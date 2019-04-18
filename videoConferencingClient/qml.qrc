@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/1.jpg</file>
+        <file>resources/1.png</file>
+        <file>resources/xly.png</file>
+        <file>qml/main.qml</file>
+        <file>qml/MeetingList.qml</file>
+        <file>qml/PublishMeeting.qml</file>
+        <file>qml/SpeakerList.qml</file>
+        <file>qml/AttendeeList.qml</file>
+    </qresource>
+</RCC>
