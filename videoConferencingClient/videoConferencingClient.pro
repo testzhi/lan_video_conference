@@ -18,7 +18,8 @@ SOURCES += \
     meeting.cpp \
     department.cpp \
     company.cpp \
-    group.cpp
+    group.cpp \
+    videoconferencingclient.cpp
 
 
 RESOURCES += qml.qrc
@@ -39,8 +40,10 @@ HEADERS += \
     meeting.h \
     department.h \
     company.h \
-    group.h
+    group.h \
+    videoconferencingclient.h
 
 DISTFILES += \
     resources/1.png \
     resources/xly.png
+LIBS += -lboost_system -lboost_date_time -lpthread

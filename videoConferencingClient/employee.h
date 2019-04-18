@@ -35,6 +35,11 @@ signals:
     void emailChanged();
     void groupChanged();
     void meetingsChanged();
+
+    void registerSuccessfully();//注册成功
+    void emailAlreadyRegistered();//注册失败 之 email已被占用
+    void loginSucceeded();//登录成功
+    void loginFailed(QString err);
 public:
     Employee(QObject *parent = 0):QObject(parent){
 //        m_userID = "111";
