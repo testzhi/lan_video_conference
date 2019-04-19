@@ -4,12 +4,48 @@
 # videoConferencingClient 客户端
 # 服务器地址
         Liana 192.168.43.174:2333
-        Lzy
+        Lzy   192.168.43.7:2333
         Liang
 # -------------------------------------当前版本 -------------------------------------
 
-Client的tcp部分，Client部分请求（注册登录）;Server tcp连接;数据库小部分
+Client的tcp部分，Client部分请求（注册登录）;  Server tcp连接;   数据库部分;      Server部分反馈（注册登录）
 客户端部分添加了四个signals（登录注册）
+# ------------------------------------数据库部分 ------------------------------------
+第一次配置
+    mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+    systemctl start mysqld
+    mysql_secure_installation 
+    systemctl restart mysqld
+    
+    将mariadb connector解压缩，将include文件夹下内容复制到/usr/include或/usr/local/include
+                             将lib文件夹下内容复制到/usr/lib或/usr/local/lib
+                             将bin文件夹下内容复制到/usr/bin或/usr/local/bin
+    source /sbin/ldconfig
+    mysql -u root -p 密码
+    create user 'VideoConferencingServer'@'localhost';
+    create database VideoConferencingDB;
+    grant all on VideoConferencingDB.* to 'VideoConferencingServer'@'localhost';
+    
+n次以后
+    systemctl start mysqld
+    
+<!--     若需要在终端查看数据库 mysql -u VideoConferencingServer  -->
+    
+    
+[Note:如果想避免重复输入以上语句，可以直接输入（即开机自启数据库）                     ]
+[    systemctl enable mysqld@.service  或者 systemctl enable mysqld           ]
+[    若要关闭上述语句                                                           ]
+[    systemctl disable mysqld@.service 或者 systemctl disable mysqld@.service ]
+# ------------------------------------libjrtp部分 ------------------------------------
+jthread解压缩
+    cmake .
+    make
+    make install
+jrtp解压缩
+    camke .
+    make
+    make install
+    ln -s /usr/local/lib64/libjrtp.so.3.11.1 /usr/lib      或者 ln -s /usr/local/lib/libjrtp.so.3.11.1 /usr/lib
 
 # -------------------------------------JSON部分 -------------------------------------
 # 由客户端发送     #
@@ -64,7 +100,7 @@ Client的tcp部分，Client部分请求（注册登录）;Server tcp连接;数�
     TYPE：_LOGIN
     DATA：{
         EMAILID:
-        RESULT："1"/"-1"无效账户/"-2"密码错误
+        RESULT："1"/"-1"无效账户/"-2"密码错误/"-3"重复登录
         ERROR:
         }
     }

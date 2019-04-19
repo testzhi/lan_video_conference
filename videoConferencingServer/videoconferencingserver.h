@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <QJsonObject>
 #include <string>
+#include "datacontroller.h"
 
 #define BUFFER_LENGTH 1024
 
@@ -40,8 +41,8 @@ public:
 
 
     //处理函数
-    void handleRegister(QJsonObject Data, string ip, sock_ptr sock);  //处理注册
-    void handleLogin(QJsonObject Data, string ip, sock_ptr sock);//处理登录
+    void handleRegister(QJsonObject Data, sock_ptr sock);  //处理注册
+    void handleLogin(QJsonObject Data, std::string ip, sock_ptr sock);//处理登录
     void handleExit(QJsonObject Data, sock_ptr sock);//处理退出
     void handleAccountDetail(QJsonObject Data, sock_ptr sock);//处理账户信息
     void handleColleagueList(QJsonObject Data, sock_ptr sock);
@@ -57,6 +58,8 @@ private:
     tcp::endpoint m_tcpEP;
     boost::array<char,BUFFER_LENGTH> m_tcpRecvBuf;//接收数据缓冲区。
     boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;//接收数据缓冲区。
+
+    DataController dc;
 };
 
 #endif // VIDEOCONFERENCINGSERVER_H

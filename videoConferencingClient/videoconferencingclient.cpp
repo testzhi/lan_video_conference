@@ -94,17 +94,6 @@ void VideoConferencingClient::rtpResultAnalysis()
 //REQUEST PART：客户端 发送 数据 (调用COLLECTION部分)
 void VideoConferencingClient::requestRegister(string realName, string passwd, string email, QByteArray avatar, string company, string department, string group, string phoneNumber)
 {
-    m_employee->setRealName(QString::fromStdString(realName));
-    m_employee->setUserPassword(QString::fromStdString(passwd));
-    m_employee->setEmail(QString::fromStdString(email));
-    QString a(avatar);
-    m_employee->setAvatar(a);
-    m_employee->setCompany(QString::fromStdString(company));
-    m_employee->setDepartment(QString::fromStdString(department));
-    m_employee->setGroup(QString::fromStdString(group));
-    m_employee->setPhone(QString::fromStdString(phoneNumber));
-
-
     string sendMessage = registerJsonToString(realName, passwd, email, avatar, company, department, group, phoneNumber);
     cout << "请求注册：" << sendMessage << endl;
     tcpSendMessage(sendMessage);

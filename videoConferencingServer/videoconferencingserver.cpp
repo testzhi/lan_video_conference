@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QJsonDocument>
 
+
 using std::cout;
 using std::endl;
 using std::string;
@@ -43,7 +44,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     string type = Data["TYPE"].toString().toStdString();
 
     if(type == "#REGISTER") //处理注册请求
-        handleRegister(Data, _remote_ip,sock);
+        handleRegister(Data, sock);
     else if(type == "#LOGIN") //处理登录请求
         handleLogin(Data, _remote_ip,sock);
     else if(type == "#EXIT")
@@ -74,38 +75,52 @@ void VideoConferencingServer::handleTcpSend(const boost::system::error_code &ec,
 
 
 //处理函数
-void VideoConferencingServer::handleRegister(QJsonObject Data, std::string ip, VideoConferencingServer::sock_ptr sock)
+void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
 
     string email = Data.value("DATA")["EMAIL"].toString().toStdString();
-//    //检测数据库 查找该email
 
-//    //若存在该email 则RESUILT=-1 ERROR=”The e-mail has been registered.“
+    string tcpJson, id;
+    int res;
+    dc.jsonStrCreateRegisteredID(tcpJson, email, id, res);
 
-//    //若无该email 则建档
-//    string realName = Data.value("DATA")["REALNAME"].toString().toStdString();
-//    string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
-//    string avatar = Data.value("DATA")["AVATAR"].toString().toStdString();
-//    string company = Data.value("DATA")["COMPANY"].toString().toStdString();
-//    string department = Data.value("DATA")["DEPARTMENT"].toString().toStdString();
-//    string group = Data.value("DATA")["GROUP"].toString().toStdString();
-//    string phone = Data.value("DATA")["PHONE"].toString().toStdString();
+    string realName = Data.value("DATA")["REALNAME"].toString().toStdString();
+    string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
+    string avatar = Data.value("DATA")["AVATAR"].toString().toStdString();
+    string company = Data.value("DATA")["COMPANY"].toString().toStdString();
+    string department = Data.value("DATA")["DEPARTMENT"].toString().toStdString();
+    string group = Data.value("DATA")["GROUP"].toString().toStdString();
+    string phone = Data.value("DATA")["PHONE"].toString().toStdString();
 
-//    //得到随机生成的ID，然后一并插入到数据库
-    string idjson, id;
-//    db.strMsgCreateRegisteredID(idjson, id);
-//    db.getDb().insertIntoTableAccounts(id, passwd, userName,"");//头像先假设为默认头像
-    tcpSendMessage(idjson,sock);
+    if(res == 1)
+        dc.getDb().insertIntoTableEmployees(id, passwd, realName, email, group, department, company, "");
+    tcpSendMessage(tcpJson, sock);
 }
 
-void VideoConferencingServer::handleLogin(QJsonObject Data, std::string ip, VideoConferencingServer::sock_ptr sock)
+void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConferencingServer::sock_ptr sock)
 {
+    string tcpJson;
+    string emailid = Data.value("DATA")["EMAILID"].toString().toStdString();
+    string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
 
+    string verifyRes;
+    int result;
+    dc.jsonStrVerifyAccountResult(emailid, passwd,verifyRes, result);
+
+    if(result == 1)
+    {
+        dc.getDb().updateStateByEmaiID(emailid, 1, ip);
+    }
+    tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
+    string tcpJson;
+    string emailid = Data.value("DATA")["FROM"].toString().toStdString();
 
+    string verifyRes;
+    dc.getDb().updateStateByEmaiID(emailid, 0, "");
 }
 
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
