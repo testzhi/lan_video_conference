@@ -8,7 +8,7 @@ using std::string;
 using std::vector;
 
 DataBaseBroker::DataBaseBroker()
-    :errorNum(0),errorInfo("ok"), mysqlInstance(mysql_init(NULL))//分配内存并初始化一个MYSQL *对象
+//    :errorNum(0),errorInfo("ok"), mysqlInstance(mysql_init(NULL))//分配内存并初始化一个MYSQL *对象
 {
     mysql_library_init(0,NULL,NULL);
     mysql_init(mysqlInstance);

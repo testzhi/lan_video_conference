@@ -70,7 +70,7 @@ Rectangle {
                         }
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr(company.companyName)
+                            text: qsTr(conferenceUI.company.companyName)
                         }
                     }
                 }
@@ -90,11 +90,11 @@ Rectangle {
                             return false
                     }
 
-                    model: company.departmentCount()
+                    model: conferenceUI.company.departmentCount()
                     delegate: Rectangle {
                         z: -1
                         id: departmentSet
-                        property Department departments: company.getDepartment(
+                        property Department departments: conferenceUI.company.getDepartment(
                                                              index)
                         width: parent.width
                         height: {

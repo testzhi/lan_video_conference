@@ -4,8 +4,8 @@
 
 int main()
 {
-//    VideoConferencingServer *server = new VideoConferencingServer();
-//    server->run();
+    VideoConferencingServer *server = new VideoConferencingServer();
+    server->run();
 
     DataBaseBroker db;
     char *serv = "localhost";         char *username = "chinwag";

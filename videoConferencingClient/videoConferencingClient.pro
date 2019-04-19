@@ -1,4 +1,4 @@
-QT += quick
+QT += qml quick
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -19,11 +19,12 @@ SOURCES += \
     department.cpp \
     company.cpp \
     group.cpp \
-    videoconferencingclient.cpp
+    videoconferencingclient.cpp \
+    conferenceui.cpp
 
 
 RESOURCES += qml.qrc
-
+QT += widgets
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
@@ -41,7 +42,8 @@ HEADERS += \
     department.h \
     company.h \
     group.h \
-    videoconferencingclient.h
+    videoconferencingclient.h \
+    conferenceui.h
 
 DISTFILES += \
     resources/1.png \

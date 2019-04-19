@@ -8,5 +8,8 @@
         <file>qml/PublishMeeting.qml</file>
         <file>qml/SpeakerList.qml</file>
         <file>qml/AttendeeList.qml</file>
+        <file>qml/Register.qml</file>
+        <file>qml/Login.qml</file>
+        <file>qml/Home.qml</file>
     </qresource>
 </RCC>

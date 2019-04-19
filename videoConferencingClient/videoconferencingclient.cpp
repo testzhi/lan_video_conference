@@ -13,7 +13,7 @@ using std::string;
 
 
 VideoConferencingClient::VideoConferencingClient()
-    :m_sockTcp(m_io), m_tcpEP(ip::address::from_string("192.168.43.174"), 2333)
+    :m_sockTcp(m_io), m_tcpEP(ip::address::from_string("192.168.43.7"), 2333)
 {
     m_sockTcp.connect(m_tcpEP);
 }
