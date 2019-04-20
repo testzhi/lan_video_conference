@@ -21,6 +21,7 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
     _remote_endpoint = sock->remote_endpoint(); //这个东西必须要放在这里
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
+//    sock->async_send()
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, boost::asio::placeholders::error, sock, sock->remote_endpoint().address().to_string()));
     accept();
 }
@@ -54,6 +55,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     else if(type == "#REQUEST_COLLEAGUE_LIST")
         handleColleagueList(Data, sock);
 
+//    m_tcpRecvBuf.
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
 }
 
@@ -65,8 +67,10 @@ void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingS
             m_tcpSendBuf[i] = msg[i];
         else m_tcpSendBuf[i] = '\0';
     }
-    cout << msg << endl;
+    cout << "反馈" << msg << endl;
     async_write(*sock,boost::asio::buffer(m_tcpSendBuf), boost::bind(&VideoConferencingServer::handleTcpSend, this, boost::asio::placeholders::error,sock));
+
+//    async_write(*sock,boost::asio::buffer(m_wtbuf),boost::bind(&Server::write_hander, this, boost::asio::placeholders::error, sock));
 }
 void VideoConferencingServer::handleTcpSend(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock)
 {

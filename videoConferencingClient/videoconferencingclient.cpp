@@ -1,5 +1,6 @@
 #include "videoconferencingclient.h"
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 #include <QDebug>
 #include <thread>
 #include <iostream>
@@ -20,7 +21,7 @@ VideoConferencingClient::VideoConferencingClient()
 //TCP
 void VideoConferencingClient::threadTcpReceive()
 {
-    std::thread threadTcp(&VideoConferencingClient::tcpReceiveMessage, this);
+    boost::thread threadTcp(boost::bind(&VideoConferencingClient::tcpReceiveMessage, this));
     threadTcp.detach();
 }
 void VideoConferencingClient::tcpReceiveMessage()
@@ -28,12 +29,14 @@ void VideoConferencingClient::tcpReceiveMessage()
     for(int i = 0; i != BUFFER_LENGTH; i++)
         m_tcpRecvBuf[i] = '\0';
 
+    cout << "wait"<< endl;
     size_t readSize = 0;
-    while(readSize == 0)
-        readSize = m_sockTcp.read_some(buffer(m_tcpRecvBuf));
+    while(readSize == 0) {
+        readSize = m_sockTcp.read_some(boost::asio::buffer(m_tcpRecvBuf));
+    }
 
     string s = "";
-    for(size_t i = 0; i != readSize; i++)
+    for(int i = 0; i != readSize; i++)
         if(m_tcpRecvBuf[i] != '\0')
             s.push_back(m_tcpRecvBuf[i]);
 
@@ -63,10 +66,14 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
     else if (type == "_LOGIN")
     {
         handleLoginResult(qo, loginResult, err);
+        cout << "loginResult  " << loginResult << endl;
         if(loginResult != 1) {
             qDebug() << "登录失败： " << err;
             m_employee->loginFailed(err);
-        }else m_employee->loginSucceeded();
+        }else {
+            requestAccountDetail(m_employee->userID().toStdString());
+            m_employee->loginSucceeded();
+        }
     }
     else if (type == "_INITIALIZE_ACCOUNT_DETAIL")
     {
@@ -110,7 +117,8 @@ void VideoConferencingClient::requestExit(string emailId)
     cout << "请求退出："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
 }
-void VideoConferencingClient::requestAccountDetail(string emailId)
+
+void VideoConferencingClient::requestAccountDetail(std::string emailId)
 {
     string sendMessage = initializeAccountDetailJsonToString(emailId);
     cout << "请求账户细节信息："  << sendMessage << endl;
@@ -144,12 +152,9 @@ void VideoConferencingClient::handleRegisteredResult(QJsonObject qo, int &result
 void VideoConferencingClient::handleLoginResult(QJsonObject qo, int &result, QString &err)
 {
     err.clear();
-    result = qo.value("DATA")["RESULT"].toString().toInt();
-    string emailId = qo.value("DATA")["EMAILID"].toString().toStdString();
-    if(result == 1)
-        requestAccountDetail(emailId);
-    else
-        err = qo.value("DATA")["ERROR"].toString();
+    QString qs = qo.value("DATA")["RESULT"].toString();
+    result = qs.toInt();
+    err = qo.value("DATA")["ERROR"].toString();
     //等待重新输入
 }
 void VideoConferencingClient::handleInitAccountDetailResult(QJsonObject qo, QList<QString> &employeeDetail)
@@ -206,7 +211,7 @@ string VideoConferencingClient::registerJsonToString(string realName, string pas
 
     QJsonObject json;
     json.insert("DATA", QJsonValue(data));
-    json.insert("TYPE", "#REGISTERED");
+    json.insert("TYPE", "#REGISTER");
 
     QJsonDocument document;
     document.setObject(json);
@@ -302,4 +307,14 @@ QJsonObject VideoConferencingClient::stringToQJsonObject(string str)
     qDebug()<< qString;
     QJsonObject data = QJsonDocument::fromJson(qString.toUtf8()).object();
     return data;
+}
+
+void VideoConferencingClient::setCompany(Company *company)
+{
+    m_company = company;
+}
+
+void VideoConferencingClient::setEmployee(Employee *employee)
+{
+    m_employee = employee;
 }
