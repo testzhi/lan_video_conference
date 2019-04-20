@@ -15,10 +15,6 @@ DataBaseBroker::DataBaseBroker()
     mysql_options(mysqlInstance,MYSQL_SET_CHARSET_NAME,"utf8");
     //    mysql_options(mysqlInstance,MYSQL_SET_CHARSET_NAME,"gbk");
 }
-DataBaseBroker::~DataBaseBroker()
-{
-    closeMySQL();
-}
 bool DataBaseBroker::connectMySQL(const char *host, const char *username, const char *password, const char *database, int port)
 {
     if(mysql_real_connect(mysqlInstance, host, username, password, database, port, nullptr, 0) != nullptr)
@@ -36,6 +32,7 @@ void DataBaseBroker::closeMySQL()
 {
     mysql_close(mysqlInstance);
 }
+
 //测试版本
 int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, string userName, string email, string groupName, string departmentName, string companyName, string ip)
 {

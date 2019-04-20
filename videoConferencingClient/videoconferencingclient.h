@@ -6,7 +6,7 @@
 #include <QObject>
 #include <string>
 #include <QJsonObject>
-#include "employee.h"
+#include "company.h"
 
 #define BUFFER_LENGTH   1024
 
@@ -65,6 +65,7 @@ private:
     boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;//接收数据缓冲区。
 
     Employee *m_employee;
+    Company *m_company;
 };
 
 #endif // VIDEOCONFERENCINGSERVER_H

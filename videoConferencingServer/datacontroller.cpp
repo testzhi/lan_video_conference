@@ -8,6 +8,7 @@
 #include <QVariant>
 #include <QDebug>
 #include <iostream>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using std::vector;
 using std::string;
@@ -22,7 +23,7 @@ DataController::DataController()
 
 DataController::~DataController()
 {
-
+    db.closeMySQL();
 }
 
 vector<string> DataController::getEmployeeInfo(string emailID)

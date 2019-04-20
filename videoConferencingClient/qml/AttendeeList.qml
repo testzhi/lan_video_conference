@@ -27,9 +27,9 @@ Rectangle {
     property Group gro
     property Employee emp
     function initListChoose() {
-        for (var a = 0; a !== company.departmentCount(); a++) {
+        for (var a = 0; a !== conferenceUI.company.departmentCount(); a++) {
             departmentSelect[a] = listAllNotChoose
-            dep = company.getDepartment([a])
+            dep = conferenceUI.company.getDepartment([a])
             for (var b = 0; b !== dep.groupCount(); b++) {
                 groupSelect[groupSelect.length] = listAllNotChoose
                 gro = dep.getGroup(b)
@@ -113,7 +113,7 @@ Rectangle {
                         }
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr(company.companyName)
+                            text: qsTr(conferenceUI.company.companyName)
                         }
                     }
                 }
@@ -126,11 +126,11 @@ Rectangle {
                     anchors.leftMargin: 20
                     anchors.top: parent.top
                     anchors.topMargin: mainWindow.height * 0.06
-                    model: company.departmentCount()
+                    model: conferenceUI.company.departmentCount()
                     delegate: Rectangle {
                         z: -1
                         id: departmentSet
-                        property Department departments: company.getDepartment(
+                        property Department departments: conferenceUI.company.getDepartment(
                                                              index)
                         width: parent.width
                         height: {

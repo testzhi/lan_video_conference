@@ -9,9 +9,9 @@ class DataBaseBroker
 {
 public:
     DataBaseBroker();
-    ~DataBaseBroker();
     bool connectMySQL(const char *host, const char *username, const char *password, const char *database, int port);
     bool createTables();
+    void closeMySQL();
 
     bool canRegister(std::string email);
     //无效email-2 ，无效ID-1, 0命令执行失败  ，ID 1 ，email 2
@@ -62,7 +62,6 @@ private:
     bool query(const std::string& querystr);
     bool getDatafromDB(std::string queryStr, std::vector<std::vector<std::string> >& data, int &row);
     bool isSameString(std::string userID_fk, std::string friendID_fk);
-    void closeMySQL();
 };
 
 #endif // DATABASEBROKER_H
