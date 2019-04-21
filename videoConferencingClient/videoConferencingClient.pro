@@ -20,7 +20,8 @@ SOURCES += \
     company.cpp \
     group.cpp \
     videoconferencingclient.cpp \
-    conferenceui.cpp
+    conferenceui.cpp \
+    notification.cpp
 
 
 RESOURCES += qml.qrc
@@ -43,9 +44,10 @@ HEADERS += \
     company.h \
     group.h \
     videoconferencingclient.h \
-    conferenceui.h
+    conferenceui.h \
+    notification.h
 
 DISTFILES += \
     resources/1.png \
     resources/xly.png
-LIBS += -lboost_system -lboost_date_time -lpthread
+LIBS += -lboost_system -lboost_date_time -lpthread -lboost_thread

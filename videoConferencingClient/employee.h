@@ -7,6 +7,7 @@
 #include <QQmlListProperty>
 
 #include <meeting.h>
+#include "notification.h"
 
 class Employee:public QObject
 {
@@ -94,6 +95,7 @@ private:
     QString m_email;
     QString m_group;
     QList<Meeting *> _meetings;
+    QList<Notification *> _notification;
 
     static void appendMeeting(QQmlListProperty<Meeting> *meetings,Meeting * meeting);
     static int countMeeting(QQmlListProperty<Meeting> *meetings);

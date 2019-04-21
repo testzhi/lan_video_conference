@@ -22,9 +22,9 @@ void ConferenceUI::setEmployee(Employee *employee)
 
 void ConferenceUI::getLoginInformation(QString account, QString password)
 {
-//    m_employee->setUserID();
+    m_employee->setUserID(account);
     m_employee->setUserPassword(password);
-    m_videoConferencing.requestLogin(account.toStdString(),password.toStdString());
+    m_videoConferencing->requestLogin(account.toStdString(),password.toStdString());
 }
 
 void ConferenceUI::getRegisterInformation(QString avator, QString name, QString password, QString company, QString department, QString group, QString phone, QString email)
@@ -37,5 +37,16 @@ void ConferenceUI::getRegisterInformation(QString avator, QString name, QString 
     m_employee->setGroup(group);
     m_employee->setPhone(phone);
     m_employee->setEmail(email);
-//    m_videoConferencing.requestRegister(name.toStdString(),password.toStdString(),email.toStdString(),avator.toStdString(),company.toStdString(),department.toStdString(),group.toStdString(),phone.toStdString());
+    m_videoConferencing->requestRegister(name.toStdString(),password.toStdString(),email.toStdString(),"",company.toStdString(),department.toStdString(),group.toStdString(),phone.toStdString());
 }
+
+VideoConferencingClient *ConferenceUI::getVideoConferencing() const
+{
+    return m_videoConferencing;
+}
+
+void ConferenceUI::setVideoConferencing(VideoConferencingClient *videoConferencing)
+{
+    m_videoConferencing = videoConferencing;
+}
+

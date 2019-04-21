@@ -3,7 +3,7 @@ import QtQuick.Controls 2.2
 
 Item {
     anchors.fill: parent
-    signal login(var userID, var userPassword)
+    signal login
     Column {
         id: loginPage
         anchors.centerIn: parent
@@ -48,9 +48,8 @@ Item {
                 if (account.text.length === 0 || loginPassword.text.length == 0)
                     mistake.text = "信息未填写完整"
                 else {
-                    conferenceUI.getLoginInformation(account.text, loginPassword.text)
-                    login(account.text, loginPassword.text)
-                    account.text = loginPassword.text = ""
+                    conferenceUI.getLoginInformation(account.text,
+                                                     loginPassword.text)
                 }
             }
         }
@@ -70,6 +69,17 @@ Item {
             }
         }
     }
+    Connections {
+        target: conferenceUI.employee
+        onLoginFailed: {
+            mistake.text = err
+        }
+        onLoginSucceeded: {
+            login()
+            account.text = loginPassword.text = ""
+        }
+    }
+
     Register {
         id: register
         visible: false
@@ -77,11 +87,10 @@ Item {
             loginPage.visible = true
             register.visible = false
         }
-        //        onRegister: {
-        //            account.text = email
-        //            loginPassword.text = password
-        //            loginPage.visible = true
-        //            register.visible = false
-        //        }
+        onRegisterSuccess: {
+            loginPage.visible = true
+            register.visible = false
+            account.text = userID
+        }
     }
 }

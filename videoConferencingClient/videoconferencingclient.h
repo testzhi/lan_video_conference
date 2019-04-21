@@ -39,6 +39,9 @@ public:
     void requestColleagueList(std::string emaiId);//请求同事列表
 
 
+    void setEmployee(Employee *employee);
+    void setCompany(Company *company);
+
 private:
     //HANDLE PART：客户端处理来自Server的数据
     void handleRegisteredResult(QJsonObject qo, int &result, QString &returnID, QString &email, QString &err);//处理注册返回结果

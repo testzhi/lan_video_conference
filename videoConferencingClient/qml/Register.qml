@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.1
 
 Item {
     signal back
+    signal registerSuccess(var userID)
     anchors.fill: parent
     Image {
         anchors.left: parent.left
@@ -211,9 +212,6 @@ Item {
                                                         department.text,
                                                         group.text, phone.text,
                                                         email.text)
-                    _image.source = "../resources/xly.png"
-                    name.text = password.text = company.text = department.text
-                            = group.text = phone.text = email.text = confirm.text = ""
                 }
             }
         }
@@ -221,6 +219,18 @@ Item {
             id: mistake
             color: "red"
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+    }
+    Connections {
+        target: conferenceUI.employee
+        onEmailAlreadyRegistered: {
+            mistake.text = "该邮箱已被注册"
+        }
+        onRegisterSuccessfully: {
+            _image.source = "../resources/xly.png"
+            name.text = password.text = company.text = department.text
+                    = group.text = phone.text = email.text = confirm.text = ""
+            registerSuccess(conferenceUI.employee.userID)
         }
     }
 }

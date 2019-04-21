@@ -11,8 +11,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    VideoConferencingClient *client = new VideoConferencingClient();
-    client->threadTcpReceive();
+
 
     QQmlApplicationEngine engine;
     qmlRegisterType<Employee>("Meeting",1,0,"Employee");
@@ -63,6 +62,11 @@ int main(int argc, char *argv[])
     ConferenceUI conferenceUI;
     conferenceUI.setCompany(&company);
     conferenceUI.setEmployee(&employee);
+    VideoConferencingClient *client = new VideoConferencingClient();
+    client->threadTcpReceive();
+    conferenceUI.setVideoConferencing(client);
+    conferenceUI.getVideoConferencing()->setEmployee(conferenceUI.employee());
+    conferenceUI.getVideoConferencing()->setCompany(conferenceUI.company());
     engine.rootContext()->setContextProperty("conferenceUI",&conferenceUI);
 
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
