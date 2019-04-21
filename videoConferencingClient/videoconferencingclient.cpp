@@ -23,7 +23,6 @@ void VideoConferencingClient::threadTcpReceive()
 {
     boost::thread threadTcp(boost::bind(&VideoConferencingClient::tcpReceiveMessage, this));
     threadTcp.detach();
-//    threadTcp.join();
 }
 void VideoConferencingClient::tcpReceiveMessage()
 {
@@ -32,15 +31,9 @@ void VideoConferencingClient::tcpReceiveMessage()
 
     cout << "wait"<< endl;
     size_t readSize = 0;
-<<<<<<< HEAD
-    while(readSize == 0)
-        readSize = m_sockTcp.read_some(buffer(m_tcpRecvBuf));
-    cout << "readsize" <<readSize<<endl;
-=======
     while(readSize == 0) {
         readSize = m_sockTcp.read_some(boost::asio::buffer(m_tcpRecvBuf));
     }
->>>>>>> e7ac3372bd5d7efa5e984a02cbe7b3cff293baac
 
     string s = "";
     for(int i = 0; i != readSize; i++)
@@ -57,6 +50,7 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
     QJsonObject qo = stringToQJsonObject(str);
     string type = qo["TYPE"].toString().toStdString();
 
+    QList<QString> employeeDetail;
     QString userID, email;
     int registerResult, loginResult;
     QString err;
@@ -84,6 +78,15 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
     }
     else if (type == "_INITIALIZE_ACCOUNT_DETAIL")
     {
+        handleInitAccountDetailResult(qo,employeeDetail);
+        m_employee->setUserID(employeeDetail.at(0));
+        m_employee->setEmail(employeeDetail.at(1));
+        m_employee->setRealName(employeeDetail.at(2));
+        m_employee->setAvatar(employeeDetail.at(3));
+        m_employee->setCompany(employeeDetail.at(4));
+        m_employee->setDepartment(employeeDetail.at(5));
+        m_employee->setGroup(employeeDetail.at(6));
+        m_employee->setPhone(employeeDetail.at(7));
     }
     else if (type == "_INITIALIZE_COLLEAGUE_LIST")
     {
@@ -170,6 +173,8 @@ void VideoConferencingClient::handleInitAccountDetailResult(QJsonObject qo, QLis
     employeeDetail.append(qo.value("DATA")["EMAIL"].toString());
     employeeDetail.append(qo.value("DATA")["REALNAME"].toString());
     employeeDetail.append(qo.value("DATA")["AVATAR"].toString());
+    employeeDetail.append(qo.value("DATA")["COMPANY"].toString());
+    employeeDetail.append(qo.value("DATA")["DEPARTMENT"].toString());
     employeeDetail.append(qo.value("DATA")["GROUP"].toString());
     employeeDetail.append(qo.value("DATA")["PHONE"].toString());
 }

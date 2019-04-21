@@ -17,8 +17,8 @@ Item {
                 spacing: mainWindow.width * 0.03
                 Rectangle {
                     id: img
-                    width: mainWindow.height * 0.10
-                    height: mainWindow.height * 0.10
+                    width: mainWindow.height * 0.07
+                    height: mainWindow.height * 0.07
                     anchors.verticalCenter: parent.verticalCenter
                     Image {
                         id: _image
@@ -26,7 +26,6 @@ Item {
                         visible: false
                         anchors.fill: parent
                         source: "../resources/xly.png"
-                        //                        sourceSize: Qt.size(parent.size, parent.size)
                         antialiasing: true
                     }
                     Rectangle {
@@ -50,7 +49,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: conferenceUI.employee.realName
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
             }
         }
@@ -76,22 +75,31 @@ Item {
                             height: tabbarColumn.height * 0.85 / 4
                             Text {
                                 text: qsTr(modelData)
-                                font.pointSize: 50
+                                //                                font.pointSize: 50
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                             onClicked: {
                                 if (index === 0) {
                                     meetingList.visible = true
                                     publishMeeting.visible = false
+                                    notification.visible = false
+                                    personalData.visible = false
                                 } else if (index === 1) {
                                     meetingList.visible = false
                                     publishMeeting.visible = true
+                                    notification.visible = false
+                                    personalData.visible = false
                                 } else if (index === 2) {
                                     meetingList.visible = false
                                     publishMeeting.visible = false
+                                    notification.visible = true
+                                    personalData.visible = false
                                 } else if (index === 3) {
                                     meetingList.visible = false
                                     publishMeeting.visible = false
+                                    notification.visible = false
+                                    personalData.visible = true
                                 }
                             }
                         }
@@ -109,14 +117,20 @@ Item {
             Rectangle {
                 height: mainWindow.height * 0.88 - 1
                 width: mainWindow.width * 0.85
-                //                border.color: "blue"
-                //                border.width: 2
                 MeetingList {
                     id: meetingList
                     visible: true
                 }
                 PublishMeeting {
                     id: publishMeeting
+                    visible: false
+                }
+                Notification {
+                    id: notification
+                    visible: false
+                }
+                PersonalData {
+                    id: personalData
                     visible: false
                 }
             }

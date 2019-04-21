@@ -19,7 +19,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "会议主题："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 TextField {
                     anchors.verticalCenter: parent.verticalCenter
@@ -36,7 +36,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "会议说明："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
@@ -44,7 +44,7 @@ Item {
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
                     width: parent.width * 0.87
                     height: parent.height * 0.9
-                    border.color: "blue"
+                    //                    border.color: "blue"
                     border.width: 1
                     ScrollView {
                         anchors.fill: parent
@@ -61,14 +61,14 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "会议类别："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 ComboBox {
                     id: category
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                     visible: true
                     onCurrentIndexChanged: {
                         if (category.currentIndex === 1) {
@@ -89,7 +89,7 @@ Item {
                         anchors.left: parent.left
                         anchors.leftMargin: mainWindow.width * 0.40
                         text: "最低人数限制："
-                        font.pixelSize: 25
+                        //                        font.pixelSize: 25
                     }
                     SpinBox {
                         anchors.verticalCenter: parent.verticalCenter
@@ -111,7 +111,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "会议日期："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
@@ -145,7 +145,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "会议时间："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 SpinBox {
                     anchors.verticalCenter: parent.verticalCenter
@@ -178,7 +178,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.55
                     text: "预期时长："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 SpinBox {
                     anchors.verticalCenter: parent.verticalCenter
@@ -195,7 +195,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.55 + 230
                     text: "分钟"
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
             }
             Rectangle {
@@ -208,7 +208,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "主讲人员："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                     //                    maximumLength: 10
                 }
                 TextField {
@@ -251,7 +251,7 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
                     text: "参会人员："
-                    font.pixelSize: 25
+                    //                    font.pixelSize: 25
                 }
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
@@ -273,6 +273,9 @@ Item {
                         }
                     }
                 }
+            }
+            Button {
+                text: "确认发布"
             }
         }
     }

@@ -17,8 +17,10 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.01
-                    text: conferenceUI.employee.getMeeting(index).theme
-                    font.pixelSize: 15
+                    text: conferenceUI.employee.getMeeting(
+                              index).theme + "(" + conferenceUI.employee.getMeeting(
+                              index).date + "  " + conferenceUI.employee.getMeeting(
+                              index).time + ")"
                 }
             }
         }

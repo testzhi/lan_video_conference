@@ -11,5 +11,7 @@
         <file>qml/Register.qml</file>
         <file>qml/Login.qml</file>
         <file>qml/Home.qml</file>
+        <file>qml/Notification.qml</file>
+        <file>qml/PersonalData.qml</file>
     </qresource>
 </RCC>

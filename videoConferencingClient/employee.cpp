@@ -120,9 +120,38 @@ int Employee::meetingCount()
     return _meetings.count();
 }
 
+Notification *Employee::getNotification(int i)
+{
+    return _notifications.at(i);
+}
+
+int Employee::notificationCount()
+{
+    return _notifications.count();
+}
+
 void Employee::insertMeeting(Meeting *meeting)
 {
     _meetings.append(meeting);
+}
+
+void Employee::insertNotification(Notification *notification)
+{
+    _notifications.append(notification);
+}
+
+void Employee::sortMeeting()
+{
+    qSort(_meetings.begin(),_meetings.end(),[](const Meeting *infoA,const Meeting *infoB){
+        if(infoA->date() == infoB->date())
+            return infoA->time() > infoB->time();
+        else return infoA->date() < infoB->date();
+    });
+}
+
+QQmlListProperty<Notification> Employee::notifications()
+{
+    return QQmlListProperty<Notification>(this,nullptr,Employee::appendNotification,Employee::countNotification,Employee::atNotification,Employee::clearNotification);
 }
 
 void Employee::setMeetings(const QList<Meeting *> &meetings)
@@ -160,4 +189,36 @@ void Employee::clearMeeting(QQmlListProperty<Meeting> *meetings)
     if(employee) {
         employee->_meetings.clear();
     }
+}
+
+void Employee::appendNotification(QQmlListProperty<Notification> *notifications, Notification *notification)
+{
+    Employee *employee = qobject_cast<Employee *>(notifications->object);
+    if(notification) {
+        notification->setParent(employee);
+        employee->_notifications.append(notification);
+    }
+}
+
+int Employee::countNotification(QQmlListProperty<Notification> *notifications)
+{
+    Employee *employee = qobject_cast<Employee *>(notifications->object);
+    if(employee)
+        return employee->_notifications.count();
+    return 0;
+}
+
+Notification *Employee::atNotification(QQmlListProperty<Notification> *notifications, int i)
+{
+    Employee *employee = qobject_cast<Employee *>(notifications->object);
+    if(employee)
+        return employee->_notifications.at(i);
+    return nullptr;
+}
+
+void Employee::clearNotification(QQmlListProperty<Notification> *notification)
+{
+    Employee *employee = qobject_cast<Employee *>(notification->object);
+    if(employee)
+        employee->_notifications.clear();
 }

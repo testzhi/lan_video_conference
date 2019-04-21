@@ -23,6 +23,7 @@ class Employee:public QObject
     Q_PROPERTY(QString email READ email WRITE setEmail NOTIFY emailChanged)
     Q_PROPERTY(QString group READ group WRITE setGroup NOTIFY groupChanged)
     Q_PROPERTY(QQmlListProperty<Meeting> meetings READ meetings NOTIFY meetingsChanged)
+    Q_PROPERTY(QQmlListProperty<Notification> notifications READ notifications NOTIFY notificationsChanged)
     Q_CLASSINFO("DefaultProperty", "meetings")
 signals:
     void userIDChanged();
@@ -36,6 +37,7 @@ signals:
     void emailChanged();
     void groupChanged();
     void meetingsChanged();
+    void notificationsChanged();
 
     void registerSuccessfully();//注册成功
     void emailAlreadyRegistered();//注册失败 之 email已被占用
@@ -80,8 +82,14 @@ public:
     Q_INVOKABLE QQmlListProperty<Meeting> meetings();
     Q_INVOKABLE Meeting *getMeeting(int i);
     Q_INVOKABLE int meetingCount();
+    Q_INVOKABLE Notification *getNotification(int i);
+    Q_INVOKABLE int notificationCount();
 
     void insertMeeting(Meeting *meeting);
+    void insertNotification(Notification *notification);
+    void sortMeeting();
+
+    QQmlListProperty<Notification> notifications();
 
 private:
     QString m_userID;
@@ -95,12 +103,17 @@ private:
     QString m_email;
     QString m_group;
     QList<Meeting *> _meetings;
-    QList<Notification *> _notification;
+    QList<Notification *> _notifications;
 
     static void appendMeeting(QQmlListProperty<Meeting> *meetings,Meeting * meeting);
     static int countMeeting(QQmlListProperty<Meeting> *meetings);
     static Meeting *atMeeting(QQmlListProperty<Meeting> *meetings,int i);
     static void clearMeeting(QQmlListProperty<Meeting> *meetings);
+    static void appendNotification(QQmlListProperty<Notification> *notifications,Notification *notification);
+    static int countNotification(QQmlListProperty<Notification> *notifications);
+    static Notification *atNotification(QQmlListProperty<Notification> *notifications,int i);
+    static void clearNotification(QQmlListProperty<Notification> *notification);
+
 };
 
 #endif // EMPLOYEE_H
