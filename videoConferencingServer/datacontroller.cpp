@@ -17,8 +17,15 @@ using std::endl;
 
 DataController::DataController()
 {
-        db.connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
-        db.createTables();
+    db.connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
+    db.createTables();
+    //    db.insertIntoTableEmployees("563181354", "1717", "Liana", "563181354@qq.com", "analysis", "AI", "google","");
+    //    db.insertIntoTableEmployees("599599599", "5995", "lzy", "599@qq.com", "AVATARlzy", "analysis", "compute", "google", "18982777901","");
+    //    db.insertIntoTableEmployees("zjm", "5995", "zjm", "zjm@qq.com", "AVATARzjm", "analysis2", "compute", "google", "18982777901","");
+    //    db.insertIntoTableEmployees("777777777", "7777", "Liang", "777@qq.com", "analysis", "compute", "baidu","11111111111","");
+    //    db.insertIntoTableEmployees("222222222", "222", "luoooooo", "222@qq.com", "gro", "test", "baidu","");
+    //    db.insertIntoTableEmployees("1111111", "123123123", "luoooooo", "1222@qq.com", "gro", "test", "baidu","");
+    cout << "建表结束" << endl;
 }
 
 DataController::~DataController()
@@ -63,7 +70,7 @@ void DataController::jsonStrCreateRegisteredID(std::string &idJson, string email
             id = iid;
         }
         data.insert("RESULT", "1");
-        data.insert("USERID", "");
+        data.insert("USERID", id.c_str());
         data.insert("EMAIL", email.c_str());
         data.insert("ERROR", "");
         insert = 1;
@@ -87,6 +94,7 @@ void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string
     data.clear();
     int i = db.queryResultForLogin(emailid, data);
     string err;
+    string res; res.clear();
     if(i == -1)
     {
         err = string(db.getErrorInfo());
@@ -95,7 +103,8 @@ void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string
     else if (i == 0)
     {
         err = "InvalidAccount";
-        result = 0;
+        result = -1;
+        res = "-1";
     }
     else
     {
@@ -103,26 +112,29 @@ void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string
         {
             int state = atoi(data[3].c_str());
 
-            if(state == 2)
-            {
-                err="";
-                result = 1;
-            }
-            else
-            {
-                err="Repeat Login";
-                result = -3;
-            }
+            //            if(state == 0)
+            //            {
+            err="";
+            result = 1;
+            res = "1";
+            //            }
+            //            else
+            //            {
+            //                err="Repeat Login";
+            //                result = -3;
+            //                res = "-3";
+            //            }
         }
         else
         {
             err = "WrongPassword";
             result = -2;
+            res = "-2";
         }
     }
 
     QJsonObject dd;
-    dd.insert("RESULT", result);
+    dd.insert("RESULT", res.c_str());
     dd.insert("ERROR", err.c_str());
     dd.insert("EMAILID", emailid.c_str());
     QJsonObject jsonMsg;
@@ -133,6 +145,30 @@ void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);
     string strJson(byteArray);
     verifyResult = strJson;
+    cout << strJson << endl;
+}
+
+void DataController::jsonStrAccountDetail(string emailid, string &jsonstr, int &res)
+{
+    vector<string> data;
+    res = db.queryEmployeeInfoByEmailID(emailid, data);
+    QJsonObject dd;
+    dd.insert("USERID", data[0].c_str());
+    dd.insert("EMAIL", data[1].c_str());
+    dd.insert("REALNAME", data[2].c_str());
+    dd.insert("AVATAR", data[3].c_str());
+    dd.insert("COMPANY", data[6].c_str());
+    dd.insert("DEPARTMENT", data[5].c_str());
+    dd.insert("GROUP", data[4].c_str());
+    dd.insert("PHONE", data[7].c_str());
+    QJsonObject jsonMsg;
+    jsonMsg.insert("DATA", dd);
+    jsonMsg.insert("TYPE", "_INITIALIZE_ACCOUNT_DETAIL");
+    QJsonDocument document;
+    document.setObject(jsonMsg);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+    jsonstr = strJson;
     cout << strJson << endl;
 }
 

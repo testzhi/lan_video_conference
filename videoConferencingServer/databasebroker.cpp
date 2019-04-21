@@ -49,7 +49,7 @@ int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, strin
     int gid = getGroupID(groupName, depaid, comid);
 
     char cmd[200];
-    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', NULL, '%d', '%d', '%d', NULL, '-1', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), gid, depaid, comid, ip.c_str());
+    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', NULL, '%d', '%d', '%d', NULL, '0', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), gid, depaid, comid, ip.c_str());
 
     if(!query(cmd))
         return 0;
@@ -70,7 +70,7 @@ int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, strin
     int gid = getGroupID(groupName, depaid, comid);
 
     char cmd[200];
-    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', NULL, '%d', '%d', '%d', '%s', '-1', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), gid, depaid, comid, phone.c_str(), ip.c_str());
+    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', NULL, '%d', '%d', '%d', '%s', '0', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), gid, depaid, comid, phone.c_str(), ip.c_str());
 
     if(!query(cmd))
         return 0;
@@ -92,7 +92,7 @@ int DataBaseBroker::insertIntoTableEmployees(std::string userid, std::string pas
     int gid = getGroupID(groupName, depaid, comid);
 
     char cmd[200];
-    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '-1', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), avatar.c_str(), gid, depaid, comid, phone.c_str(), ip.c_str());
+    sprintf(cmd, "insert into EmployeesTable values('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s', '0', '%s');", userid.c_str(), passwd.c_str(), userName.c_str(), email.c_str(), avatar.c_str(), gid, depaid, comid, phone.c_str(), ip.c_str());
 
     if(!query(cmd))
         return 0;
@@ -110,22 +110,83 @@ int DataBaseBroker::queryEmployeeInfoByEmailID(std::string emailID, std::vector<
     if(!query(cmd))
         return -1;
     result=mysql_store_result(mysqlInstance);
-    auto field=mysql_num_fields(result);
-    auto row = mysql_num_rows(result);
-    if(row == 0)
+    auto row1 = mysql_num_rows(result);
+
+    MYSQL_ROW line1 = mysql_fetch_row(result);
+    if(row1 == 0)
         return 0;
+    else {
+        char company[100], department[100], group[100];
+        sprintf(company, "select * from CompaniesTable where COMPANYID = '%s';", line1[7]);
+        if(!query(company))
+            return -1;
+        result=mysql_store_result(mysqlInstance);
+        auto row2 = mysql_num_rows(result);
+        if(row2 == 0) return 0;
+        MYSQL_ROW line2 = mysql_fetch_row(result);
 
-    MYSQL_ROW line = mysql_fetch_row(result);
+        sprintf(department, "select * from DepartmentsTable where DEPARTMENTID = '%s';", line1[6]);
+        if(!query(department))
+            return -1;
+        result=mysql_store_result(mysqlInstance);
+        auto row3 = mysql_num_rows(result);
+        if(row3 == 0) return 0;
+        MYSQL_ROW line3 = mysql_fetch_row(result);
 
-    for(unsigned int i=0; i < field; i++)
-    {
-        if(line[i])
+        sprintf(group, "select * from GroupsTable where GROUPID = '%s';", line1[5]);
+        if(!query(group))
+            return -1;
+        result=mysql_store_result(mysqlInstance);
+        auto row4 = mysql_num_rows(result);
+        if(row4 == 0) return 0;
+        MYSQL_ROW line4 = mysql_fetch_row(result);
+
+        if(line1[0])//id0
         {
-            std::cout<<line[i]<<"  ";
-            data.push_back(line[i]);
+            data.push_back(line1[0]);
+        }else {
+            data.push_back("");
         }
-        else
+        if(line1[3])//email1
         {
+            data.push_back(line1[3]);
+        }else {
+            data.push_back("");
+        }
+        if(line1[2])//name2
+        {
+            data.push_back(line1[2]);
+        }else {
+            data.push_back("");
+        }
+        if(line1[4])//avatar3
+        {
+            data.push_back(line1[4]);
+        }else {
+            data.push_back("");
+        }
+        if(line4[1])// 组4
+        {
+            data.push_back(line4[1]);
+        }else {
+            data.push_back("");
+        }
+        if(line3[1])//部门5
+        {
+            data.push_back(line3[1]);
+        }else {
+            data.push_back("");
+        }
+        if(line2[1])//公司6
+        {
+            data.push_back(line2[1]);
+        }else {
+            data.push_back("");
+        }
+        if(line1[8])//电话7
+        {
+            data.push_back(line1[8]);
+        }else {
             data.push_back("");
         }
     }
@@ -433,7 +494,7 @@ void DataBaseBroker::errorIntoMySQL()
 {
     errorNum = mysql_errno(mysqlInstance);
     errorInfo = mysql_error(mysqlInstance);
-    cout << "Error Number :" << errorNum << "-------" << errorInfo << endl;
+    cout << "数据库错误信息: " << errorNum << "-------" << errorInfo << endl;
 }
 bool DataBaseBroker::query(const string &querystr)
 {

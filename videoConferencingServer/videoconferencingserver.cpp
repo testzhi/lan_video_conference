@@ -18,15 +18,16 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
 {
     if(ec)
         return;
-    _remote_endpoint = sock->remote_endpoint(); //这个东西必须要放在这里
+    _remote_endpoint = sock->remote_endpoint();
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
+//    sock->async_send()
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, boost::asio::placeholders::error, sock, sock->remote_endpoint().address().to_string()));
     accept();
 }
 void VideoConferencingServer::run()
 {
-        m_io.run();
+    m_io.run();
 }
 
 void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock, std::string _remote_ip)
@@ -38,9 +39,12 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         if (m_tcpRecvBuf[i] != '\0')
             receive_message.push_back(m_tcpRecvBuf[i]);
     }
-    cout << "来自客户端的数据：" << receive_message << endl;
-
     QJsonObject Data = stringToQJsonObject(receive_message);
+
+    if(receive_message.length() != 0)
+        cout << "来自客户端的数据：" << receive_message << endl;
+    receive_message.clear();
+
     string type = Data["TYPE"].toString().toStdString();
 
     if(type == "#REGISTER") //处理注册请求
@@ -54,6 +58,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     else if(type == "#REQUEST_COLLEAGUE_LIST")
         handleColleagueList(Data, sock);
 
+//    m_tcpRecvBuf.
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
 }
 
@@ -65,12 +70,12 @@ void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingS
             m_tcpSendBuf[i] = msg[i];
         else m_tcpSendBuf[i] = '\0';
     }
-    cout << msg << endl;
-    async_write(*sock,boost::asio::buffer(m_tcpSendBuf), boost::bind(&VideoConferencingServer::handleTcpSend, this, boost::asio::placeholders::error,sock));
+    cout  << "-------" << "当前服务端输出：" << m_tcpSendBuf.data();
+    async_write(*sock, boost::asio::buffer(m_tcpSendBuf), boost::bind(&VideoConferencingServer::handleTcpSend, this, boost::asio::placeholders::error,sock));
 }
 void VideoConferencingServer::handleTcpSend(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock)
 {
-
+    cout << "-------" <<"发送完毕" << endl;
 }
 
 
@@ -99,19 +104,19 @@ void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencing
 
 void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConferencingServer::sock_ptr sock)
 {
-    string tcpJson;
     string emailid = Data.value("DATA")["EMAILID"].toString().toStdString();
     string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
 
     string verifyRes;
     int result;
-    dc.jsonStrVerifyAccountResult(emailid, passwd,verifyRes, result);
+    dc.jsonStrVerifyAccountResult(emailid, passwd, verifyRes, result);
 
     if(result == 1)
     {
         dc.getDb().updateStateByEmaiID(emailid, 1, ip);
     }
-    tcpSendMessage(tcpJson, sock);
+    cout << "登录反馈发送前的json str： " << verifyRes <<endl;;
+    tcpSendMessage(verifyRes, sock);
 }
 
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -125,7 +130,14 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
 
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
 
+    string tcpJson, id;
+    int res;
+    dc.jsonStrAccountDetail(emailID, tcpJson, res);
+
+    if(res == 1)
+        tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleColleagueList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)

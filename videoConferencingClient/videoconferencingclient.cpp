@@ -22,6 +22,7 @@ void VideoConferencingClient::threadTcpReceive()
 {
     std::thread threadTcp(&VideoConferencingClient::tcpReceiveMessage, this);
     threadTcp.detach();
+//    threadTcp.join();
 }
 void VideoConferencingClient::tcpReceiveMessage()
 {
@@ -31,6 +32,7 @@ void VideoConferencingClient::tcpReceiveMessage()
     size_t readSize = 0;
     while(readSize == 0)
         readSize = m_sockTcp.read_some(buffer(m_tcpRecvBuf));
+    cout << "readsize" <<readSize<<endl;
 
     string s = "";
     for(size_t i = 0; i != readSize; i++)
