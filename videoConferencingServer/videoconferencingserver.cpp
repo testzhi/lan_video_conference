@@ -1,6 +1,7 @@
 #include "videoconferencingserver.h"
 #include <iostream>
 #include <QJsonDocument>
+#include <QJsonArray>
 
 
 using std::cout;
@@ -57,8 +58,15 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleAccountDetail(Data, sock);
     else if(type == "#REQUEST_COLLEAGUE_LIST")
         handleColleagueList(Data, sock);
+    else if(type == "#REQUEST_MEETING_INVITIONS_LIST")
+        handleInvitionsList(Data, sock);
+    else if(type == "#REQUEST_LAUNCH_MEETING")
+        handleRequestLaunchMeeting(Data, sock);
+    else if(type == "#REQUEST_START_MEETING")
+        handleRequestStartMeeting(Data, sock);
+    else if(type == "#REQUEST_STOP_MEETING")
+        handleRequestStopMeeting(Data, sock);
 
-//    m_tcpRecvBuf.
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
 }
 
@@ -101,7 +109,6 @@ void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencing
         dc.getDb().insertIntoTableEmployees(id, passwd, realName, email, group, department, company, "");
     tcpSendMessage(tcpJson, sock);
 }
-
 void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConferencingServer::sock_ptr sock)
 {
     string emailid = Data.value("DATA")["EMAILID"].toString().toStdString();
@@ -118,7 +125,6 @@ void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConf
     cout << "登录反馈发送前的json str： " << verifyRes <<endl;;
     tcpSendMessage(verifyRes, sock);
 }
-
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
     string tcpJson;
@@ -127,7 +133,6 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
     string verifyRes;
     dc.getDb().updateStateByEmaiID(emailid, 0, "");
 }
-
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
@@ -135,14 +140,111 @@ void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConfere
     string tcpJson, id;
     int res;
     dc.jsonStrAccountDetail(emailID, tcpJson, res);
-
     if(res == 1)
         tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleColleagueList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
 
+    string tcpJson, id;
+    int res;
+    dc.jsonStrColleagueDetail(emailID, tcpJson, res);
+    cout << tcpJson;
+    if(res == 1)
+        tcpSendMessage(tcpJson, sock);
+}
+
+void VideoConferencingServer::handleInvitionsList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+
+    string tcpJson, id;
+    unsigned long long res;
+    dc.jsonStrInvitationsDetail(emailID, tcpJson, res);
+    cout << tcpJson;
+//    if(res == 1)
+//        tcpSendMessage(tcpJson, sock);
+}
+
+void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+
+    string tcpJson, id;
+    unsigned long long res;
+    dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
+    cout << tcpJson;
+//    if(res == 1)
+//        tcpSendMessage(tcpJson, sock);
+}
+
+void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+//    string initiator = Data.value("DATA")["INITIATOR"].toString().toStdString();
+    string assistant = Data.value("DATA")["ASSISTANT"].toString().toStdString();
+    string speaker = Data.value("DATA")["SPEAKER"].toString().toStdString();
+    string date = Data.value("DATA")["DATE"].toString().toStdString();
+    string time = Data.value("DATA")["TIME"].toString().toStdString();
+    int catagro = Data.value("DATA")["CATAGRO"].toInt();
+    string subject = Data.value("DATA")["SUBJECT"].toString().toStdString();
+//    string name = Data.value("DATA")["MEETINGNAME"].toString().toStdString();
+    int scale = Data.value("DATA")["MEETINGSCALE"].toInt();
+    int preDura = Data.value("DATA")["PREDICTEDDURATION"].toInt();
+    string remark = Data.value("DATA")["REMARK"].toString().toStdString();
+
+
+    string tcpJson, id;
+    unsigned long long meetingid = dc.getDb().insertIntoTableMeetings(assistant, speaker, date, time, catagro, subject, scale, preDura, remark);
+    if(meetingid != 0)
+    {
+        string mm = std::to_string(meetingid);
+        dc.jsonStrLaunchMeetingResult(meetingid, tcpJson);
+        dc.getDb().insertIntoTableAttendees(mm, assistant);
+        dc.getDb().insertIntoTableAttendees(mm, speaker);
+
+
+        QJsonArray attendeesArray =  Data.value("DATA")["ATTENDEES"].toArray();
+        for(auto attendee : attendeesArray)
+        {
+            QJsonObject per = attendee.toObject();
+            string userid = per.value("EMAILID").toString().toStdString();
+            dc.getDb().insertIntoTableAttendees(mm, userid);
+            dc.getDb().insertIntoTableNotifications(userid, emailID, 1, subject, 0, mm);
+            //向其他人发会议邀请
+            //            找userid对应ip？
+            //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+
+
+        }
+//        tcpSendMessage(tcpJson, sock);
+    }
+}
+
+void VideoConferencingServer::handleRequestStartMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+    string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
+
+    string tcpJson, id;
+    dc.getDb().updateMeetingStateByMeetingID(meetingID, 1);
+    //告诉其他人发会议状态更改
+    //            找userid对应ip？
+    //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+}
+
+void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+    string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
+
+    string tcpJson, id;
+    dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
+    //告诉其他人发会议状态更改
+    //            找userid对应ip？
+    //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
 }
 
 

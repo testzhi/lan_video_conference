@@ -46,6 +46,11 @@ public:
     void handleExit(QJsonObject Data, sock_ptr sock);//处理退出
     void handleAccountDetail(QJsonObject Data, sock_ptr sock);//处理账户信息
     void handleColleagueList(QJsonObject Data, sock_ptr sock);
+    void handleInvitionsList(QJsonObject Data, sock_ptr sock);
+    void handleMeetingList(QJsonObject Data, sock_ptr sock);
+    void handleRequestLaunchMeeting(QJsonObject Data, sock_ptr sock);
+    void handleRequestStartMeeting(QJsonObject Data, sock_ptr sock);
+    void handleRequestStopMeeting(QJsonObject Data, sock_ptr sock);
 
 
 
