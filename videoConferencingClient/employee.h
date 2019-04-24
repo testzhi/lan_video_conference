@@ -46,6 +46,9 @@ signals:
     void emailAlreadyRegistered();//注册失败 之 email已被占用
     void loginSucceeded();//登录成功
     void loginFailed(QString err);
+    void initCompanyMessage();
+    void initNotificationMessage();
+    void initMeetingList();
 public:
     Employee(QObject *parent = 0):QObject(parent){
 //        m_userID = "111";
@@ -81,7 +84,6 @@ public:
     Q_INVOKABLE void setEmail(const QString &email);
     Q_INVOKABLE QString group() const;
     Q_INVOKABLE void setGroup(const QString &group);
-    Q_INVOKABLE void setMeetings(const QList<Meeting *> &meetings);
     Q_INVOKABLE QQmlListProperty<Meeting> meetings();
     Q_INVOKABLE Meeting *getMeeting(int i);
     Q_INVOKABLE int meetingCount();
@@ -96,6 +98,10 @@ public:
 
     Company *companys() const;
     void setCompanys(Company *companys);
+
+    QList<Notification *> getNotifications() const;
+    void setNotifications(const QList<Notification *> &notifications);
+    void setMeetings(const QList<Meeting *> &meetings);
 
 private:
     QString m_userID;

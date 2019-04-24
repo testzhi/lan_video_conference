@@ -164,6 +164,16 @@ void Employee::setCompanys(Company *companys)
     m_companys = companys;
 }
 
+QList<Notification *> Employee::getNotifications() const
+{
+    return _notifications;
+}
+
+void Employee::setNotifications(const QList<Notification *> &notifications)
+{
+    _notifications = notifications;
+}
+
 void Employee::setMeetings(const QList<Meeting *> &meetings)
 {
     _meetings = meetings;

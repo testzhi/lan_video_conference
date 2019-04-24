@@ -4,6 +4,7 @@ import QtGraphicalEffects 1.12
 
 Item {
     anchors.fill: parent
+    signal exit()
     Column {
         id: mainPage
         Rectangle {
@@ -51,6 +52,13 @@ Item {
                     text: conferenceUI.employee.realName
                     //                    font.pixelSize: 25
                 }
+            }
+            Button {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "退出当前帐号"
+                anchors.right: parent.right
+                anchors.rightMargin: 20
+                onClicked: exit()
             }
         }
         Rectangle {

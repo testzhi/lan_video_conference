@@ -4,38 +4,79 @@ import Meeting 1.0
 
 Item {
     anchors.fill: parent
-    ScrollView {
-        id: notificationList
+    property var notificationMessage: []
+    property var notificationCategory: []
+
+    property Notification not
+    function initNotification() {
+        for (var i = 0; i !== conferenceUI.employee.notificationCount(); i++) {
+            not = conferenceUI.employee.getNotification(i)
+            notificationMessage[i] = not.notificationMessage
+            notificationCategory[i] = not.notificationCategory
+        }
+    }
+
+    Loader {
+        id: notificationLoader
         anchors.fill: parent
-        ListView {
-            model: conferenceUI.employee.notificationCount()
-            spacing: 0.1
-            delegate: Rectangle {
-                width: mainWindow.width * 0.85
-                height: mainWindow.height * 0.10
-                border.width: 0.5
-                //                border.color: "blue"
-                Text {
-                    property Notification notification: conferenceUI.employee.getNotification(
-                                                            index)
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: mainWindow.width * 0.01
-                    text: notification.notificationMessage
-//                    font.pixelSize: 15
-                }
-                Row {
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.right: parent.right
-                    spacing: 10
-                    Button {
-                        text: "同意"
+    }
+
+    Connections {
+        target: conferenceUI.employee
+        onLoginSucceeded: {
+            initNotification()
+            notificationLoader.sourceComponent = notificationComponent
+        }
+    }
+
+    Component {
+        id: notificationComponent
+        ScrollView {
+            id: notificationList
+            anchors.fill: parent
+            ListView {
+                model: notificationMessage.length
+                spacing: 0.1
+                delegate: Rectangle {
+                    width: mainWindow.width * 0.85
+                    height: mainWindow.height * 0.10
+                    border.width: 0.5
+                    //                border.color: "blue"
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: mainWindow.width * 0.01
+                        text: notificationMessage[index]
+                        //                    font.pixelSize: 15
                     }
-                    Button {
-                        text: "拒绝"
-                        onClicked: {
-                            refuse.visible = true
-                            notificationList.opacity = 0.5
+                    Rectangle {
+                        width: mainWindow.width * 0.30
+                        height: mainWindow.height * 0.10 - 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        visible: {
+                            console.log("notificationCategory  ",
+                                        notificationCategory[index])
+                            var s = notificationCategory[index]
+                            if (s === "MEETING_INVITATION")
+                                return true
+                            else
+                                return false
+                        }
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            spacing: 10
+                            Button {
+                                text: "同意"
+                            }
+                            Button {
+                                text: "拒绝"
+                                onClicked: {
+                                    refuse.visible = true
+                                    notificationList.opacity = 0.5
+                                }
+                            }
                         }
                     }
                 }
@@ -61,7 +102,7 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         refuse.visible = false
-                        notificationList.opacity = 1
+                        //                        notificationList.opacity = 1
                         mistake.text = ""
                     }
                 }

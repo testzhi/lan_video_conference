@@ -14,13 +14,6 @@ Window {
     visible: true
     width: 400
     height: 600
-
-    //        ConferenceUI {
-    //            id: conferenceUI
-    //            property var i: {
-    //                conferenceUI.setEmployee(conference.employee)
-    //            }
-    //        }
     Login {
         id: login
         onLogin: {
@@ -39,6 +32,12 @@ Window {
         id: homeComponent
         Home {
             id: home
+            onExit: {
+                mainWindow.width = 400
+                mainWindow.height = 600
+                homeLoader.sourceComponent = null
+                login.visible = true
+            }
         }
     }
 }

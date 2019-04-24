@@ -16,6 +16,8 @@ class Meeting:public QObject
     Q_PROPERTY(QString duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QString category READ category WRITE setCategory NOTIFY categoryChanged)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(QString meetingID READ meetingID WRITE setMeetingID NOTIFY meetingIDChanged)
+    Q_PROPERTY(QString remark READ remark WRITE setRemark NOTIFY remarkChanged)
 signals:
     void initiatorChanged();
     void speakerChanged();
@@ -26,6 +28,8 @@ signals:
     void durationChanged();
     void categoryChanged();
     void stateChanged();
+    void meetingIDChanged();
+    void remarkChanged();
 public:
     Meeting(QObject *parent = 0):QObject(parent){}
     Meeting(std::string initiator,std::string speaker,std::string date,std::string time,std::string theme,std::string scale,std::string duration,std::string category,std::string state);
@@ -47,13 +51,20 @@ public:
     Q_INVOKABLE void setCategory(const QString &category);
     Q_INVOKABLE QString state() const;
     Q_INVOKABLE void setState(const QString &state);
+    QString meetingID() const;
+    Q_INVOKABLE void setMeetingID(const QString &meetingID);
+
+    QString remark() const;
+    void setRemark(const QString &remark);
 
 private:
+    QString m_meetingID;
     QString m_initiator;//会议发起人（秘书）
     QString m_speaker;//会议主讲人
     QString m_date;//会议日期
     QString m_time;//会议开始时间
     QString m_theme;//会议主题
+    QString m_remark;
     QString m_scale;//会议规模（人数）
     QString m_duration;//会议预期时长
     QString m_category;//会议类别

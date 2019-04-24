@@ -96,3 +96,23 @@ void Meeting::setState(const QString &state)
 {
     m_state = state;
 }
+
+QString Meeting::meetingID() const
+{
+    return m_meetingID;
+}
+
+void Meeting::setMeetingID(const QString &meetingID)
+{
+    m_meetingID = meetingID;
+}
+
+QString Meeting::remark() const
+{
+    return m_remark;
+}
+
+void Meeting::setRemark(const QString &remark)
+{
+    m_remark = remark;
+}

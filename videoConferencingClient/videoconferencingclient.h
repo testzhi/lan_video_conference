@@ -56,6 +56,7 @@ private:
     void handleInitColleagueListResult(QJsonObject qo);
     void handleInitMeetingInvitionsListResult(QJsonObject qo);
     void handleInitMeetingListResult(QJsonObject qo);
+    void handleReplyLaunchMeetingResult(QJsonObject qo, QString &err);
 
 
 
@@ -84,6 +85,8 @@ private:
 
     Employee *m_employee;
     Company com;
+    QList<Notification *> noti;
+    QList<Meeting *> mee;
 //    Company *m_company;
 };
 

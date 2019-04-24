@@ -1,4 +1,5 @@
 #include "conferenceui.h"
+#include <vector>
 
 //Company *ConferenceUI::company() const
 //{
@@ -38,6 +39,14 @@ void ConferenceUI::getRegisterInformation(QString avator, QString name, QString 
     m_employee->setPhone(phone);
     m_employee->setEmail(email);
     m_videoConferencing->requestRegister(name.toStdString(),password.toStdString(),email.toStdString(),"",company.toStdString(),department.toStdString(),group.toStdString(),phone.toStdString());
+}
+
+void ConferenceUI::getLaunchMeetingMessage(QString speaker, QString date, QString time, QString category, QString subject, QString scale, QString dura, QString remark, QList<QString> attendees)
+{
+    std::vector<std::string> atts;
+    for(int i = 0;i != attendees.count();i++)
+        atts.push_back(attendees[i].toStdString());
+    m_videoConferencing->requestLaunchMeeting(m_employee->userID().toStdString(),m_employee->userID().toStdString(),speaker.toStdString(),date.toStdString(),time.toStdString(),category.toStdString(),subject.toStdString(),scale.toStdString(),dura.toStdString(),remark.toStdString(),atts);
 }
 
 VideoConferencingClient *ConferenceUI::getVideoConferencing() const

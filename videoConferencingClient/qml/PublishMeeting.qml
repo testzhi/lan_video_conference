@@ -22,10 +22,19 @@ Item {
                     //                    font.pixelSize: 25
                 }
                 TextField {
+                    id: subject
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
                     maximumLength: 10
+                }
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.31
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "  *"
+                    color: "red"
+                    visible: subject.text.length === 0
                 }
             }
             Rectangle {
@@ -49,6 +58,7 @@ Item {
                     ScrollView {
                         anchors.fill: parent
                         TextArea {
+                            id: remark
                         }
                     }
                 }
@@ -92,6 +102,7 @@ Item {
                         //                        font.pixelSize: 25
                     }
                     SpinBox {
+                        id: scale
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
                         anchors.leftMargin: mainWindow.width * 0.55
@@ -122,6 +133,7 @@ Item {
                     border.color: "blue"
                     TextField {
                         id: currentDate
+                        property var selectDate
                         anchors.fill: parent
                         maximumLength: 10
                     }
@@ -133,6 +145,14 @@ Item {
                         //                        onFocusChanged: calendar.visible = false
                         //                        onWheel: calendar.visible = false
                     }
+                }
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.36
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "  *"
+                    color: "red"
+                    visible: currentDate.text.length === 0
                 }
             }
             Rectangle {
@@ -148,6 +168,7 @@ Item {
                     //                    font.pixelSize: 25
                 }
                 SpinBox {
+                    id: hour
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
@@ -165,6 +186,7 @@ Item {
                 }
 
                 SpinBox {
+                    id: minute
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 250
@@ -181,6 +203,7 @@ Item {
                     //                    font.pixelSize: 25
                 }
                 SpinBox {
+                    id: dura
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.55 + 80
@@ -233,13 +256,16 @@ Item {
                         anchors.fill: parent
                         onClicked: {
                             speakerList.visible = !speakerList.visible
-                            //                            speakerList.currentEmployee =
-                            //                            if (speakerLoader.sourceComponent === null)
-                            //                                speakerLoader.sourceComponent = speakerComponent
-                            //                            else
-                            //                                speakerLoader.sourceComponent = null
                         }
                     }
+                }
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.36
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "  *"
+                    color: "red"
+                    visible: speakerID.text.length === 0
                 }
             }
 
@@ -257,15 +283,17 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
-                    width: mainWindow.width * 0.25
+                    width: mainWindow.width * 0.50
                     height: mainWindow.height * 0.06
-                    border.color: "blue"
                     border.width: 1
-                    //                    TextField {
-                    //                        id: speakerName
-                    //                        anchors.fill: parent
-                    //                        maximumLength: 10
-                    //                    }
+                    ScrollView {
+                        anchors.fill: parent
+                        TextArea {
+                            id: attendeeID
+                            property var attendeeUserID: []
+                            wrapMode: Text.Wrap
+                        }
+                    }
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
@@ -273,9 +301,64 @@ Item {
                         }
                     }
                 }
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.61
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "  *"
+                    color: "red"
+                    visible: attendeeID.text.length === 0
+                }
             }
-            Button {
-                text: "确认发布"
+            Rectangle {
+                width: mainWindow.width * 0.85
+                height: mainWindow.height * 0.06
+                Button {
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.05 + 50
+                    //                highlighted: true
+                    text: "确认发布"
+                    onClicked: {
+                        var currDate = new Date
+                        var date = new Date()
+                        date = currentDate.selectDate
+                        date.setHours(hour.value)
+                        date.setMinutes(minute.value)
+                        console.log("selectDate  ", date)
+                        if (subject.text.length === 0
+                                || currentDate.text.length === 0
+                                || speakerID.text.length === 0
+                                || attendeeID.text.length === 0) {
+                            mistake.text = "信息未填写完整"
+                        } else if (currDate > date) {
+                            mistake.text = "无效的会议日期时间"
+                        } else {
+                            mistake.text = ""
+                            var scaleNum = 0
+                            if (category.currentIndex === 1)
+                                scaleNum = scale.value
+                            var time = hour.value.toString(
+                                        ) + ":" + minute.value.toString()
+                            console.log(scaleNum, "  ", time)
+                            for (var i = 0; i != attendeeID.attendeeUserID.length; i++)
+                                console.log("attendee userid  ",
+                                            attendeeID.attendeeUserID[i])
+                            conferenceUI.getLaunchMeetingMessage(
+                                        speakerID.text, currentDate.text, time,
+                                        category.currentIndex.toString(),
+                                        subject.text, scaleNum.toString(),
+                                        dura.value.toString(), remark.text,
+                                        attendeeID.attendeeUserID)
+                        }
+                    }
+                }
+                Text {
+                    id: mistake
+                    color: "red"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: mainWindow.width * 0.3
+                }
             }
         }
     }
@@ -291,6 +374,7 @@ Item {
             var s = selectedDate
             var time = new Date()
             currentDate.text = selectedDate
+            currentDate.selectDate = selectedDate
             calendar.visible = false
         }
     }
@@ -298,255 +382,27 @@ Item {
         id: speakerList
 
         visible: false
-                onSpeakerChoose: {
-                    speakerList.visible = false
-                    speakerID.text = qsTr(userID)
-                    speakerName.text = qsTr(realName)
-                    currentEmployee = qsTr(userID)
-                }
+        onSpeakerChoose: {
+            speakerList.visible = false
+            speakerID.text = qsTr(userID)
+            speakerName.text = qsTr(realName)
+            currentEmployee = qsTr(userID)
+        }
     }
     AttendeeList {
         id: attendeeList
         visible: false
+        onRefresh: {
+            attendeeID.attendeeUserID.length = 0
+            var s = ""
+            for (var i = 0; i != employeeSelect.length; i++) {
+                if (employeeSelect[i] === true) {
+                    s += employeeRealName[i] + " / "
+                    attendeeID.attendeeUserID[attendeeID.attendeeUserID.length] = employeeUserID[i]
+                }
+            }
+
+            attendeeID.text = s
+        }
     }
-
-    //    }
-
-    //    Rectangle {
-    //        id: speakerList
-    //        visible: false
-    //        anchors.left: parent.left
-    //        anchors.leftMargin: mainWindow.width * 0.25 + 50
-    //        width: mainWindow.width * 0.3
-    //        height: mainWindow.height /** 0.60*/
-    //        border.color: "blue"
-    //        //        border.width: 1
-    //        Rectangle {
-    //            width: parent.width - 2
-    //            height: parent.height - 2
-    //            anchors.centerIn: parent
-    //            //            border.width: 1
-    //            ScrollView {
-    //                anchors.fill: parent
-    //                Rectangle {
-    //                    //                    z: -1
-    //                    id: companySet
-    //                    property var set: 0
-    //                    width: parent.width
-    //                    height: mainWindow.height * 0.06
-    //                    Row {
-    //                        anchors.fill: parent
-    //                        spacing: 10
-    //                        anchors.left: parent.left
-    //                        anchors.leftMargin: 10
-    //                        Image {
-    //                            id: companyChoose
-    //                            //                            signal companyChooseChanged
-    //                            width: parent.height * 0.5
-    //                            height: parent.height * 0.5
-    //                            source: "../resources/1.png"
-    //                            anchors.verticalCenter: parent.verticalCenter
-    //                            MouseArea {
-    //                                anchors.fill: parent
-    //                                onClicked: {
-    //                                    if (company.set === 0) {
-    //                                        company.set = 1
-    //                                        companyChoose.source = "../resources/1.png"
-    //                                        allDepartment.visible = true
-    //                                    } else {
-    //                                        companyChoose.source = "../resources/xly.png"
-    //                                        allDepartment.visible = false
-    //                                        company.set = 0
-    //                                    }
-    //                                }
-    //                            }
-    //                        }
-    //                        Text {
-    //                            anchors.verticalCenter: parent.verticalCenter
-    //                            text: qsTr(company.companyName)
-    //                        }
-    //                    }
-    //                }
-    //                ListView {
-    //                    z: -1
-    //                    id: allDepartment
-    //                    anchors.fill: parent
-    //                    anchors.left: parent.left
-    //                    anchors.leftMargin: 20
-    //                    anchors.top: parent.top
-    //                    anchors.topMargin: mainWindow.height * 0.06
-    //                    visible: {
-    //                        if (companySet.set === 0)
-    //                            return true
-    //                        else
-    //                            return false
-    //                    }
-
-    //                    model: company.departmentCount()
-    //                    delegate: Rectangle {
-    //                        z: -1
-    //                        id: departmentSet
-    //                        property Department departments: company.getDepartment(
-    //                                                             index)
-    //                        width: parent.width
-    //                        height: {
-
-    //                            var a = departments.groupCount()
-    //                            var b = departments.employeeCount()
-    //                            console.log("hhh   ", a + b + 1)
-    //                            mainWindow.height * 0.06 * (a + b + 1)
-    //                        }
-    //                        //                        border.width: 1
-    //                        //                        border.color: "yellow"
-    //                        Column {
-    //                            anchors.fill: parent
-    //                            Item {
-    //                                width: parent.width
-    //                                height: mainWindow.height * 0.06
-    //                                Row {
-    //                                    anchors.fill: parent
-    //                                    spacing: 10
-    //                                    Image {
-    //                                        id: departmentChoose
-    //                                        width: parent.height * 0.5
-    //                                        height: parent.height * 0.5
-    //                                        source: "../resources/1.png"
-    //                                        anchors.verticalCenter: parent.verticalCenter
-    //                                        MouseArea {
-    //                                            anchors.fill: parent
-    //                                            onClicked: {
-    //                                                if (allGroup.visible === true) {
-    //                                                    allGroup.visible = false
-    //                                                    departmentSet.height = mainWindow.height * 0.06
-    //                                                    departmentChoose.source = "../resources/xly.png"
-    //                                                } else {
-    //                                                    allGroup.visible = true
-    //                                                    departmentSet.height = mainWindow.height * 0.06 * (departments.groupCount() + 1 + departmentSet.departments.employeeCount())
-    //                                                    departmentChoose.source = "../resources/1.png"
-    //                                                }
-    //                                            }
-    //                                        }
-    //                                    }
-    //                                    Text {
-    //                                        anchors.verticalCenter: parent.verticalCenter
-    //                                        text: {
-    //                                            return departmentSet.departments.departmentName
-    //                                        }
-    //                                    } //text
-    //                                } //row
-    //                            } //item
-    //                            ListView {
-    //                                id: allGroup
-    //                                anchors.left: parent.left
-    //                                anchors.leftMargin: 10
-    //                                width: parent.width - 10
-    //                                height: mainWindow.height * 0.06
-    //                                        * (departmentSet.departments.groupCount(
-    //                                               ) + departmentSet.departments.employeeCount(
-    //                                               ))
-    //                                model: departmentSet.departments.groupCount()
-
-    //                                delegate: Rectangle {
-    //                                    id: groupSet
-    //                                    property Group groups: departmentSet.departments.getGroup(
-    //                                                               index)
-    //                                    width: parent.width
-    //                                    height: mainWindow.height * 0.06 * (groups.employeeCount(
-    //                                                                            ) + 1)
-    //                                    //                                    border.width: 1
-    //                                    Row {
-    //                                        width: parent.width
-    //                                        height: mainWindow.height * 0.06
-    //                                        spacing: 10
-    //                                        Image {
-    //                                            id: groupChoose
-    //                                            width: parent.height * 0.5
-    //                                            height: parent.height * 0.5
-    //                                            source: "../resources/1.png"
-    //                                            anchors.verticalCenter: parent.verticalCenter
-    //                                            MouseArea {
-    //                                                anchors.fill: parent
-    //                                                onClicked: {
-    //                                                    if (allEmployee.visible === true) {
-    //                                                        allEmployee.visible = false
-    //                                                        groupSet.height = mainWindow.height * 0.06
-    //                                                        departmentSet.height -= mainWindow.height * 0.06 * groupSet.groups.employeeCount()
-    //                                                        groupChoose.source = "../resources/xly.png"
-    //                                                    } else {
-    //                                                        allEmployee.visible = true
-    //                                                        groupSet.height = mainWindow.height * 0.06
-    //                                                                * (groups.employeeCount(
-    //                                                                       ) + 1)
-    //                                                        departmentSet.height += mainWindow.height * 0.06 * groupSet.groups.employeeCount()
-
-    //                                                        groupChoose.source = "../resources/1.png"
-    //                                                    }
-    //                                                }
-    //                                            }
-    //                                        }
-    //                                        Text {
-    //                                            anchors.verticalCenter: parent.verticalCenter
-    //                                            text: {
-    //                                                return groupSet.groups.groupName
-    //                                            }
-    //                                        } //text
-    //                                    } //row
-    //                                    ListView {
-    //                                        id: allEmployee
-    //                                        anchors.left: parent.left
-    //                                        anchors.leftMargin: 10
-    //                                        anchors.top: parent.top
-    //                                        anchors.topMargin: mainWindow.height * 0.06
-    //                                        width: parent.width - 10
-    //                                        height: mainWindow.height * 0.06
-    //                                                * (groupSet.groups.employeeCount(
-    //                                                       ) + 1)
-    //                                        model: groupSet.groups.employeeCount()
-    //                                        delegate: Rectangle {
-    //                                            id: employeeSet
-    //                                            property Employee employees: groupSet.groups.getEmployee(index)
-    //                                            width: parent.width - 10
-    //                                            height: mainWindow.height * 0.06
-    //                                            Row {
-    //                                                width: parent.width
-    //                                                height: mainWindow.height * 0.06
-    //                                                spacing: 10
-    //                                                CheckBox {
-    //                                                    id: employeeChoose
-    //                                                    checked: {
-    //                                                        if (employeeSet.employees.userID
-    //                                                                === speakerID.text)
-    //                                                            return true
-    //                                                        else
-    //                                                            return false
-    //                                                    }
-    //                                                    onClicked: {
-    //                                                        speakerList.visible = false
-    //                                                        speakerID.text
-    //                                                                = employeeSet.employees.userID
-    //                                                        speakerName.text
-    //                                                                = employeeSet.employees.realName
-    //                                                    }
-
-    //                                                    anchors.verticalCenter: parent.verticalCenter
-    //                                                }
-    //                                                Text {
-    //                                                    anchors.verticalCenter: parent.verticalCenter
-    //                                                    text: {
-    //                                                        return employeeSet.employees.realName
-    //                                                    }
-    //                                                } //text
-    //                                            } //row
-    //                                        }
-    //                                    }
-    //                                } //delegate
-    //                            } //listView
-    //                        } //column
-    //                    } //delegate
-    //                } //listView
-    //                //                    }
-    //                //                }
-    //            } //scrollView
-    //        }
-    //    }
 }

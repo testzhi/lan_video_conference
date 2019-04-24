@@ -20,4 +20,14 @@ void Notification::setNotificationMessage(const QString &notificationMessage)
     m_notificationMessage = notificationMessage;
 }
 
+QString Notification::meetingID() const
+{
+    return m_meetingID;
+}
+
+void Notification::setMeetingID(const QString &meetingID)
+{
+    m_meetingID = meetingID;
+}
+
 

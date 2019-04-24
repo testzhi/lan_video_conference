@@ -93,7 +93,7 @@ Rectangle {
         Connections {
             target: conferenceUI.employee
             onLoginSucceeded: {
-                console.log("loginSucceed")
+                console.log("attendee init company message")
                 initListChoose()
                 refresh()
             }

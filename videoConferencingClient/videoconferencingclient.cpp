@@ -100,18 +100,25 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
             }
         }
         requestMeetingInvitionsList(m_employee->userID().toStdString());
-        m_employee->loginSucceeded();
+
     }
     else if (type == "_INITIALIZE_MEETING_INVITATIONS_LIST")
     {
-        QString invitation;
         handleInitMeetingInvitionsListResult(qo);
+//        m_employee->initNotificationMessage();
         requestMeetingList(m_employee->userID().toStdString());
     }
     else if (type == "_INITIALIZE_MEETINGS_LIST")
     {
-        QString invitation;
         handleInitMeetingListResult(qo);
+//        m_employee->initMeetingList();
+         m_employee->loginSucceeded();
+    }
+    else if (type == "_LAUNCH_MEETING_RESULT")
+    {
+        QString err;
+        handleReplyLaunchMeetingResult(qo, err);
+         m_employee->loginSucceeded();
     }
 }
 
@@ -302,7 +309,7 @@ void VideoConferencingClient::handleInitMeetingInvitionsListResult(QJsonObject q
             QString time = anInvitation.value("TIME").toString();
             QString subject = anInvitation.value("SUBJECT").toString();
             //                int scale = anInvitation.value("MEETINGSCALE").toInt();
-            QString preDuration = anInvitation.value("PREDICTEDDURATION").toString();
+//            QString preDuration = anInvitation.value("PREDICTEDDURATION").toString();
             //    int state = anInvitation.value("MEETINGSTATE").toInt();
             QString remark = anInvitation.value("REMARK").toString();
 
@@ -318,11 +325,12 @@ void VideoConferencingClient::handleInitMeetingInvitionsListResult(QJsonObject q
 
             Notification *notification = new Notification() ;
             notification->setNotificationMessage(invitation);
-//            notification->setMeetingID(meetingID);
+            notification->setMeetingID(meetingID);
             notification->setNotificationCategory("MEETING_INVITATION");
-//                        m_employee->insertNotification(notification);
+            noti.append(notification);
         }
     }
+    m_employee->setNotifications(noti);
 }
 
 void VideoConferencingClient::handleInitMeetingListResult(QJsonObject qo)
@@ -345,7 +353,7 @@ void VideoConferencingClient::handleInitMeetingListResult(QJsonObject qo)
             QString state = aMeeting.value("MEETINGSTATE").toString();
             QString remark = aMeeting.value("REMARK").toString();
 
-            Meeting *meeting = new Meeting() ;
+            Meeting *meeting = new Meeting();
             meeting->setDate(date);
             meeting->setTime(time);
             meeting->setScale(scale);
@@ -355,10 +363,21 @@ void VideoConferencingClient::handleInitMeetingListResult(QJsonObject qo)
             meeting->setCategory(category);
             meeting->setDuration(preDuration);
             meeting->setInitiator(assistant);
-//            meeting->setID(meetingID);
-//            m_employee->insertMeeting(meeting);
+            meeting->setMeetingID(meetingID);
+            meeting->setRemark(remark);
+            mee.append(meeting);
         }
     }
+    m_employee->setMeetings(mee);
+}
+
+void VideoConferencingClient::handleReplyLaunchMeetingResult(QJsonObject qo, QString &err)
+{
+//    err.clear();
+//    QString qs = qo.value("DATA")["RESULT"].toString();
+//    result = qs.toInt();
+//    err = qo.value("DATA")["ERROR"].toString();
+//    QString meetingid = qo.value("DATA")["MEETINGID"].toString();
 }
 
 

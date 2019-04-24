@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
     Employee employee;
     employee.insertNotification(&notification);
     employee.insertNotification(&notification1);
-    employee.insertMeeting(&meetings);
-    employee.insertMeeting(&meeting);
-    employee.insertMeeting(&meeting1);
+//    employee.insertMeeting(&meetings);
+//    employee.insertMeeting(&meeting);
+//    employee.insertMeeting(&meeting1);
     employee.sortMeeting();
 //    employee.setCompanys(company);
     ConferenceUI conferenceUI;
