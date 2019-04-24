@@ -22,7 +22,7 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
     _remote_endpoint = sock->remote_endpoint();
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
-//    sock->async_send()
+    //    sock->async_send()
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, boost::asio::placeholders::error, sock, sock->remote_endpoint().address().to_string()));
     accept();
 }
@@ -58,14 +58,18 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleAccountDetail(Data, sock);
     else if(type == "#REQUEST_COLLEAGUE_LIST")
         handleColleagueList(Data, sock);
-    else if(type == "#REQUEST_MEETING_INVITIONS_LIST")
+    else if(type == "#REQUEST_MEETING_INVITATIONS_LIST")
         handleInvitionsList(Data, sock);
-    else if(type == "#REQUEST_LAUNCH_MEETING")
-        handleRequestLaunchMeeting(Data, sock);
-    else if(type == "#REQUEST_START_MEETING")
-        handleRequestStartMeeting(Data, sock);
-    else if(type == "#REQUEST_STOP_MEETING")
-        handleRequestStopMeeting(Data, sock);
+    else if(type == "#REQUEST_MEETINGS_LIST")
+        handleMeetingList(Data, sock);
+    //    else if(type == "#REQUEST_LAUNCH_MEETING")
+    //        handleRequestLaunchMeeting(Data, sock);
+    //    else if(type == "#REQUEST_START_MEETING")
+    //        handleRequestStartMeeting(Data, sock);
+    //    else if(type == "#REQUEST_STOP_MEETING")
+    //        handleRequestStopMeeting(Data, sock);
+    //    else if(type == "#REQUEST_SEND_INVITION_RESULT")
+    //        handleRequestInvitionResult(Data, sock);
 
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
 }
@@ -160,12 +164,12 @@ void VideoConferencingServer::handleInvitionsList(QJsonObject Data, VideoConfere
 {
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
 
-    string tcpJson, id;
+    string tcpJson;
     unsigned long long res;
     dc.jsonStrInvitationsDetail(emailID, tcpJson, res);
     cout << tcpJson;
-//    if(res == 1)
-//        tcpSendMessage(tcpJson, sock);
+    if(res == 1)
+        tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -176,21 +180,21 @@ void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferenc
     unsigned long long res;
     dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
     cout << tcpJson;
-//    if(res == 1)
-//        tcpSendMessage(tcpJson, sock);
+    if(res == 1)
+        tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
-//    string initiator = Data.value("DATA")["INITIATOR"].toString().toStdString();
+    //    string initiator = Data.value("DATA")["INITIATOR"].toString().toStdString();
     string assistant = Data.value("DATA")["ASSISTANT"].toString().toStdString();
     string speaker = Data.value("DATA")["SPEAKER"].toString().toStdString();
     string date = Data.value("DATA")["DATE"].toString().toStdString();
     string time = Data.value("DATA")["TIME"].toString().toStdString();
-    int catagro = Data.value("DATA")["CATAGRO"].toInt();
+    int catagro = Data.value("DATA")["CATEGORY"].toInt();
     string subject = Data.value("DATA")["SUBJECT"].toString().toStdString();
-//    string name = Data.value("DATA")["MEETINGNAME"].toString().toStdString();
+    //    string name = Data.value("DATA")["MEETINGNAME"].toString().toStdString();
     int scale = Data.value("DATA")["MEETINGSCALE"].toInt();
     int preDura = Data.value("DATA")["PREDICTEDDURATION"].toInt();
     string remark = Data.value("DATA")["REMARK"].toString().toStdString();
@@ -211,7 +215,8 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
         {
             QJsonObject per = attendee.toObject();
             string userid = per.value("EMAILID").toString().toStdString();
-            dc.getDb().insertIntoTableAttendees(mm, userid);
+            if(assistant != userid)
+                dc.getDb().insertIntoTableAttendees(mm, userid);
             dc.getDb().insertIntoTableNotifications(userid, emailID, 1, subject, 0, mm);
             //向其他人发会议邀请
             //            找userid对应ip？
@@ -219,7 +224,7 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
 
 
         }
-//        tcpSendMessage(tcpJson, sock);
+        //        tcpSendMessage(tcpJson, sock);
     }
 }
 
@@ -245,6 +250,26 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
     //告诉其他人发会议状态更改
     //            找userid对应ip？
     //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+}
+
+void VideoConferencingServer::handleRequestInvitionResult(QJsonObject Data, VideoConferencingServer::sock_ptr)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+    string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
+    int result = Data.value("DATA")["RESULT"].toInt();
+    string cause = Data.value("DATA")["CAUSE"].toString().toStdString();
+
+    if(result == 0)
+        dc.getDb().insertIntoTableAttendees(meetingID, emailID, -1, cause);
+    else
+        dc.getDb().insertIntoTableAttendees(meetingID, emailID);
+}
+
+void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+    string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
+    dc.getDb().insertIntoTableAttendees(meetingID, emailID, 1, "");
 }
 
 

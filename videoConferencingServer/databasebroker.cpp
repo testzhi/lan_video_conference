@@ -76,7 +76,7 @@ bool DataBaseBroker::createTables()
                       "`SPEAKER` CHAR(7) NOT NULL,"
                       "`DATE` DATE NOT NULL,"
                       "`TIME` TIME NOT NULL,"
-                      "`CATAGRO` TINYINT NOT NULL,"
+                      "`CATEGORY` TINYINT NOT NULL,"
                       "`SUBJECT` VARCHAR(20) NOT NULL,"
                       "`MEETINGNAME` VARCHAR(20),"
                       "`OWNUNIT` VARCHAR(20),"
@@ -100,7 +100,7 @@ bool DataBaseBroker::createTables()
     string notifications = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`NotificationsTable` ("
                            "`NOTIFIEDID` CHAR(7) NOT NULL,"
                            "`NOTIFYID` CHAR(7),"
-                           "`CATAGRO` TINYINT,"
+                           "`CATEGORY` TINYINT,"
                            "`SUBJECT` VARCHAR(20),"
                            "`STATE` INT NOT NULL,"
                            "`MEETINGID` INT NOT NULL,"
@@ -557,7 +557,8 @@ unsigned long long DataBaseBroker::queryMeetingDetailsOnlyByMeetingID(std::strin
     MYSQL_ROW line = mysql_fetch_row(result);
     delete [] cmd;
     if(row == 0) return 0;
-    for (unsigned long long i = 0; i != row; ++i)
+    unsigned int field = mysql_num_fields(result);
+    for (unsigned int i = 0; i != field; ++i)
     {
 
         if(line[i])
@@ -858,7 +859,7 @@ int DataBaseBroker::getGroupID(std::string gName, int did)
 unsigned long long DataBaseBroker::queryInvitations(std::string emailID, int catagro, int state, std::vector<std::vector<std::string> > &data)
 {
     char *cmd = new char[150];
-    sprintf(cmd, "select * from NotificationsTable where `NOTIFIEDID` = '%s' and 'CATAGRO' = '%d' and 'STATE' = '%d';", emailID.c_str(), catagro, state);
+    sprintf(cmd, "select * from NotificationsTable where `NOTIFIEDID` = '%s' and `CATEGORY` = '%d' and `STATE` = '%d';", emailID.c_str(), catagro, state);
     if(!query(cmd))
     {
         delete [] cmd;
@@ -876,7 +877,10 @@ unsigned long long DataBaseBroker::queryInvitations(std::string emailID, int cat
         for(unsigned int j = 0; j != field; j++)
         {
             if(line[j])
+            {
+                cout << line[i] << endl;
                 linedata.push_back(line[j]);
+            }
             else
                 linedata.push_back("");
         }
@@ -887,7 +891,7 @@ unsigned long long DataBaseBroker::queryInvitations(std::string emailID, int cat
 unsigned long long DataBaseBroker::queryMeetingDetailsByMeetingIDAndMeetingState(std::string meetingID, int meetingState, std::vector<std::string>  &data)
 {
     char *cmd = new char[150];
-    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s' and `MEETINGIDSTATE` = '%d';", meetingID.c_str(), meetingState);
+    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s' and `MEETINGSTATE` = '%d';", meetingID.c_str(), meetingState);
     if(!query(cmd))
     {
         delete [] cmd;
@@ -898,7 +902,8 @@ unsigned long long DataBaseBroker::queryMeetingDetailsByMeetingIDAndMeetingState
     MYSQL_ROW line = mysql_fetch_row(result);
     delete [] cmd;
     if(row == 0) return 0;
-    for (unsigned long long i = 0; i != row; ++i)
+    unsigned int field = mysql_num_fields(result);
+    for (unsigned int i = 0; i != field; ++i)
     {
 
         if(line[i])

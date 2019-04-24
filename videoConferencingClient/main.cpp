@@ -90,5 +90,13 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
+    auto i = app.exec();
+    if(i  ==  0)
+    {
+        std::string userID = conferenceUI.employee()->userID().toStdString();
+        conferenceUI.getVideoConferencing()->requestExit(userID);
+    }
+    return i;
+
     return app.exec();
 }

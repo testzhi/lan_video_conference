@@ -1,5 +1,4 @@
 # ------------------------lan_video_conference（局域网视频会议）
-
 # videoConferencingServer 服务器
 # videoConferencingClient 客户端
 # 服务器地址
@@ -62,10 +61,12 @@ n次以后
 表7  NotificationsTable
     CATAGRO             1助手发起的会议邀请
     STATE               0暂未处理          1已经处理通知（同意）     2已经处理通知（拒绝）      <!---1已经超时失效-->
+    SUBJECT是指其他出去会议通知类型的主题，而会议通知的主题即会议主题
     
 表2
 表2
 # ------------------------------------libjrtp部分
+[若删除已经cmake安装的软件     cat install_manifest.txt|while read f; do sudo rm "$f"; done]
 jthread解压缩
     cmake .
     make
@@ -73,7 +74,8 @@ jthread解压缩
 jrtp解压缩
     camke .
     make
-    make install
+    make instal
+    ln -s /usr/local/lib64/libjthread.so.1.3.3  /usr/lib   或者   ln -s /usr/local/lib/libjthread.so.1.3.3  /usr/lib
     ln -s /usr/local/lib64/libjrtp.so.3.11.1 /usr/lib      或者 ln -s /usr/local/lib/libjrtp.so.3.11.1 /usr/lib
 
 # -------------------------------------JSON部分
@@ -117,7 +119,7 @@ jrtp解压缩
         }
     }
 请求账户的会议邀请列表{
-    TYPE： #REQUEST_MEETING_INVITIONS_LIST
+    TYPE： #REQUEST_MEETING_INVITATIONS_LIST
     DATA：{
         FROM：xxxIDxxx
         }
@@ -143,7 +145,7 @@ jrtp解压缩
         SPEAKER
         DATE
         TIME
-        CATAGRO
+        CATEGORY
         SUBJECT
 <!--         MEETINGNAME -->
 <!--         OWNUNIT -->
@@ -191,6 +193,15 @@ jrtp解压缩
         MEETINGID:
         }
     }-->
+请求回复邀请{
+    TYPE： #REQUEST_SEND_INVITATION_RESULT
+    DATA：{
+        FROM：xxxIDxxx
+        RESULT:0/1
+        MEETINGID:
+        CAUSE
+        }
+    }
 # 由服务端发送     _
 注册结果{
     TYPE：_REGISTER
@@ -269,7 +280,7 @@ jrtp解压缩
               
 
 账户的会议邀请列表{
-    TYPE：_INITIALIZE_MEETING_INVITIONS_LIST
+    TYPE：_INITIALIZE_MEETING_INVITATIONS_LIST
     DATA:{
         INVITATIONS：[
                     { INITIATOR
@@ -341,12 +352,14 @@ jrtp解压缩
     TYPE： _INITIALIZE_MEETINGS_LIST
     DATA：{
         MEETINGS：[
-                    { INITIATOR
+                    { 
+<!--                       INITIATOR -->
+                      MEETINGID
                       ASSISTANT
                       SPEAKER
                       DATE
                       TIME
-<!--                       CATAGRO -->
+                      CATEGORY
                       SUBJECT
 <!--                       MEETINGNAME -->
 <!--                       OWNUNIT -->
@@ -355,12 +368,13 @@ jrtp解压缩
                       MEETINGSTATE
                       REMARK
                     }
-                    { INITIATOR
+                    { 
+<!--                       INITIATOR -->
                       ASSISTANT
                       SPEAKER
                       DATE
                       TIME
-<!--                       CATAGRO -->
+                      CATEGORY
                       SUBJECT
 <!--                       MEETINGNAME -->
 <!--                       OWNUNIT -->

@@ -19,27 +19,80 @@ DataController::DataController()
 {
     db.connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
     db.createTables();
-    //    db.insertIntoTableEmployees("5631813", "1717", "Liana", "563181354@qq.com", "TechGROUP1", "Development", "Google","");
-    //    db.insertIntoTableEmployees("9129450", "5995", "Li Zhangyu", "912945084@qq.com", "TechGROUP2", "Development", "Google", "");
-    //    db.insertIntoTableEmployees("1693174", "1693", "Liang Zhidong", "1693174982@qq.com", "TechGROUP1", "Development", "Google", "18889999333","");
-    //    db.insertIntoTableEmployees("1", "1", "1", "1@qq.com", "TechGROUP1", "Development", "Google","");
-    //    db.insertIntoTableEmployees("2", "2", "2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
-    //    db.insertIntoTableEmployees("3", "3", "3", "2@qq.com", "TechGROUP2", "Development", "Google", "");
-    //    db.insertIntoTableEmployees("7418907", "7418", "Zhang Jinming", "741890707@qq.com", "Analysis", "BigData", "Baidu","11111111111","");
-    //    db.insertIntoTableEmployees("1018772", "1018", "Lu Xingyu", "1018772325@qq.com", "test1", "Test", "Baidu","");
-    //    db.insertIntoTableEmployees("563", "1717", "Liana", "5634@qq.com","TechGROUP1", "Development", "Google","");
-    //    db.insertIntoTableEmployees("912", "5995", "Li", "912@qq.com", "TechGROUP2", "Development", "Google", "");
-    //    db.insertIntoTableEmployees("169", "1693", "Liang", "169@qq.com", "TechGROUP1", "Development", "Google", "18889999233","");
-    //    db.insertIntoTableEmployees("741", "7418", "Zhang", "741@qq.com", "Analysis", "BigData", "Baidu","11111111112","");
-    //    db.insertIntoTableEmployees("101", "1018", "Lu", "1018772325@qq.com", "test1", "Test", "Baidu","");
-    //    db.insertIntoTableEmployees("111", "111", "name1", "111@163.com", "GROUP1", "Department1", "Company1","11111111111");
-    //    db.insertIntoTableEmployees("222", "222", "name2", "222@163.com", "Group2", "Department2", "company2","12121212122");
+//            db.insertIntoTableEmployees("5631813", "1717", "Liana", "563181354@qq.com", "TechGROUP1", "Development", "Google","");
+//            db.insertIntoTableEmployees("9129450", "5995", "Li Zhangyu", "912945084@qq.com", "TechGROUP2", "Development", "Google", "");
+//            db.insertIntoTableEmployees("1693174", "1693", "Liang Zhidong", "1693174982@qq.com", "TechGROUP1", "Development", "Google", "18889999333","");
+//            db.insertIntoTableEmployees("1", "1", "1", "1@qq.com", "TechGROUP1", "Development", "Google","");
+//            db.insertIntoTableEmployees("2", "2", "2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
+//            db.insertIntoTableEmployees("3", "3", "3", "2@qq.com", "TechGROUP2", "Development", "Google", "");
+//            db.insertIntoTableEmployees("7418907", "7418", "Zhang Jinming", "741890707@qq.com", "Analysis", "BigData", "Baidu","11111111111","");
+//            db.insertIntoTableEmployees("1018772", "1018", "Lu Xingyu", "1018772325@qq.com", "test1", "Test", "Baidu","");
+//            db.insertIntoTableEmployees("563", "1717", "Liana", "5634@qq.com","TechGROUP1", "Development", "Google","");
+//            db.insertIntoTableEmployees("912", "5995", "Li", "912@qq.com", "TechGROUP2", "Development", "Google", "");
+//            db.insertIntoTableEmployees("169", "1693", "Liang", "169@qq.com", "TechGROUP1", "Development", "Google", "18889999233","");
+//            db.insertIntoTableEmployees("741", "7418", "Zhang", "741@qq.com", "Analysis", "BigData", "Baidu","11111111112","");
+//            db.insertIntoTableEmployees("101", "1018", "Lu", "1018772325@qq.com", "test1", "Test", "Baidu","");
+//            db.insertIntoTableEmployees("111", "111", "name1", "111@163.com", "GROUP1", "Department1", "Company1","11111111111");
+//            db.insertIntoTableEmployees("222", "222", "name2", "222@163.com", "Group2", "Department2", "company2","12121212122");
 
-    db.insertIntoTableMeetings("1","1","2018-09-10","20:00", 1, "meeting1",10,30,"1--assistant-speaker");
-    db.insertIntoTableMeetings("169","1","2018-09-17","21:00", 1, "meeting2",10,30,"1-speaker");
-    db.insertIntoTableMeetings("1693174","1","2018-09-19","23:00", 1, "meeting3",10,30,"1-speaker");
-    db.insertIntoTableMeetings("1","1","2018-09-17","21:00", 1, "meeting2",10,30,"1-speaker");
-    db.insertIntoTableMeetings("1","1","2018-09-19","23:00", 1, "meeting3",10,30,"1-speaker");
+//            db.insertIntoTableMeetings("1","1","2019-05-10","20:00", 1, "meeting1",10,30,"1--assistant-speaker");
+//            db.insertIntoTableAttendees("1","1");
+//            db.insertIntoTableNotifications("2", "1", 1, "subject", 0, "1");
+//            db.insertIntoTableNotifications("169", "1", 1, "subject", 0, "1");
+//            db.insertIntoTableNotifications("1693174", "1", 1, "subject", 0, "1");
+//            db.insertIntoTableAttendees("1", "2");
+//            db.insertIntoTableAttendees("1", "169");
+//            db.insertIntoTableAttendees("1", "1693174");
+
+//            db.insertIntoTableMeetings("169","1","2019-05-17","21:00", 1, "meeting2",10,30,"1-speaker");
+//            db.insertIntoTableAttendees("2","169");
+//            db.insertIntoTableAttendees("2","1");
+//            db.insertIntoTableNotifications("2","169",1,"evening meeting",0,"2");
+//            db.insertIntoTableNotifications("1693174","169",1,"evening meeting",0,"2");
+//            db.insertIntoTableAttendees("2","2");
+//            db.insertIntoTableAttendees("2","1693174");
+
+//            db.insertIntoTableMeetings("1693174","1","2019-05-19","23:00", 1, "meeting3",10,30,"1-speaker");
+//            db.insertIntoTableAttendees("3","1693174");
+//            db.insertIntoTableAttendees("3","1");
+
+//            db.insertIntoTableMeetings("563","1","2019-04-17","11:00", 1, "meeting4",10,30,"1-speaker");
+//            db.insertIntoTableAttendees("4","563");
+//            db.insertIntoTableAttendees("4","1");
+//            db.updateMeetingStateByMeetingID("4",2);
+
+//            db.insertIntoTableMeetings("563","2","2019-05-11","10:00", 1, "meeting5",10,30,"2-speaker");
+//            db.insertIntoTableAttendees("5","563");
+//            db.insertIntoTableAttendees("5","2");
+//            db.insertIntoTableNotifications("1", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableNotifications("169", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableNotifications("2", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableNotifications("5631813", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableNotifications("912", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableNotifications("9129450", "563", 1, "morning date", 0, "5");
+//            db.insertIntoTableAttendees("5","1");
+//            db.insertIntoTableAttendees("5","169");
+//            db.insertIntoTableAttendees("5","2");
+//            db.insertIntoTableAttendees("5","5631813");
+//            db.insertIntoTableAttendees("5","912");
+//            db.insertIntoTableAttendees("5","9129450");
+
+//            db.insertIntoTableMeetings("2","563","2019-05-12","14:00", 1, "meeting8",10,30,"563-speaker");
+//            db.insertIntoTableAttendees("6","2");
+//            db.insertIntoTableAttendees("6","563");
+//            db.insertIntoTableNotifications("1", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableNotifications("169", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableNotifications("2", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableNotifications("5631813", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableNotifications("912", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableNotifications("9129450", "2", 1, "morning date", 0, "6");
+//            db.insertIntoTableAttendees("6","1");
+//            db.insertIntoTableAttendees("6","169");
+//            db.insertIntoTableAttendees("6","2");
+//            db.insertIntoTableAttendees("6","5631813");
+//            db.insertIntoTableAttendees("6","912");
+//            db.insertIntoTableAttendees("6","9129450");
+
     cout << "建表结束" << endl;
 }
 
@@ -184,6 +237,7 @@ void DataController::jsonStrColleagueDetail(std::string emailid, std::string &js
 
     string comid;
     int r = db.queryCompanyOfEmployeeID(emailid, comid);
+    QJsonArray departmentsArray;
     if(r != 1)
         res = 0;
     else
@@ -191,8 +245,8 @@ void DataController::jsonStrColleagueDetail(std::string emailid, std::string &js
         vector<vector<string>> depas;
         unsigned long long p = db.queryDepartmentsInCompany(comid,depas);
         if(p == 0) res = 0;
-        QJsonArray departmentsArray;
-        for (auto &i:depas) {
+        for (auto &i:depas)
+        {
             QJsonObject aDepartment;
             aDepartment.insert("DEPARTMENTNAME", i[0].c_str());
             vector<vector<string>> gros;
@@ -200,7 +254,6 @@ void DataController::jsonStrColleagueDetail(std::string emailid, std::string &js
             QJsonArray groupsInDepartment;
             for(auto &j:gros)
             {
-
                 QJsonObject aGroup;
                 aGroup.insert("GROUPNAME", j[0].c_str());
                 vector<vector<string>> empls;
@@ -224,30 +277,33 @@ void DataController::jsonStrColleagueDetail(std::string emailid, std::string &js
             departmentsArray.insert(0, aDepartment);
 
         }
-
-        QJsonObject data;
-        data.insert("DEPARTMENTS", departmentsArray);
-        QJsonObject json;
-        json.insert("DATA", QJsonValue(data));
-        json.insert("TYPE", "_INITIALIZE_COLLEAGUE_LIST");
-        QJsonDocument document;
-        document.setObject(json);
-        QByteArray byteArray = document.toJson(QJsonDocument::Compact);
-        std::string strJson(byteArray);
-        jsonstr = strJson;
-        res = 1;
     }
+    QJsonObject data;
+    data.insert("DEPARTMENTS", departmentsArray);
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "_INITIALIZE_COLLEAGUE_LIST");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+    res = 1;
 }
 
 void DataController::jsonStrInvitationsDetail(std::string emailid, std::string &jsonstr, unsigned long long &res)
 {
     vector<vector<string>> invi;
     res = db.queryInvitationsUndisposed(emailid, invi);
+    QJsonObject json;
+    QJsonObject data;
+    QJsonArray invitationsArray;
     if(res != 0)
     {
         res = 1;
-        QJsonArray invitationsArray;
-        for (auto &anInvi: invi) {
+
+        for (auto &anInvi: invi)
+        {
             QJsonObject meeting;
             vector<string> data;
             db.queryMeetingOfInvitionInfo(anInvi[5], data);
@@ -258,25 +314,24 @@ void DataController::jsonStrInvitationsDetail(std::string emailid, std::string &
             meeting.insert("DATE", data[4].c_str());
             meeting.insert("TIME", data[5].c_str());
             meeting.insert("SUBJECT", data[7].c_str());
-//            meeting.insert("MEETINGNAME", data[8].c_str());
-//            meeting.insert("OWNUNIT", data[9].c_str());
+            //            meeting.insert("MEETINGNAME", data[8].c_str());
+            //            meeting.insert("OWNUNIT", data[9].c_str());
             meeting.insert("MEETINGSCALE", data[10].c_str());
             meeting.insert("PREDICTEDDURATION", data[11].c_str());
             meeting.insert("MEETINGSTATE", data[14].c_str());
             meeting.insert("REMARK", data[15].c_str());
             invitationsArray.insert(0, meeting);
         }
-        QJsonObject data;
-        data.insert("INVITATIONS", invitationsArray);
-        QJsonObject json;
-        json.insert("DATA", QJsonValue(data));
-        json.insert("TYPE", "_INITIALIZE_MEETING_INVITIONS_LIST");
-        QJsonDocument document;
-        document.setObject(json);
-        QByteArray byteArray = document.toJson(QJsonDocument::Compact);
-        std::string strJson(byteArray);
-        jsonstr = strJson;
     }
+    data.insert("INVITATIONS", invitationsArray);
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "_INITIALIZE_MEETING_INVITATIONS_LIST");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+
 }
 
 void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res)
@@ -296,15 +351,15 @@ void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &json
             {
                 if(atoi(data[14].c_str()) == 2)
                 {
-                                QJsonObject meeting;
+                    QJsonObject meeting;
                     meeting.insert("INITIATOR", data[1].c_str());
                     meeting.insert("ASSISTANT", data[2].c_str());
                     meeting.insert("SPEAKER", data[3].c_str());
                     meeting.insert("DATE", data[4].c_str());
                     meeting.insert("TIME", data[5].c_str());
                     meeting.insert("SUBJECT", data[7].c_str());
-        //            meeting.insert("MEETINGNAME", data[8].c_str());
-        //            meeting.insert("OWNUNIT", data[9].c_str());
+                    //            meeting.insert("MEETINGNAME", data[8].c_str());
+                    //            meeting.insert("OWNUNIT", data[9].c_str());
                     meeting.insert("MEETINGSCALE", data[10].c_str());
                     meeting.insert("PREDICTEDDURATION", data[11].c_str());
                     meeting.insert("MEETINGSTATE", data[14].c_str());

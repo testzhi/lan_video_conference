@@ -37,6 +37,12 @@ public:
     void requestExit(std::string emailId);
     void requestAccountDetail(std::string emailId);//请求账户细节
     void requestColleagueList(std::string emaiId);//请求同事列表
+    void requestMeetingInvitionsList(std::string emaiId);//请求会议被邀请列表
+    void requestMeetingList(std::string emailID);//会议列表
+    void requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
+    void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);
+    void requestStartMeeting(std::string emailid, std::string meetingID);
+    void requestStopMeeting(std::string emailid, std::string meetingID);
 
 
     void setEmployee(Employee *employee);
@@ -48,6 +54,9 @@ private:
     void handleLoginResult(QJsonObject qo, int &result, QString &err);//处理登录返回结果
     void handleInitAccountDetailResult(QJsonObject qo, QList<QString> &employeeDetail);
     void handleInitColleagueListResult(QJsonObject qo);
+    void handleInitMeetingInvitionsListResult(QJsonObject qo);
+    void handleInitMeetingListResult(QJsonObject qo);
+
 
 
     //COLLECTION PART：客户端 收集整理 数据
@@ -56,6 +65,12 @@ private:
     std::string exitJsonToString(std::string emailId);
     std::string initializeAccountDetailJsonToString(std::string emailId);
     std::string initializeColleagueListToString(std::string emailId);
+    std::string initializeMeetingInvitionsListToString(std::string emailid);
+    std::string initializeMeetingListToString(std::string emailID);
+    std::string requestLaunchMeetingToString(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
+    std::string requestReplyMeetingToString(std::string emailid, std::string result, std::string meetingID, std::string cause);
+    std::string requestStartMeetingToString(std::string emailid, std::string meetingID);
+    std::string requestStopMeetingToString(std::string emailid, std::string meetingID);
 
 
     void tcpSendMessage(std::string msg);

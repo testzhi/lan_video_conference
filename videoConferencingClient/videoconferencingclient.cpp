@@ -99,7 +99,19 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
                 cout << "groupName  " << m_employee->companys()->getDepartment(i)->getGroup(a)->groupName().toStdString() << endl;
             }
         }
-         m_employee->loginSucceeded();
+        requestMeetingInvitionsList(m_employee->userID().toStdString());
+        m_employee->loginSucceeded();
+    }
+    else if (type == "_INITIALIZE_MEETING_INVITATIONS_LIST")
+    {
+        QString invitation;
+        handleInitMeetingInvitionsListResult(qo);
+        requestMeetingList(m_employee->userID().toStdString());
+    }
+    else if (type == "_INITIALIZE_MEETINGS_LIST")
+    {
+        QString invitation;
+        handleInitMeetingListResult(qo);
     }
 }
 
@@ -151,6 +163,48 @@ void VideoConferencingClient::requestColleagueList(string emaiId)
     tcpSendMessage(sendMessage);
 }
 
+void VideoConferencingClient::requestMeetingInvitionsList(std::string emaiId)
+{
+    string sendMessage = initializeMeetingInvitionsListToString(emaiId);
+    cout << "请求会议受邀请列表："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestMeetingList(std::string emailID)
+{
+    string sendMessage = initializeMeetingListToString(emailID);
+    cout << "请求会议列表："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees)
+{
+    string sendMessage = requestLaunchMeetingToString(emailid, assistant, speaker, date, time, category, subject, scale, dura, remark, attendees);
+    cout << "请求发起会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause)
+{
+    string sendMessage = requestReplyMeetingToString(emailid, result, meetingID, cause);
+    cout << "请求回复通知："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestStartMeeting(std::string emailid, std::string meetingID)
+{
+    string sendMessage = requestStartMeetingToString(emailid, meetingID);
+    cout << "请求开始会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestStopMeeting(std::string emailid, std::string meetingID)
+{
+    string sendMessage = requestStopMeetingToString(emailid, meetingID);
+    cout << "请求关闭会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
 
 //HANDLE PART：客户端处理来自Server的数据
 void VideoConferencingClient::handleRegisteredResult(QJsonObject qo, int &result, QString &returnID, QString &email, QString &err)
@@ -198,30 +252,113 @@ void VideoConferencingClient::handleInitColleagueListResult(QJsonObject qo)
 
     for(auto aDepa : departments)
     {
-        Department *department = new Department();
-        QJsonObject aDepartment = aDepa.toObject();
-        department->setDepartmentName(aDepartment.value("DEPARTMENTNAME").toString());
-        QJsonArray groups = aDepartment.value("GROUPS").toArray();
-        for(auto aGro : groups)
+        if(!aDepa.isUndefined())
         {
-            Group *group = new Group();
-            QJsonObject aGroup = aGro.toObject();
-            group->setGroupName(aGroup.value("GROUPNAME").toString());
-            QJsonArray employees = aGroup.value("EMPLOYEES").toArray();
-            for(auto anEmpl : employees)
+            Department *department = new Department();
+            QJsonObject aDepartment = aDepa.toObject();
+            department->setDepartmentName(aDepartment.value("DEPARTMENTNAME").toString());
+            QJsonArray groups = aDepartment.value("GROUPS").toArray();
+            for(auto aGro : groups)
             {
-                ConciseEmployee *employee = new ConciseEmployee();
-                QJsonObject anEmployee = anEmpl.toObject();
-                employee->setRealName(anEmployee.value("REALNAME").toString());
-                employee->setUserID(anEmployee.value("USERID").toString());
-                group->insertConciseEmployee(employee);
+                if(!aGro.isUndefined())
+                {
+                    Group *group = new Group();
+                    QJsonObject aGroup = aGro.toObject();
+                    group->setGroupName(aGroup.value("GROUPNAME").toString());
+                    QJsonArray employees = aGroup.value("EMPLOYEES").toArray();
+                    for(auto anEmpl : employees)
+                    {
+                        if(!anEmpl.isUndefined())
+                        {
+                            ConciseEmployee *employee = new ConciseEmployee();
+                            QJsonObject anEmployee = anEmpl.toObject();
+                            employee->setRealName(anEmployee.value("REALNAME").toString());
+                            employee->setUserID(anEmployee.value("USERID").toString());
+                            group->insertConciseEmployee(employee);
+                        }
+                    }
+                    department->insertGroup(group);
+                }
             }
-            department->insertGroup(group);
+            com.insertDepartment(department);
         }
-        com.insertDepartment(department);
     }
     cout << "xxxxxxxxxxxxxx" << endl;
     m_employee->setCompanys(&com);
+}
+
+void VideoConferencingClient::handleInitMeetingInvitionsListResult(QJsonObject qo)
+{
+    QJsonArray invitations = qo.value("DATA")["INVITATIONS"].toArray();
+    for (auto anInvi : invitations)
+    {
+        QJsonObject anInvitation =  anInvi.toObject();
+        if(!anInvi.isUndefined())
+        {
+            QString meetingID = anInvitation.value("MEETINGID").toString();
+            QString assistant = anInvitation.value("ASSISTANT").toString();
+            QString speaker = anInvitation.value("SPEAKER").toString();
+            QString date = anInvitation.value("DATE").toString();
+            QString time = anInvitation.value("TIME").toString();
+            QString subject = anInvitation.value("SUBJECT").toString();
+            //                int scale = anInvitation.value("MEETINGSCALE").toInt();
+            QString preDuration = anInvitation.value("PREDICTEDDURATION").toString();
+            //    int state = anInvitation.value("MEETINGSTATE").toInt();
+            QString remark = anInvitation.value("REMARK").toString();
+
+            QString invitation;
+            invitation.clear();
+            invitation.append(assistant);   invitation.append(" 在 ");                   invitation.append(date);
+            invitation.append(" ");         invitation.append(time);                    invitation.append(" 邀请您参加主题为 ");
+            invitation.append(subject);     invitation.append(" 的会议  [ 主讲人：");      invitation.append(speaker);
+            if(remark.isEmpty())
+                invitation.append(" ]");
+            else
+                invitation.append("     会议说明：");    invitation.append(remark);      invitation.append(" ]");
+
+            Notification *notification = new Notification() ;
+            notification->setNotificationMessage(invitation);
+//            notification->setMeetingID(meetingID);
+            notification->setNotificationCategory("MEETING_INVITATION");
+//                        m_employee->insertNotification(notification);
+        }
+    }
+}
+
+void VideoConferencingClient::handleInitMeetingListResult(QJsonObject qo)
+{
+    QJsonArray meetings = qo.value("DATA")["MEETINGS"].toArray();
+    for (auto aMeet : meetings)
+    {
+        QJsonObject aMeeting =  aMeet.toObject();
+        if(!aMeet.isUndefined())
+        {
+            QString meetingID = aMeeting.value("MEETINGID").toString();
+            QString assistant = aMeeting.value("ASSISTANT").toString();
+            QString speaker = aMeeting.value("SPEAKER").toString();
+            QString date = aMeeting.value("DATE").toString();
+            QString time = aMeeting.value("TIME").toString();
+            QString subject = aMeeting.value("SUBJECT").toString();
+            QString scale = aMeeting.value("MEETINGSCALE").toString();
+            QString category = aMeeting.value("CATEGORY").toString();
+            QString preDuration = aMeeting.value("PREDICTEDDURATION").toString();
+            QString state = aMeeting.value("MEETINGSTATE").toString();
+            QString remark = aMeeting.value("REMARK").toString();
+
+            Meeting *meeting = new Meeting() ;
+            meeting->setDate(date);
+            meeting->setTime(time);
+            meeting->setScale(scale);
+            meeting->setState(state);
+            meeting->setTheme(subject);
+            meeting->setSpeaker(speaker);
+            meeting->setCategory(category);
+            meeting->setDuration(preDuration);
+            meeting->setInitiator(assistant);
+//            meeting->setID(meetingID);
+//            m_employee->insertMeeting(meeting);
+        }
+    }
 }
 
 
@@ -315,6 +452,128 @@ string VideoConferencingClient::initializeColleagueListToString(string emailId)
 
     return strJson;
 }
+
+std::string VideoConferencingClient::initializeMeetingInvitionsListToString(std::string emailid)
+{
+    QJsonObject data;
+    data.insert("FROM",QString::fromStdString(emailid));
+
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_MEETING_INVITATIONS_LIST");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::initializeMeetingListToString(std::string emailID)
+{
+    QJsonObject data;
+    data.insert("FROM",QString::fromStdString(emailID));
+
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_MEETINGS_LIST");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestLaunchMeetingToString(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees)
+{
+    QJsonObject data;
+    data.insert("FROM", emailid.c_str());
+    data.insert("ASSISTANT",assistant.c_str());
+    data.insert("SPEAKER",speaker.c_str());
+    data.insert("DATE",date.c_str());
+    data.insert("TIME",time.c_str());
+    data.insert("CATEGORY",category.c_str());
+    data.insert("SUBJECT",subject.c_str());
+    data.insert("MEETINGSCALE",scale.c_str());
+    data.insert("PREDICTEDDURATION",dura.c_str());
+    data.insert("REMARK",remark.c_str());
+    QJsonArray attendeesArray;
+    for(auto m: attendees)
+    {
+        QJsonObject atten;
+        atten.insert("EMAILID", m.c_str());
+        attendeesArray.insert(0, atten);
+    }
+    data.insert("ATTENDEES", attendeesArray);
+
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_LAUNCH_MEETING");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestReplyMeetingToString(std::string emailid,std::string result, std::string meetingID, std::string cause)
+{
+    QJsonObject data;
+    data.insert("FROM", emailid.c_str());
+    data.insert("RESULT", result.c_str());
+    data.insert("MEETINGID", meetingID.c_str());
+    data.insert("CAUSE", cause.c_str());
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_SEND_INVITATION_RESULT");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestStartMeetingToString(std::string emailid, std::string meetingID)
+{
+    QJsonObject data;
+    data.insert("FROM", emailid.c_str());
+    data.insert("MEETINGID", meetingID.c_str());
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_START_MEETING");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestStopMeetingToString(std::string emailid, std::string meetingID)
+{
+    QJsonObject data;
+    data.insert("FROM", emailid.c_str());
+    data.insert("MEETINGID", meetingID.c_str());
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "#REQUEST_STOP_MEETING");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
 
 
 

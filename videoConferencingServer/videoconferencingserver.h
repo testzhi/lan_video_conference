@@ -48,9 +48,11 @@ public:
     void handleColleagueList(QJsonObject Data, sock_ptr sock);
     void handleInvitionsList(QJsonObject Data, sock_ptr sock);
     void handleMeetingList(QJsonObject Data, sock_ptr sock);
-    void handleRequestLaunchMeeting(QJsonObject Data, sock_ptr sock);
+    void handleRequestLaunchMeeting(QJsonObject Data, sock_ptr sock);//发起人
     void handleRequestStartMeeting(QJsonObject Data, sock_ptr sock);
     void handleRequestStopMeeting(QJsonObject Data, sock_ptr sock);
+    void handleRequestInvitionResult(QJsonObject Data, sock_ptr);
+    void handleRequestAttendMeeting(QJsonObject Data, sock_ptr);//参会人
 
 
 
