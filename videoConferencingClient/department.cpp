@@ -32,7 +32,7 @@ int Department::employeeCount()
 
 void Department::insertGroup(Group *group)
 {
-    m_employeesNumber += group->employeeCount();
+    m_employeesNumber += group->conciseEmployeeCount();
     _groups.append(group);
 }
 

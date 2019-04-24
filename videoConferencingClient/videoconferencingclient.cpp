@@ -87,9 +87,19 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
         m_employee->setDepartment(employeeDetail.at(5));
         m_employee->setGroup(employeeDetail.at(6));
         m_employee->setPhone(employeeDetail.at(7));
+        requestColleagueList(m_employee->userID().toStdString());
     }
     else if (type == "_INITIALIZE_COLLEAGUE_LIST")
     {
+        handleInitColleagueListResult(qo);
+        cout << "department count  " <<  m_employee->companys()->departmentCount() << endl;
+        for(int i = 0;i != m_employee->companys()->departmentCount();i++) {
+            cout << "department name  " << m_employee->companys()->getDepartment(i)->departmentName().toStdString() << endl;
+            for(int a = 0; a != m_employee->companys()->getDepartment(i)->groupCount();a++) {
+                cout << "groupName  " << m_employee->companys()->getDepartment(i)->getGroup(a)->groupName().toStdString() << endl;
+            }
+        }
+         m_employee->loginSucceeded();
     }
 }
 
@@ -152,7 +162,7 @@ void VideoConferencingClient::handleRegisteredResult(QJsonObject qo, int &result
         returnID = qo.value("DATA")["USERID"].toString();
         email = qo.value("DATA")["EMAIL"].toString();
         cout << "用户ID:    " << returnID.toStdString() << endl
-                  << "用户Email： " << email.toStdString() << endl;
+             << "用户Email： " << email.toStdString() << endl;
         m_employee->setUserID(returnID);
         m_employee->setEmail(email);
     } else if(qo.value("DATA")["RESULT"].toString().toInt() == -1){
@@ -179,31 +189,39 @@ void VideoConferencingClient::handleInitAccountDetailResult(QJsonObject qo, QLis
     employeeDetail.append(qo.value("DATA")["PHONE"].toString());
 }
 
-void VideoConferencingClient::handleInitColleagueListResult(QJsonObject qo, QList<QString> &group, int &groupNumber)
+void VideoConferencingClient::handleInitColleagueListResult(QJsonObject qo)
 {
-//    TYPE：_INITIALIZE_COLLEAGUE_LIST
-//    DATA:{
-//        GROUPS：[
-//            {GROUPNAME：
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//            }],
-//            [
-//            {GROUPNAME：
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//            }],
-//            [
-//            {GROUPNAME：
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//                [REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:]，
-//            }]
 
-//        }
-//    }
+    com.setCompanyName(m_employee->company());
+    //    QList<Department *> departmentss;
+    QJsonArray departments = qo.value("DATA")["DEPARTMENTS"].toArray();
+
+    for(auto aDepa : departments)
+    {
+        Department *department = new Department();
+        QJsonObject aDepartment = aDepa.toObject();
+        department->setDepartmentName(aDepartment.value("DEPARTMENTNAME").toString());
+        QJsonArray groups = aDepartment.value("GROUPS").toArray();
+        for(auto aGro : groups)
+        {
+            Group *group = new Group();
+            QJsonObject aGroup = aGro.toObject();
+            group->setGroupName(aGroup.value("GROUPNAME").toString());
+            QJsonArray employees = aGroup.value("EMPLOYEES").toArray();
+            for(auto anEmpl : employees)
+            {
+                ConciseEmployee *employee = new ConciseEmployee();
+                QJsonObject anEmployee = anEmpl.toObject();
+                employee->setRealName(anEmployee.value("REALNAME").toString());
+                employee->setUserID(anEmployee.value("USERID").toString());
+                group->insertConciseEmployee(employee);
+            }
+            department->insertGroup(group);
+        }
+        com.insertDepartment(department);
+    }
+    cout << "xxxxxxxxxxxxxx" << endl;
+    m_employee->setCompanys(&com);
 }
 
 
@@ -321,10 +339,10 @@ QJsonObject VideoConferencingClient::stringToQJsonObject(string str)
     return data;
 }
 
-void VideoConferencingClient::setCompany(Company *company)
-{
-    m_company = company;
-}
+//void VideoConferencingClient::setCompany(Company *company)
+//{
+//    m_company = company;
+//}
 
 void VideoConferencingClient::setEmployee(Employee *employee)
 {

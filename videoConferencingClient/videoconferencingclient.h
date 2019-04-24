@@ -6,7 +6,7 @@
 #include <QObject>
 #include <string>
 #include <QJsonObject>
-#include "company.h"
+#include "employee.h"
 
 #define BUFFER_LENGTH   1024
 
@@ -40,14 +40,14 @@ public:
 
 
     void setEmployee(Employee *employee);
-    void setCompany(Company *company);
+//    void setCompany(Company *company);
 
 private:
     //HANDLE PART：客户端处理来自Server的数据
     void handleRegisteredResult(QJsonObject qo, int &result, QString &returnID, QString &email, QString &err);//处理注册返回结果
     void handleLoginResult(QJsonObject qo, int &result, QString &err);//处理登录返回结果
     void handleInitAccountDetailResult(QJsonObject qo, QList<QString> &employeeDetail);
-    void handleInitColleagueListResult(QJsonObject qo, QList<QString> &group,  int &groupNumber);
+    void handleInitColleagueListResult(QJsonObject qo);
 
 
     //COLLECTION PART：客户端 收集整理 数据
@@ -68,7 +68,8 @@ private:
     boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;//接收数据缓冲区。
 
     Employee *m_employee;
-    Company *m_company;
+    Company com;
+//    Company *m_company;
 };
 
 #endif // VIDEOCONFERENCINGSERVER_H

@@ -14,6 +14,13 @@ Window {
     visible: true
     width: 400
     height: 600
+
+    //        ConferenceUI {
+    //            id: conferenceUI
+    //            property var i: {
+    //                conferenceUI.setEmployee(conference.employee)
+    //            }
+    //        }
     Login {
         id: login
         onLogin: {

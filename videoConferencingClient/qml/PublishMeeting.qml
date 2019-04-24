@@ -298,12 +298,12 @@ Item {
         id: speakerList
 
         visible: false
-        onSpeakerChoose: {
-            speakerList.visible = false
-            speakerID.text = qsTr(userID)
-            speakerName.text = qsTr(realName)
-            currentEmployee = qsTr(userID)
-        }
+                onSpeakerChoose: {
+                    speakerList.visible = false
+                    speakerID.text = qsTr(userID)
+                    speakerName.text = qsTr(realName)
+                    currentEmployee = qsTr(userID)
+                }
     }
     AttendeeList {
         id: attendeeList

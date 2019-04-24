@@ -1,14 +1,14 @@
 #include "conferenceui.h"
 
-Company *ConferenceUI::company() const
-{
-    return m_company;
-}
+//Company *ConferenceUI::company() const
+//{
+//    return m_company;
+//}
 
-void ConferenceUI::setCompany(Company *company)
-{
-    m_company = company;
-}
+//void ConferenceUI::setCompany(Company *company)
+//{
+//    m_company = company;
+//}
 
 Employee *ConferenceUI::employee() const
 {

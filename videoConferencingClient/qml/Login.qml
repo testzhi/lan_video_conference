@@ -75,6 +75,7 @@ Item {
             mistake.text = err
         }
         onLoginSucceeded: {
+            //            conferenceUI.setEmployee(conference.employee)
             login()
             account.text = loginPassword.text = ""
         }

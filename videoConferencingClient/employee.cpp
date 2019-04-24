@@ -154,6 +154,16 @@ QQmlListProperty<Notification> Employee::notifications()
     return QQmlListProperty<Notification>(this,nullptr,Employee::appendNotification,Employee::countNotification,Employee::atNotification,Employee::clearNotification);
 }
 
+Company *Employee::companys() const
+{
+    return m_companys;
+}
+
+void Employee::setCompanys(Company *companys)
+{
+    m_companys = companys;
+}
+
 void Employee::setMeetings(const QList<Meeting *> &meetings)
 {
     _meetings = meetings;

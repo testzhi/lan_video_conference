@@ -6,12 +6,23 @@ Rectangle {
     id: attendeeList
     signal refresh
     property bool begin: true
-    property string companySelect: listAllNotChoose
+
+    property string companySelect
+    property string companyName
+    property var companyDepartmentNum
     property var departmentSelect: []
+    property var departmentName: []
+    property var departmentGroupNum: []
+    property var departmentEmployeeNum: []
+
     property var groupSelect: []
     property var groupName: []
-    property var employeeID: []
+    property var groupEmployeeNum: []
+
     property var employeeSelect: []
+    property var employeeRealName: []
+    property var employeeUserID: []
+
     anchors.left: parent.left
     anchors.leftMargin: mainWindow.width * 0.05 + 50
     anchors.top: parent.top
@@ -19,31 +30,47 @@ Rectangle {
     width: mainWindow.width * 0.25
     height: mainWindow.height * 0.50
     border.color: {
-        attendeeList.initListChoose()
+        //        attendeeList.initListChoose()
         return "blue"
     }
 
     property Department dep
     property Group gro
-    property Employee emp
+    property ConciseEmployee emp
     function initListChoose() {
-        for (var a = 0; a !== conferenceUI.company.departmentCount(); a++) {
-            departmentSelect[a] = listAllNotChoose
-            dep = conferenceUI.company.getDepartment([a])
+        companyName = conferenceUI.employee.companys.companyName
+        companySelect = listAllNotChoose
+        companyDepartmentNum = conferenceUI.employee.companys.departmentCount()
+        for (var a = 0; a !== conferenceUI.employee.companys.departmentCount(
+                 ); a++) {
+            departmentSelect[departmentSelect.length] = listAllNotChoose
+            dep = conferenceUI.employee.companys.getDepartment([a])
+            departmentName[departmentName.length] = dep.departmentName
+            departmentGroupNum[departmentGroupNum.length] = dep.groupCount()
+            departmentEmployeeNum[departmentEmployeeNum.length] = dep.employeesNumber
+            console.log("departmentGroupNUmber  ", dep.groupCount())
             for (var b = 0; b !== dep.groupCount(); b++) {
                 groupSelect[groupSelect.length] = listAllNotChoose
                 gro = dep.getGroup(b)
                 groupName[groupName.length] = gro.groupName
-                for (var c = 0; c !== gro.employeeCount(); c++) {
+                groupEmployeeNum[groupEmployeeNum.length] = gro.conciseEmployeeCount()
+                for (var c = 0; c !== gro.conciseEmployeeCount(); c++) {
                     employeeSelect[employeeSelect.length] = false
-                    emp = gro.getEmployee(c)
-                    employeeID[employeeID.length] = emp.userID
+                    emp = gro.getConciseEmployee(c)
+                    employeeRealName[employeeRealName.length] = emp.realName
+                    employeeUserID[employeeUserID.length] = emp.userID
                 }
             }
         }
-        //        console.log("department   ", departmentSelect.length)
-        //        console.log("group   ", departmentSelect.length)
-        //        console.log("employee   ", departmentSelect.length)
+        for (var i = 0; i != groupName.length; i++) {
+            console.log("groupName  ", groupName[i])
+            console.log("groupEmployeeNum  ", groupEmployeeNum[i])
+        }
+        for (i = 0; i != departmentName.length; i++) {
+            console.log("departmentName  ", departmentName[i])
+        }
+
+        console.log("companyDepartmentNum  ", companyDepartmentNum)
     }
 
     Rectangle {
@@ -56,18 +83,27 @@ Rectangle {
 
             sourceComponent: attendeeComponent
         }
-
         Connections {
             target: attendeeList
             onRefresh: {
-                begin = false
                 attendeeLoader.sourceComponent = null
                 attendeeLoader.sourceComponent = attendeeComponent
             }
         }
+        Connections {
+            target: conferenceUI.employee
+            onLoginSucceeded: {
+                console.log("loginSucceed")
+                initListChoose()
+                refresh()
+            }
+        }
+
         Component {
             id: attendeeComponent
+
             ScrollView {
+                id: scroll
                 anchors.fill: parent
                 Rectangle {
                     z: 1
@@ -88,12 +124,10 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    if (companySelect == listAllNotChoose) {
-
+                                    if (companySelect === listAllNotChoose)
                                         companySelect = listAllChoose
-                                    } else {
+                                    else
                                         companySelect = listAllNotChoose
-                                    }
                                     for (var i = 0; i != departmentSelect.length; i++) {
                                         departmentSelect[i] = companySelect
                                     }
@@ -101,10 +135,10 @@ Rectangle {
                                         groupSelect[i] = companySelect
                                     }
                                     for (var i = 0; i != employeeSelect.length; i++) {
-                                        if (companySelect === listAllChoose)
-                                            employeeSelect[i] = true
-                                        else
+                                        if (companySelect == listAllNotChoose)
                                             employeeSelect[i] = false
+                                        else
+                                            employeeSelect[i] = true
                                     }
 
                                     refresh()
@@ -113,7 +147,7 @@ Rectangle {
                         }
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr(conferenceUI.company.companyName)
+                            text: qsTr(companyName)
                         }
                     }
                 }
@@ -126,17 +160,20 @@ Rectangle {
                     anchors.leftMargin: 20
                     anchors.top: parent.top
                     anchors.topMargin: mainWindow.height * 0.06
-                    model: conferenceUI.company.departmentCount()
+                    model: companyDepartmentNum
                     delegate: Rectangle {
+                        //                        border.width: 1
                         z: -1
                         id: departmentSet
-                        property Department departments: conferenceUI.company.getDepartment(
-                                                             index)
                         width: parent.width
                         height: {
-                            var a = departments.groupCount()
-                            var b = departments.employeeCount()
-                            mainWindow.height * 0.06 * (a + b + 1)
+                            var l = 0
+                            l += departmentGroupNum[index] - '0'
+                            l += departmentEmployeeNum[index] - '0'
+                            l += 1
+                            console.log("department length  ", l,
+                                        "  index", index)
+                            return mainWindow.height * 0.06 * l
                         }
                         Column {
                             anchors.fill: parent
@@ -148,8 +185,6 @@ Rectangle {
                                     spacing: 10
                                     Image {
                                         id: departmentChoose
-                                        property Group gro1
-                                        property Employee emp1
                                         width: parent.height * 0.5
                                         height: parent.height * 0.5
                                         source: departmentSelect[index]
@@ -158,43 +193,28 @@ Rectangle {
                                         MouseArea {
                                             anchors.fill: parent
                                             onClicked: {
+                                                console.log("hhhhhhhhhhhhhhh  departmentSelect  ",
+                                                            departmentSelect[index],
+                                                            "  index  ", index)
                                                 if (departmentSelect[index] === listAllNotChoose)
                                                     departmentSelect[index] = listAllChoose
                                                 else
                                                     departmentSelect[index] = listAllNotChoose
-
-                                                //                                                dep = company.getDepartment(
-                                                //                                                            index)
-                                                for (var a = 0; a
-                                                     !== departmentSet.departments.groupCount(
-                                                         ); a++) {
-                                                    departmentChoose.gro1
-                                                            = departmentSet.departments.getGroup(
-                                                                a)
-                                                    for (var b = 0; b != groupName.length; b++) {
-
-                                                        if (departmentChoose.gro1.groupName
-                                                                === groupName[b])
-                                                            groupSelect[b] = departmentSelect[index]
-                                                    }
-                                                    for (var c = 0; c
-                                                         !== departmentChoose.gro1.employeeCount(
-                                                             ); c++) {
-                                                        departmentChoose.emp1
-                                                                = departmentChoose.gro1.getEmployee(
-                                                                    c)
-                                                        for (var b = 0; b
-                                                             != employeeID.length; b++) {
-                                                            if (departmentChoose.emp1.userID
-                                                                    === employeeID[b])
-                                                                if (departmentSelect[index]
-                                                                        === listAllChoose)
-                                                                    employeeSelect[b] = true
-                                                                else
-                                                                    employeeSelect[b] = false
-                                                        }
-                                                    }
+                                                var el = 0
+                                                var gl = 0
+                                                for (var i = 0; i != index; i++) {
+                                                    gl += departmentGroupNum[i] - '0'
+                                                    el += departmentEmployeeNum[i] - '0'
                                                 }
+                                                for (var a = 0; a != departmentGroupNum[index]
+                                                     - '0'; i++) {
+                                                    groupSelect[gl + a] = departmentSelect[index]
+                                                }
+                                                for (var b = 0; b != departmentEmployeeNum[index]
+                                                     - '0'; b++) {
+                                                    employeeSelect[el + b] = departmentSelect[index]
+                                                }
+
                                                 refresh()
                                             }
                                         }
@@ -202,7 +222,10 @@ Rectangle {
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: {
-                                            return departmentSet.departments.departmentName
+                                            console.log("  departmentName  ",
+                                                        departmentName[index])
+
+                                            return departmentName[index]
                                         }
                                     } //text
                                 } //row
@@ -212,84 +235,115 @@ Rectangle {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 width: parent.width - 10
-                                height: mainWindow.height * 0.06
-                                        * (departmentSet.departments.groupCount(
-                                               ) + departmentSet.departments.employeeCount(
-                                               ))
-                                model: departmentSet.departments.groupCount()
+                                property var beforeGroup: {
+                                    var gl = 0
+                                    for (var i = 0; i != index; i++) {
+                                        gl += departmentGroupNum[i] - '0'
+                                    }
+                                    return gl
+                                }
+                                property var beforeEmployee1: {
+                                    var el = 0
+                                    for (var i = 0; i != index; i++) {
+                                        el += departmentEmployeeNum[i] - '0'
+                                    }
+                                    return el
+                                }
+
+                                height: {
+                                    var l = 0
+                                    l += departmentGroupNum[index] - '0'
+                                    l += departmentEmployeeNum[index] - '0'
+                                    return mainWindow.height * 0.06 * l
+                                }
+                                model: {
+                                    console.log("departmentGroupNUm  ",
+                                                departmentGroupNum[index])
+                                    departmentGroupNum[index]
+                                }
 
                                 delegate: Rectangle {
                                     id: groupSet
-                                    property Group groups: departmentSet.departments.getGroup(
-                                                               index)
                                     width: parent.width
-                                    height: mainWindow.height * 0.06 * (groups.employeeCount(
-                                                                            ) + 1)
+                                    height: {
+                                        var l = 0
+
+                                        l += groupEmployeeNum[allGroup.beforeGroup + index] - '0'
+
+                                        l += 1
+                                        console.log("groupLength  ", l,
+                                                    "  groupindex  ", index)
+                                        mainWindow.height * 0.06 * l
+                                    }
                                     Row {
                                         width: parent.width
                                         height: mainWindow.height * 0.06
                                         spacing: 10
                                         Image {
                                             id: groupChoose
-                                            property Employee emp2
                                             width: parent.height * 0.5
                                             height: parent.height * 0.5
                                             anchors.verticalCenter: parent.verticalCenter
-                                            source: {
-                                                for (var i = 0; i != groupName.length; i++) {
-                                                    if (groupSet.groups.groupName === groupName[i])
-                                                        return groupSelect[i]
-                                                }
-                                            }
+                                            source: groupSelect[allGroup.beforeGroup + index]
                                             MouseArea {
                                                 anchors.fill: parent
                                                 onClicked: {
-                                                    for (var i = 0; i != groupName.length; i++) {
-                                                        if (groupSet.groups.groupName
-                                                                === groupName[i]) {
-                                                            if (groupSelect[i] === listAllChoose)
-                                                                groupSelect[i] = listAllNotChoose
-                                                            else
-                                                                groupSelect[i] = listAllChoose
-                                                            for (var b = 0; b
-                                                                 !== groupSet.groups.employeeCount(
-                                                                     ); b++) {
-                                                                groupChoose.emp2 = groupSet.groups.getEmployee(
-                                                                            b)
-                                                                for (var a = 0; a
-                                                                     !== employeeID.length; a++) {
-                                                                    if (groupChoose.emp2.userID === employeeID[a]) {
-                                                                        employeeSelect[a] = groupSelect[i] === listAllChoose ? true : false
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
+                                                    if (groupSelect[allGroup.beforeGroup + index]
+                                                            === listAllNotChoose)
+                                                        groupSelect[allGroup.beforeGroup + index]
+                                                                = listAllChoose
+                                                    else
+                                                        groupSelect[allGroup.beforeGroup + index]
+                                                                = listAllNotChoose
+                                                    var el = 0
+                                                    for (var i = 0; i != index; i++) {
+                                                        el += groupEmployeeNum[allGroup.beforeGroup + i] - '0'
                                                     }
+                                                    for (var a = 0; a != groupEmployeeNum[allGroup.beforeGroup + index] - '0'; a++) {
+                                                        if (groupSelect[allGroup.beforeGroup
+                                                                        + index] === listAllChoose)
+                                                            employeeSelect[allGroup.beforeEmployee1 + el + a] = true
+                                                        else
+                                                            employeeSelect[allGroup.beforeEmployee1 + el + a] = false
+                                                    }
+
                                                     refresh()
                                                 }
                                             }
                                         }
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: {
-                                                return groupSet.groups.groupName
-                                            }
+                                            text: groupName[allGroup.beforeGroup + index]
                                         } //text
                                     } //row
                                     ListView {
                                         id: allEmployee
+                                        property var beforeEmployee2: {
+                                            var el = 0
+                                            for (var i = 0; i != index; i++) {
+                                                el += groupEmployeeNum[allGroup.beforeGroup
+                                                                       + i] - '0'
+                                            }
+                                            return el
+                                        }
+
                                         anchors.left: parent.left
                                         anchors.leftMargin: 10
                                         anchors.top: parent.top
                                         anchors.topMargin: mainWindow.height * 0.06
                                         width: parent.width - 10
-                                        height: mainWindow.height * 0.06
-                                                * (groupSet.groups.employeeCount(
-                                                       ) + 1)
-                                        model: groupSet.groups.employeeCount()
+                                        height: {
+                                            var l = 0
+                                            l += groupEmployeeNum[allGroup.beforeGroup
+                                                                  + index] - '0'
+                                            l += 1
+                                            return mainWindow.height * 0.06 * l
+                                        }
+                                        model: groupEmployeeNum[allGroup.beforeGroup + index]
+
                                         delegate: Rectangle {
                                             id: employeeSet
-                                            property Employee employees: groupSet.groups.getEmployee(index)
+                                            //                                            property ConciseEmployee employees: groupSet.groups.getConciseEmployee(index)
                                             width: parent.width - 10
                                             height: mainWindow.height * 0.06
                                             Row {
@@ -298,32 +352,17 @@ Rectangle {
                                                 spacing: 10
                                                 CheckBox {
                                                     id: employeeChoose
-                                                    checked: {
-                                                        for (var i = 0; i
-                                                             != employeeID.length; i++) {
-                                                            if (employeeSet.employees.userID
-                                                                    === employeeID[i])
-                                                                return employeeSelect[i]
-                                                        }
-                                                    }
+                                                    checked: employeeSelect[allGroup.beforeEmployee1 + allEmployee.beforeEmployee2 + index]
                                                     onClicked: {
-                                                        for (var i = 0; i
-                                                             != employeeID.length; i++) {
-                                                            if (employeeSet.employees.userID
-                                                                    === employeeID[i])
-                                                                employeeSelect[i]
-                                                                        = employeeChoose.checked
-                                                        }
-                                                        //                                                        refresh()
+                                                        employeeSelect[allGroup.beforeEmployee1 + allEmployee.beforeEmployee2 + index] = !employeeSelect[allGroup.beforeEmployee1 + allEmployee.beforeEmployee2 + index]
+                                                        refresh()
                                                     }
 
                                                     anchors.verticalCenter: parent.verticalCenter
                                                 }
                                                 Text {
                                                     anchors.verticalCenter: parent.verticalCenter
-                                                    text: {
-                                                        return employeeSet.employees.realName
-                                                    }
+                                                    text: employeeRealName[allGroup.beforeEmployee1 + allEmployee.beforeEmployee2 + index]
                                                 } //text
                                             } //row
                                         }

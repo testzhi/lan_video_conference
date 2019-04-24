@@ -8,6 +8,7 @@
 
 #include <meeting.h>
 #include "notification.h"
+#include "company.h"
 
 class Employee:public QObject
 {
@@ -24,6 +25,7 @@ class Employee:public QObject
     Q_PROPERTY(QString group READ group WRITE setGroup NOTIFY groupChanged)
     Q_PROPERTY(QQmlListProperty<Meeting> meetings READ meetings NOTIFY meetingsChanged)
     Q_PROPERTY(QQmlListProperty<Notification> notifications READ notifications NOTIFY notificationsChanged)
+    Q_PROPERTY(Company* companys READ companys WRITE setCompanys NOTIFY companysChanged)
     Q_CLASSINFO("DefaultProperty", "meetings")
 signals:
     void userIDChanged();
@@ -38,6 +40,7 @@ signals:
     void groupChanged();
     void meetingsChanged();
     void notificationsChanged();
+    void companysChanged();
 
     void registerSuccessfully();//注册成功
     void emailAlreadyRegistered();//注册失败 之 email已被占用
@@ -91,6 +94,9 @@ public:
 
     QQmlListProperty<Notification> notifications();
 
+    Company *companys() const;
+    void setCompanys(Company *companys);
+
 private:
     QString m_userID;
     QString m_userPassword;
@@ -104,6 +110,7 @@ private:
     QString m_group;
     QList<Meeting *> _meetings;
     QList<Notification *> _notifications;
+    Company *m_companys;
 
     static void appendMeeting(QQmlListProperty<Meeting> *meetings,Meeting * meeting);
     static int countMeeting(QQmlListProperty<Meeting> *meetings);
