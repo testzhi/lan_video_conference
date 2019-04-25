@@ -3,6 +3,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/array.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/asio.hpp>
 #include <QJsonObject>
 #include <string>
@@ -21,8 +22,9 @@ class VideoConferencingServer
     typedef std::shared_ptr<socket_type> sock_ptr;
 
 public:
-    VideoConferencingServer(): m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333))
+    VideoConferencingServer(): m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333)), m_sockTcp(m_io) , m_sockUdp(m_io)
     {
+                m_sockUdp.open(ip::udp::v4());
         accept();
     }
 
@@ -32,9 +34,19 @@ public:
 
     //TCP
     void tcpHandleReceive(const boost::system::error_code &ec, sock_ptr sock, std::string _remote_ip);
-    void tcpSendMessage(std::string msg, sock_ptr sock);
     void handleTcpSend(const boost::system::error_code &ec, sock_ptr sock);
+    void tcpSendMessage(std::string msg, sock_ptr sock);
 
+    void tcpSendTo(std::string ip, std::string msg);
+
+    void tcpAsyncConnect(std::string ip, std::string msg);
+    void tcpAsyncConnectionHandler(std::string msg, const boost::system::error_code &ec);
+    void tcpAsyncSendToHandler(const boost::system::error_code &ec);
+
+
+    //UDP
+    void udpSendMessage(std::string ip, string msg);
+    void handleUdpSend(const boost::system::error_code &ec);
 
     //RTP
     void rtpSendMessage(std::string ip, string msg);
@@ -51,7 +63,7 @@ public:
     void handleRequestLaunchMeeting(QJsonObject Data, sock_ptr sock);//发起人
     void handleRequestStartMeeting(QJsonObject Data, sock_ptr sock);
     void handleRequestStopMeeting(QJsonObject Data, sock_ptr sock);
-    void handleRequestInvitionResult(QJsonObject Data, sock_ptr);
+    void handleRequestInvitionResult(QJsonObject Data, sock_ptr sock);
     void handleRequestAttendMeeting(QJsonObject Data, sock_ptr);//参会人
 
 
@@ -59,12 +71,16 @@ public:
 private:
     QJsonObject stringToQJsonObject(std::string string);
 
+
     io_service m_io;
-    tcp::endpoint _remote_endpoint;
     ip::tcp::acceptor m_acceptor;
-    tcp::endpoint m_tcpEP;
-    boost::array<char,BUFFER_LENGTH> m_tcpRecvBuf;//接收数据缓冲区。
-    boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;//接收数据缓冲区。
+
+
+    boost::array<char,BUFFER_LENGTH> m_tcpRecvBuf;
+    //    boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;
+    tcp::socket m_sockTcp;
+
+    udp::socket m_sockUdp;
 
     DataController dc;
 };

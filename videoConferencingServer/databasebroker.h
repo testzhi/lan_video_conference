@@ -37,6 +37,7 @@ public:
     int queryEmployeeInfoByEmailID(std::string emailID, std::vector<std::string> &data);
     //id email passwd state ip
     int queryResultForLogin(std::string emailID, std::vector<std::string> &data);
+    int queryIpByUserID(std::string userID, int state, std::string &Ip);
     int queryCompanyOfEmployeeID(std::string id, std::string &comid);
 
 
@@ -53,10 +54,12 @@ public:
     unsigned long long queryInvitationsUndisposed(std::string emailID, std::vector<std::vector<std::string> > &data);
     unsigned long long queryInvitationsInvalid(std::string emailID, std::vector<std::vector<std::string> > &data);
     unsigned long long queryMeetingOfInvitionInfo(std::string meetingID, std::vector<std::string> &data);
+    unsigned long long queryMeetingNOTENDByMeetingID(std::string meetingID, int meetingState, std::vector<std::string>  &data);
 
 
     unsigned long long queryMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds);
-    unsigned long long queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string>  &data);
+    int queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string>  &data);
+    unsigned long long queryMeetingSubjectByMeetingID(std::string meetingID, std::string &data);
 
 
 
@@ -64,6 +67,11 @@ public:
     bool updateMeetingStateByMeetingID(std::string meetingID, int state);
     bool updateAttendeeByMeetingIDAndAttendeeID(std::string meetingid, std::string attendeeid, int state, std::string remark);
     bool updateNotificationsState(std::string notifiedID, std::string meetingid, int state);
+
+
+        void deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID);
+
+
 
     const char *getErrorInfo() const;
     int getErrorNum() const;
@@ -98,8 +106,6 @@ private:
     bool canCreateID(std::string id);
     void errorIntoMySQL();
     bool query(const std::string& querystr);
-    bool getDatafromDB(std::string queryStr, std::vector<std::vector<std::string> >& data, int &row);
-    bool isSameString(std::string userID_fk, std::string friendID_fk);
 };
 
 #endif // DATABASEBROKER_H

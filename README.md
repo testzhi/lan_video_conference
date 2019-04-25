@@ -28,7 +28,7 @@ Client的tcp部分，Client部分请求（注册登录）;  Server tcp连接;   
 n次以后
     systemctl start mysqld
     
-<!--     若需要在终端查看数据库 mysql -u VideoConferencingServer  -->
+<!--     若需要在终端查看数据库 mysql -u VideoConferencingServer       use VideoConferencingDB  -->
     
     
 [Note:如果想避免重复输入以上语句，可以直接输入（即开机自启数据库）                     ]
@@ -56,7 +56,7 @@ n次以后
     REMARK              会议备注
     MEETINGSTATE        0未开始1进行中2完成
 表6  AttendeesTable
-    ATTENDSTATE         -1缺席0迟到1正常参加
+    ATTENDSTATE         -1缺席0迟到1正常参加(暂时未考虑0迟到)
     REMARK              缺席原因/迟到时长
 表7  NotificationsTable
     CATAGRO             1助手发起的会议邀请
@@ -80,84 +80,14 @@ jrtp解压缩
 
 # -------------------------------------JSON部分
 # 由客户端发送     #
-请求注册{
-    TYPE：#REGISTER,
-    DATA：{
-        REALNAME  ： 
-        PASSWD    :  xxxxxxx
-        EMAIL     :  liannaxu07@gmail.com
-        AVATAR    ：
-        COMPANY   ：
-        DEPARTMENT：
-        GROUP     ：
-        PHONE     ：
-        }
-    }
-请求登录{   Note:登录可用ID或Email，退出凭借ID
-    TYPE: #LOGIN
-    DATA：{
-        EMAILID:
-        PASSWD:
-        }
-    }
-请求退出{   Note:登录可用ID或Email，退出凭借ID
-    TYPE：#EXIT
-    DATA：{
-        FROM： xxxEMAILIDxxx
-        }
-    }
-请求账户细节信息{
-    TYPE： #REQUEST_ACCOUNT_DETAIL
-        DATA：{
-            FROM：xxxEMAILIDxxx
-            }
-    }
-请求账户的同事列表{
-    TYPE： #REQUEST_COLLEAGUE_LIST
-    DATA：{
-        FROM：xxxIDxxx
-        }
-    }
-请求账户的会议邀请列表{
-    TYPE： #REQUEST_MEETING_INVITATIONS_LIST
-    DATA：{
-        FROM：xxxIDxxx
-        }
-    }
 <!--请求账户的会议提醒列表{
     TYPE： #REQUEST_MEETING_REMINDERS_LIST
     DATA：{
         FROM：xxxIDxxx
         }
     }-->
-请求账户的会议列表{
-    TYPE： #REQUEST_MEETINGS_LIST
-    DATA：{
-        FROM：xxxIDxxx
-        }
-    }
-请求发起会议{
-    TYPE： #REQUEST_LAUNCH_MEETING
-    DATA：{
-        FROM：xxxIDxxx
-<!--         INITIATOR -->
-        ASSISTANT
-        SPEAKER
-        DATE
-        TIME
-        CATEGORY
-        SUBJECT
-<!--         MEETINGNAME -->
-<!--         OWNUNIT -->
-        MEETINGSCALE
-        PREDICTEDDURATION
-        REMARK
-        ATTENDEES:[{EMAILID:    userid更好},
-                   {EMAILID:    }
-                   {EMAILID:    }
-                  ]
-        }
-    }
+
+
 请求开始会议{
     TYPE： #REQUEST_START_MEETING
     DATA：{
@@ -193,127 +123,8 @@ jrtp解压缩
         MEETINGID:
         }
     }-->
-请求回复邀请{
-    TYPE： #REQUEST_SEND_INVITATION_RESULT
-    DATA：{
-        FROM：xxxIDxxx
-        RESULT:0/1
-        MEETINGID:
-        CAUSE
-        }
-    }
-# 由服务端发送     _
-注册结果{
-    TYPE：_REGISTER
-    DATA：{
-        RESULT："1"成功/"-1"email已注册
-        USERID：
-        EMAIL:
-        ERROR:
-    }
-登录成功与否{
-    TYPE：_LOGIN
-    DATA：{
-        EMAILID:
-        RESULT："1"/"-1"无效账户/"-2"密码错误/"-3"重复登录
-        ERROR:
-        }
-    }
-账户初始化信息{
-    TYPE：_INITIALIZE_ACCOUNT_DETAIL
-        DATA：{
-            USERID    ：
-            EMAIL     :  liannaxu07@gmail.com
-            REALNAME  ： 
-            AVATAR    ：
-            COMPANY   ：
-            DEPARTMENT：
-            GROUP     ：
-            PHONE     ：
-            }
-    }
-账户的同事列表{
-    TYPE：_INITIALIZE_COLLEAGUE_LIST
-    DATA:{
-        DEPARTMENTS：[
-                    { DEPARTMENTNAME：
-                      GROUPS:[
-                                {   GROUPNAME:
-                                    EMPLOYEES:[     {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:}
-                                              ]
-                                }
-                                {   GROUPNAME:
-                                    EMPLOYEES:[     {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:}
-                                              ]
-                                }
-                             ]
-                    }
-                    { DEPARTMENTNAME：
-                      GROUPS:[
-                                {   GROUPNAME:
-                                    EMPLOYEES:[     {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:}
-                                              ]
-                                }
-                                {   GROUPNAME:
-                                    EMPLOYEES:[     {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:}
-                                              ]
-                                }
-                                {   GROUPNAME:
-                                    EMPLOYEES:[     {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:"0"/"1"},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:},
-                                                    {REALNAME:  XX,     AVATAR：XX，    EMAIL：liannaxu07@gmail.com, STATE:}
-                                              ]
-                                }
-                             ]
-                    }
-                    ]
-        }
-                    
-              
 
-账户的会议邀请列表{
-    TYPE：_INITIALIZE_MEETING_INVITATIONS_LIST
-    DATA:{
-        INVITATIONS：[
-                    { INITIATOR
-                      ASSISTANT
-                      SPEAKER
-                      DATE
-                      TIME
-<!--                       CATAGRO -->
-                      SUBJECT
-<!--                       MEETINGNAME -->
-<!--                       OWNUNIT -->
-                      MEETINGSCALE
-                      PREDICTEDDURATION
-                      MEETINGSTATE
-                      REMARK
-                    }
-                    { INITIATOR
-                      ASSISTANT
-                      SPEAKER
-                      DATE
-                      TIME
-<!--                       CATAGRO -->
-                      SUBJECT
-<!--                       MEETINGNAME -->
-<!--                       OWNUNIT -->
-                      MEETINGSCALE
-                      PREDICTEDDURATION
-                      MEETINGSTATE
-                      REMARK
-                    }
-                    ]
-        }
-                    
+# 由服务端发送     
 账户的会议提醒列表{
     TYPE：_INITIALIZE_MEETING_REMINDERS_LIST
     DATA:{
@@ -348,47 +159,117 @@ jrtp解压缩
                     }
                     ]
         }
-账户的会议列表{
-    TYPE： _INITIALIZE_MEETINGS_LIST
-    DATA：{
-        MEETINGS：[
-                    { 
-<!--                       INITIATOR -->
-                      MEETINGID
-                      ASSISTANT
-                      SPEAKER
-                      DATE
-                      TIME
-                      CATEGORY
-                      SUBJECT
-<!--                       MEETINGNAME -->
-<!--                       OWNUNIT -->
-                      MEETINGSCALE
-                      PREDICTEDDURATION
-                      MEETINGSTATE
-                      REMARK
-                    }
-                    { 
-<!--                       INITIATOR -->
-                      ASSISTANT
-                      SPEAKER
-                      DATE
-                      TIME
-                      CATEGORY
-                      SUBJECT
-<!--                       MEETINGNAME -->
-<!--                       OWNUNIT -->
-                      MEETINGSCALE
-                      PREDICTEDDURATION
-                      MEETINGSTATE
-                      REMARK
-                    }
-                    ]
+
+-----clinet
+    boost::array<char,LENGTH> m_udpRecvBuf;//接收数据缓冲区。
+
+void VideoConferencingClient::udpRecvMessage()
+{
+    io_service io;
+
+    ip::udp::endpoint m_udpEP(ip::udp::v4(),2444);
+    ip::udp::socket m_sockUdp(io,m_udpEP);
+    //ip::udp::socket m_sockUdp(m_io,m_udpEP);
+
+    m_sockUdp.set_option(ip::udp::socket::reuse_address(true));
+
+    while (true) 
+    {
+        for(int i = 0;i != BUFFER_LENGTH;i++) 
+            m_udpRecvBuf[i] = '\0';
+        
+        size_t readSize = 0;
+        while(readSize == 0) 
+            readSize = m_sockUdp.receive_from(buffer(m_udpRecvBuf),m_udpEP);
+        
+        string receiveStr = "";
+        for(int i = 0;i != readSize;i++)
+            if(m_udpRecvBuf[i] != '\0')
+                receiveStr.push_back(m_udpRecvBuf[i]);
+        onlineStrResultAnalysis(receiveStr);
     }
-发起会议结果{
-    TYPE： _LAUNCH_MEETING_RESULT
-    DATA：{
-        MEETINGID
-        RESULT：0/1
-        }
-    }          
+}
+
+
+void VideoConferencingClient::threadUdpReceive()
+{
+    boost::thread thread(boost::bind(&VideoConferencingClient::udpRecvMessage,this));
+    thread.detach();
+}
+
+void VideoConferencingClient::onlineStrResultAnalysis(string str)
+{
+    cout << "待分析语句：" << str << endl;
+    QJsonObject qo = stringToQJsonObject(str);
+    string type = qo["TYPE"].toString().toStdString();
+
+    if (type == "_INITIALIZE_MEETING_INVITATIONS_LIST")
+    {
+        handleInitMeetingInvitionsListResult(qo);
+        cout << "initNotificationMessage" << endl;
+        emit m_employee->loginSucceeded("NotificationMessage");
+        requestMeetingList(m_employee->userID().toStdString());
+    }
+    else if (type == "_START_MEETING")
+    {
+    }
+    else if (type == "_STOP_MEETING")
+    {
+    }
+}
+
+void VideoConferencingClient::tcpRecvOnlineMessage()
+{
+    io_service io;
+
+    ip::tcp::endpoint m_tcpEP(ip::tcp::v4(),2444);
+    ip::tcp::socket m_sockTcp(io,m_tcpEP);
+    //ip::tcp::socket m_sockTcp(m_io,m_tcpEP);
+
+    m_sockTcp.set_option(ip::tcp::socket::reuse_address(true));
+
+    while (true) 
+    {
+        for(int i = 0;i != BUFFER_LENGTH;i++) 
+            m_tcpRecvBuf[i] = '\0';
+        
+        size_t readSize = 0;
+        while(readSize == 0) 
+            readSize = m_sockTcp.receive(buffer(m_tcpRecvBuf));
+        
+        string receiveStr = "";
+        for(int i = 0;i != readSize;i++)
+            if(m_tcpRecvBuf[i] != '\0')
+                receiveStr.push_back(m_udpRecvBuf[i]);
+        onlineStrResultAnalysis(receiveStr);
+    }
+}
+
+
+void VideoConferencingClient::threadTcpOnlineReceive()
+{
+    boost::thread thread(boost::bind(&VideoConferencingClient::tcpRecvOnlineMessage,this));
+    thread.detach();
+}
+
+
+io_service m_io;
+ip::tcp::acceptor m_acceptor;
+m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333))
+
+void VideoConferencingClient::threadTcpAcceptOnlineReceive()
+{
+    boost::thread thread(boost::bind(&VideoConferencingClient::tcpAcceptOnlineMessage,this));
+    thread.detach();
+}
+void VideoConferencingServer::accept()
+{
+    ////tcp::socket socket(io_service);
+    //sock_ptr sock(new socket_type(m_io));
+    //boost::asio::ip::tcp::endpoint send_ep(boost::asio::ip::address::from_string(ip), 2444);
+    //m_acceptor.accept(*sock,boost::bind(, send_ep);
+}
+
+client->threadUdpReceive();
+client->threadTcpOnlineReceive();
+client->threadTcpAcceptOnlineReceive();

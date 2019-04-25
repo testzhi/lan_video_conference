@@ -35,7 +35,7 @@ void DataBaseBroker::closeMySQL()
 bool DataBaseBroker::createTables()
 {
     string employees = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`EmployeesTable` ("
-                       "`USERID` CHAR(7) NOT NULL,"
+                       "`USERID` VARCHAR(7) NOT NULL,"
                        "`PASSWD` CHAR(20) NOT NULL,"
                        "`REALNAME` VARCHAR(10) NOT NULL,"
                        "`EMAIL` VARCHAR(20) NOT NULL,"
@@ -145,6 +145,7 @@ int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, strin
         return 0;
     }
     delete [] cmd;
+    cout << "用户插入成功"<<endl;
     return 1;
 }
 int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, string userName, string email, string groupName, string departmentName, string companyName, string phone, string ip)
@@ -170,6 +171,7 @@ int DataBaseBroker::insertIntoTableEmployees(string userid, string passwd, strin
         return 0;
     }
     delete [] cmd;
+    cout << "用户插入成功"<<endl;
     return 1;
 }
 //正式版本
@@ -196,6 +198,7 @@ int DataBaseBroker::insertIntoTableEmployees(std::string userid, std::string pas
         return 0;
     }
     delete [] cmd;
+    cout << "用户插入成功"<<endl;
     return 1;
 }
 
@@ -219,6 +222,7 @@ unsigned long long DataBaseBroker::insertIntoTableMeetings(std::string assistant
     }
     result = mysql_store_result(mysqlInstance);
     auto row = mysql_num_rows(result);
+    cout << "会议插入成功"<<endl;
     return row;
 }
 
@@ -233,6 +237,7 @@ int DataBaseBroker::insertIntoTableAttendees(std::string meetingId, std::string 
         return 0;
     }
     delete [] cmd;
+    cout << "参会人员插入成功"<<endl;
     return 1;
 }
 
@@ -247,6 +252,7 @@ int DataBaseBroker::insertIntoTableAttendees(std::string meetingId, std::string 
         return 0;
     }
     delete [] cmd;
+    cout << "参会人员插入成功"<<endl;
     return 1;
 }
 
@@ -261,6 +267,7 @@ int DataBaseBroker::insertIntoTableNotifications(std::string notifiedID, std::st
         return 0;
     }
     delete [] cmd;
+    cout << "参会人员参会邀请成功"<<endl;
     return 1;
 }
 
@@ -343,7 +350,6 @@ int DataBaseBroker::queryEmployeeInfoByEmailID(std::string emailID, std::vector<
         else
             data.push_back("");
 
-        cout<< line2[1] << " " << line3[1] << " " << line4[1] <<"" <<endl;
         return 1;
     }
 }
@@ -377,7 +383,30 @@ int DataBaseBroker::queryResultForLogin(std::string emailID, std::vector<std::st
             data.push_back("");
     }
 
-    cout<<"query succeed"<<endl;
+    return 1;
+}
+
+int DataBaseBroker::queryIpByUserID(std::string userID, int state, std::string &Ip)
+{
+    char *cmd = new char[150];
+    sprintf(cmd, "select `IP` from EmployeesTable where USERID = '%s' and STATE = '%d';", userID.c_str(), state);
+
+    if(!query(cmd))
+    {
+        delete [] cmd;
+        return -1;
+    }
+    result = mysql_store_result(mysqlInstance);
+    delete [] cmd;
+    auto row = mysql_num_rows(result);
+    if(row == 0) return 0;
+
+    MYSQL_ROW line = mysql_fetch_row(result);
+    if(line[0])
+        Ip = line[0];
+    else
+        Ip = "";
+
     return 1;
 }
 int DataBaseBroker::queryCompanyOfEmployeeID(std::string id, std::string &comid)
@@ -473,7 +502,7 @@ unsigned long long DataBaseBroker::queryColleagueInfoByGroupID(std::string group
     unsigned int field = mysql_num_fields(result);
 
 
-    MYSQL_ROW line=nullptr;
+    MYSQL_ROW line = nullptr;
     line = mysql_fetch_row(result);
     while(nullptr!=line)
     {
@@ -519,34 +548,10 @@ unsigned long long DataBaseBroker::queryMeetingOfInvitionInfo(std::string meetin
     return row;
 }
 
-unsigned long long DataBaseBroker::queryMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds)
+unsigned long long DataBaseBroker::queryMeetingNOTENDByMeetingID(std::string meetingID, int meetingState, std::vector<std::string> &data)
 {
     char *cmd = new char[150];
-    sprintf(cmd, "select `MEETINGID` from AttendeesTable where `ATTENDEEID` = '%s';", emailID.c_str());
-    if(!query(cmd))
-    {
-        delete [] cmd;
-        return 0;
-    }
-    result = mysql_store_result(mysqlInstance);
-    auto row = mysql_num_rows(result);
-    delete [] cmd;
-    if(row == 0) return 0;
-    for (unsigned long long i = 0; i != row; ++i)
-    {
-         MYSQL_ROW line = mysql_fetch_row(result);
-
-        if(line[0])
-            meetingIds.push_back(line[0]);
-        else
-            meetingIds.push_back("");
-    }
-    return row;
-}
-unsigned long long DataBaseBroker::queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string> &data)
-{
-    char *cmd = new char[150];
-    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s';", meetingID.c_str());
+    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s' and `MEETINGSTATE` is not '%d';", meetingID.c_str(), meetingState);
     if(!query(cmd))
     {
         delete [] cmd;
@@ -569,6 +574,72 @@ unsigned long long DataBaseBroker::queryMeetingDetailsOnlyByMeetingID(std::strin
     return row;
 }
 
+unsigned long long DataBaseBroker::queryMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds)
+{
+    char *cmd = new char[150];
+    sprintf(cmd, "select `MEETINGID` from AttendeesTable where `ATTENDEEID` = '%s'  and `ATTENDSTATE` = '1';", emailID.c_str());
+    if(!query(cmd))
+    {
+        delete [] cmd;
+        return 0;
+    }
+    result = mysql_store_result(mysqlInstance);
+    auto row = mysql_num_rows(result);
+    delete [] cmd;
+    if(row == 0) return 0;
+    for (unsigned long long i = 0; i != row; ++i)
+    {
+        MYSQL_ROW line = mysql_fetch_row(result);
+
+        if(line[0])
+            meetingIds.push_back(line[0]);
+        else
+            meetingIds.push_back("");
+    }
+    return row;
+}
+int DataBaseBroker::queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string> &data)
+{
+    char *cmd = new char[150];
+    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s';", meetingID.c_str());
+    if(!query(cmd))
+    {
+        delete [] cmd;
+        return 0;
+    }
+    result = mysql_store_result(mysqlInstance);
+    auto row = mysql_num_rows(result);
+    MYSQL_ROW line = mysql_fetch_row(result);
+    delete [] cmd;
+    if(row == 0) return 0;
+    unsigned int field = mysql_num_fields(result);
+    for (unsigned int i = 0; i != field; ++i)
+    {
+
+        if(line[i])
+            data.push_back(line[i]);
+        else
+            data.push_back("");
+    }
+    return 1;
+}
+unsigned long long DataBaseBroker::queryMeetingSubjectByMeetingID(std::string meetingID, std::string &data)
+{
+    char *cmd = new char[150];
+    sprintf(cmd, "select `SUBJECT` from MeetingsTable where `MEETINGID` = '%s';", meetingID.c_str());
+    if(!query(cmd))
+    {
+        delete [] cmd;
+        return 0;
+    }
+    result = mysql_store_result(mysqlInstance);
+    auto row = mysql_num_rows(result);
+    MYSQL_ROW line = mysql_fetch_row(result);
+    delete [] cmd;
+    if(row == 0) return 0;
+    data = line[0];
+    return row;
+}
 
 
 
@@ -606,7 +677,7 @@ bool DataBaseBroker::updateStateByEmaiID(std::string emailID, int state, std::st
 bool DataBaseBroker::updateMeetingStateByMeetingID(std::string meetingID, int state)
 {
     char *cmd = new char[150];
-     sprintf(cmd, "update MeetingsTable set `MEETINGSTATE` = '%d' where `MEETINGID` = '%s';", state, meetingID.c_str());
+    sprintf(cmd, "update MeetingsTable set `MEETINGSTATE` = '%d' where `MEETINGID` = '%s';", state, meetingID.c_str());
     if(!query(cmd))
     {
         delete [] cmd;
@@ -620,7 +691,7 @@ bool DataBaseBroker::updateMeetingStateByMeetingID(std::string meetingID, int st
 bool DataBaseBroker::updateAttendeeByMeetingIDAndAttendeeID(std::string meetingid, std::string attendeeid, int state, std::string remark)
 {
     char *cmd = new char[150];
-     sprintf(cmd, "update AttendeesTable set `ATTENDSTATE` = '%d', `REMARK` = '%s' where `MEETINGID` = '%s' and `ATTENDEEID` = '%s';", state, remark.c_str(), meetingid.c_str(), attendeeid.c_str());
+    sprintf(cmd, "update AttendeesTable set `ATTENDSTATE` = '%d', `REMARK` = '%s' where `MEETINGID` = '%s' and `ATTENDEEID` = '%s';", state, remark.c_str(), meetingid.c_str(), attendeeid.c_str());
     if(!query(cmd))
     {
         delete [] cmd;
@@ -634,7 +705,7 @@ bool DataBaseBroker::updateAttendeeByMeetingIDAndAttendeeID(std::string meetingi
 bool DataBaseBroker::updateNotificationsState(std::string notifiedID, std::string meetingid, int state)
 {
     char *cmd = new char[150];
-     sprintf(cmd, "update NotificationsTable set `STATE` = '%d' where `MEETINGID` = '%s' and `NOTIFIEDID` = '%s';", state, meetingid.c_str(), notifiedID.c_str());
+    sprintf(cmd, "update NotificationsTable set `STATE` = '%d' where `MEETINGID` = '%s' and `NOTIFIEDID` = '%s';", state, meetingid.c_str(), notifiedID.c_str());
     if(!query(cmd))
     {
         delete [] cmd;
@@ -643,6 +714,20 @@ bool DataBaseBroker::updateNotificationsState(std::string notifiedID, std::strin
     delete [] cmd;
     cout << "会议状态修改成功" << endl;
     return true;
+}
+
+void DataBaseBroker::deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID)
+{
+
+    char *cmd = new char[200];
+    sprintf(cmd, "delete from NotificationsTable where `NOTIFIEDID` = '%s' and `MEETINGID` = '%s';", userID.c_str(), meetingID.c_str() );
+
+    if(!query(cmd))
+    {
+        delete [] cmd;
+    }
+    delete [] cmd;
+    cout << "删除通知成功"<<endl;
 }
 
 
@@ -877,10 +962,10 @@ unsigned long long DataBaseBroker::queryInvitations(std::string emailID, int cat
         for(unsigned int j = 0; j != field; j++)
         {
             if(line[j])
-            {
-                cout << line[i] << endl;
+                //            {
+                //                cout << line[i] << endl;
                 linedata.push_back(line[j]);
-            }
+            //            }
             else
                 linedata.push_back("");
         }
@@ -953,47 +1038,5 @@ bool DataBaseBroker::query(const string &querystr)
     if(0 == mysql_real_query(mysqlInstance, cmd, strlen(cmd)))
         return true;
     errorIntoMySQL();
-    return false;
-}
-bool DataBaseBroker::getDatafromDB(string queryStr, std::vector<std::vector<string> > &data, int &row)
-{
-    if(!query(queryStr))
-        return false;
-    result=mysql_store_result(mysqlInstance);
-
-    row = mysql_num_rows(result);
-    unsigned int field = mysql_num_fields(result);
-
-    MYSQL_ROW line=nullptr;
-    line=mysql_fetch_row(result);
-
-    cout<<"----line "<<row<<" "<<field<<endl;
-    while(nullptr!=line)
-    {
-        vector<string> linedata;
-        for(unsigned int i = 0; i < field;i++)
-        {
-            if(line[i])
-            {
-                std::cout << line[i] << "  ";
-                linedata.push_back(line[i]);
-            }
-            else
-            {
-                linedata.push_back("");
-            }
-        }
-        line=mysql_fetch_row(result);
-        data.push_back(linedata);
-    }
-    return true;
-}
-bool DataBaseBroker::isSameString(string userID_fk, string friendID_fk)
-{
-    if(userID_fk== friendID_fk)
-    {
-        cout << "the same parameter " << endl;
-        return true;
-    }
     return false;
 }
