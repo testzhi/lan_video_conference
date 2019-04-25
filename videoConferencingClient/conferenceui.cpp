@@ -49,6 +49,11 @@ void ConferenceUI::getLaunchMeetingMessage(QString speaker, QString date, QStrin
     m_videoConferencing->requestLaunchMeeting(m_employee->userID().toStdString(),m_employee->userID().toStdString(),speaker.toStdString(),date.toStdString(),time.toStdString(),category.toStdString(),subject.toStdString(),scale.toStdString(),dura.toStdString(),remark.toStdString(),atts);
 }
 
+void ConferenceUI::getReplyMeetingInvitation(QString result, QString meetingID, QString cause)
+{
+    m_videoConferencing->requestReplyMeetingInvitation(m_employee->userID().toStdString(),result.toStdString(),meetingID.toStdString(),cause.toStdString());
+}
+
 VideoConferencingClient *ConferenceUI::getVideoConferencing() const
 {
     return m_videoConferencing;

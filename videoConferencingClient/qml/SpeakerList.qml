@@ -89,9 +89,11 @@ Rectangle {
         Connections {
             target: conferenceUI.employee
             onLoginSucceeded: {
-                console.log("speaker init company message")
-                initListChoose()
-                refresh()
+                if (type === "CompanyMessage") {
+                    console.log("speaker init company message")
+                    initListChoose()
+                    refresh()
+                }
             }
         }
 

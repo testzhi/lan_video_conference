@@ -6,13 +6,23 @@ Item {
     anchors.fill: parent
     property var notificationMessage: []
     property var notificationCategory: []
+    property var meetingID: []
+    property var currentMeetingIndex
 
     property Notification not
     function initNotification() {
+        while (notificationMessage.length != 0) {
+            notificationCategory.pop()
+            notificationMessage.pop()
+            meetingID.pop()
+        }
+
+        //        notificationMessage.length = notificationCategory.length = meetingID.length = 0
         for (var i = 0; i !== conferenceUI.employee.notificationCount(); i++) {
             not = conferenceUI.employee.getNotification(i)
             notificationMessage[i] = not.notificationMessage
             notificationCategory[i] = not.notificationCategory
+            meetingID[i] = not.meetingID
         }
     }
 
@@ -24,8 +34,14 @@ Item {
     Connections {
         target: conferenceUI.employee
         onLoginSucceeded: {
-            initNotification()
-            notificationLoader.sourceComponent = notificationComponent
+            if (type === "NotificationMessage") {
+
+                initNotification()
+                console.log("refresh notification  ",
+                            notificationMessage.length)
+                notificationLoader.sourceComponent = null
+                notificationLoader.sourceComponent = notificationComponent
+            }
         }
     }
 
@@ -69,12 +85,17 @@ Item {
                             spacing: 10
                             Button {
                                 text: "同意"
+                                onClicked: {
+                                    conferenceUI.getReplyMeetingInvitation(
+                                                "1", meetingID[index], "")
+                                }
                             }
                             Button {
                                 text: "拒绝"
                                 onClicked: {
+                                    currentMeetingIndex = index
                                     refuse.visible = true
-                                    notificationList.opacity = 0.5
+                                    notificationLoader.opacity = 0.1
                                 }
                             }
                         }
@@ -132,7 +153,10 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     if (refuseText.text.length !== 0) {
-                        notificationList.opacity = 1
+                        conferenceUI.getReplyMeetingInvitation(
+                                    "0", meetingID[currentMeetingIndex],
+                                    refuseText.text)
+                        notificationLoader.opacity = 1
                         refuse.visible = false
                         mistake.text = ""
                         refuseText.text = ""

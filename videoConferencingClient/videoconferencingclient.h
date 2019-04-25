@@ -8,7 +8,7 @@
 #include <QJsonObject>
 #include "employee.h"
 
-#define BUFFER_LENGTH   1024
+#define BUFFER_LENGTH   2048
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -40,7 +40,7 @@ public:
     void requestMeetingInvitionsList(std::string emaiId);//请求会议被邀请列表
     void requestMeetingList(std::string emailID);//会议列表
     void requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
-    void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);
+    void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);//请求回复会议通知
     void requestStartMeeting(std::string emailid, std::string meetingID);
     void requestStopMeeting(std::string emailid, std::string meetingID);
 
@@ -57,6 +57,7 @@ private:
     void handleInitMeetingInvitionsListResult(QJsonObject qo);
     void handleInitMeetingListResult(QJsonObject qo);
     void handleReplyLaunchMeetingResult(QJsonObject qo, QString &err);
+    void handleReplyInvitation(QJsonObject qo);
 
 
 

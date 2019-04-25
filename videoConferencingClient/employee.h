@@ -27,28 +27,6 @@ class Employee:public QObject
     Q_PROPERTY(QQmlListProperty<Notification> notifications READ notifications NOTIFY notificationsChanged)
     Q_PROPERTY(Company* companys READ companys WRITE setCompanys NOTIFY companysChanged)
     Q_CLASSINFO("DefaultProperty", "meetings")
-signals:
-    void userIDChanged();
-    void userPasswordChanged();
-    void stateChanged();
-    void avatarChanged();
-    void companyChanged();
-    void departmentChanged();
-    void realNameChanged();
-    void phoneChanged();
-    void emailChanged();
-    void groupChanged();
-    void meetingsChanged();
-    void notificationsChanged();
-    void companysChanged();
-
-    void registerSuccessfully();//注册成功
-    void emailAlreadyRegistered();//注册失败 之 email已被占用
-    void loginSucceeded();//登录成功
-    void loginFailed(QString err);
-    void initCompanyMessage();
-    void initNotificationMessage();
-    void initMeetingList();
 public:
     Employee(QObject *parent = 0):QObject(parent){
 //        m_userID = "111";
@@ -102,7 +80,28 @@ public:
     QList<Notification *> getNotifications() const;
     void setNotifications(const QList<Notification *> &notifications);
     void setMeetings(const QList<Meeting *> &meetings);
+signals:
+    void userIDChanged();
+    void userPasswordChanged();
+    void stateChanged();
+    void avatarChanged();
+    void companyChanged();
+    void departmentChanged();
+    void realNameChanged();
+    void phoneChanged();
+    void emailChanged();
+    void groupChanged();
+    void meetingsChanged();
+    void notificationsChanged();
+    void companysChanged();
 
+    void registerSuccessfully();//注册成功
+    void emailAlreadyRegistered();//注册失败 之 email已被占用
+    void loginSucceeded(QString type);//登录成功
+    void loginFailed(QString err);
+    void initCompanyMessage();
+    void initNotificationMessage();
+    void initMeetingList();
 private:
     QString m_userID;
     QString m_userPassword;

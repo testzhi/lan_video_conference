@@ -37,6 +37,19 @@ Rectangle {
     property Department dep
     property Group gro
     property ConciseEmployee emp
+    function refreshChoose() {
+        companySelect = listAllNotChoose
+        for (var i = 0; i != departmentSelect.length; i++) {
+            departmentSelect[i] = listAllNotChoose
+        }
+        for (i = 0; i != groupSelect.length; i++) {
+            groupSelect[i] = listAllNotChoose
+        }
+        for (i = 0; i != employeeSelect.length; i++) {
+            employeeSelect[i] = false
+        }
+    }
+
     function initListChoose() {
         companyName = conferenceUI.employee.companys.companyName
         companySelect = listAllNotChoose
@@ -93,9 +106,11 @@ Rectangle {
         Connections {
             target: conferenceUI.employee
             onLoginSucceeded: {
-                console.log("attendee init company message")
-                initListChoose()
-                refresh()
+                if (type === "CompanyMessage") {
+                    console.log("attendee init company message")
+                    initListChoose()
+                    refresh()
+                }
             }
         }
 

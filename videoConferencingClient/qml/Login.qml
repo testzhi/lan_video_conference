@@ -76,8 +76,10 @@ Item {
         }
         onLoginSucceeded: {
             //            conferenceUI.setEmployee(conference.employee)
-            login()
-            account.text = loginPassword.text = ""
+            if (type === "LoginSucceed") {
+                login()
+                account.text = loginPassword.text = ""
+            }
         }
     }
 

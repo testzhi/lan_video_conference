@@ -60,7 +60,7 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
         if(registerResult == -1)
         {
             qDebug() << "注册失败： " << err;
-            m_employee->emailAlreadyRegistered();
+            emit m_employee->emailAlreadyRegistered();
         }else if (registerResult == 1)
             m_employee->registerSuccessfully();
     }
@@ -70,10 +70,10 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
         cout << "loginResult  " << loginResult << endl;
         if(loginResult != 1) {
             qDebug() << "登录失败： " << err;
-            m_employee->loginFailed(err);
+            emit m_employee->loginFailed(err);
         }else {
             requestAccountDetail(m_employee->userID().toStdString());
-            m_employee->loginSucceeded();
+            emit m_employee->loginSucceeded("LoginSucceed");
         }
     }
     else if (type == "_INITIALIZE_ACCOUNT_DETAIL")
@@ -100,25 +100,38 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
             }
         }
         requestMeetingInvitionsList(m_employee->userID().toStdString());
+        cout << "initCompanyMessage" << endl;
+        emit m_employee->loginSucceeded("CompanyMessage");
 
     }
     else if (type == "_INITIALIZE_MEETING_INVITATIONS_LIST")
     {
         handleInitMeetingInvitionsListResult(qo);
-//        m_employee->initNotificationMessage();
+        cout << "initNotificationMessage" << endl;
+        emit m_employee->loginSucceeded("NotificationMessage");
         requestMeetingList(m_employee->userID().toStdString());
     }
     else if (type == "_INITIALIZE_MEETINGS_LIST")
     {
         handleInitMeetingListResult(qo);
-//        m_employee->initMeetingList();
-         m_employee->loginSucceeded();
+        cout << "initMeetingMessage" << endl;
+        emit m_employee->loginSucceeded("MeetingMessage");
     }
     else if (type == "_LAUNCH_MEETING_RESULT")
     {
         QString err;
         handleReplyLaunchMeetingResult(qo, err);
-         m_employee->loginSucceeded();
+        if(err.length() == 0) {
+            emit m_employee->loginSucceeded("PublishSucceed");
+            emit m_employee->loginSucceeded("MeetingMessage");
+        }
+        else emit m_employee->loginSucceeded(err);
+
+    }
+    else if (type == "_REPLY_INVITATION")
+    {
+        handleReplyInvitation(qo);
+        emit m_employee->loginSucceeded("MeetingMessage");
     }
 }
 
@@ -186,6 +199,21 @@ void VideoConferencingClient::requestMeetingList(std::string emailID)
 
 void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees)
 {
+    Meeting *meeting = new Meeting();
+    meeting->setDate(QString::fromStdString(date));
+    meeting->setTime(QString::fromStdString(time));
+    meeting->setScale(QString::fromStdString(scale));
+    meeting->setState(QString::fromStdString("0"));
+    meeting->setTheme(QString::fromStdString(subject));
+    meeting->setSpeaker(QString::fromStdString(speaker));
+    meeting->setCategory(QString::fromStdString(category));
+    meeting->setDuration(QString::fromStdString(dura));
+    meeting->setInitiator(QString::fromStdString(assistant));
+//    meeting->setMeetingID(meetingID);
+    meeting->setRemark(QString::fromStdString(remark));
+    mee.append(meeting);
+//    m_employee->setMeetings(&mee);
+    cout << "mee length  " << mee.count() << endl;
     string sendMessage = requestLaunchMeetingToString(emailid, assistant, speaker, date, time, category, subject, scale, dura, remark, attendees);
     cout << "请求发起会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -193,6 +221,16 @@ void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::str
 
 void VideoConferencingClient::requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause)
 {
+    QList<Notification *> notification;
+    for(int i = 0;i != noti.count();i++) {
+        if(noti.at(i)->meetingID() != QString::fromStdString(meetingID))
+            notification.append(noti.at(i));
+    }
+    noti = notification;
+    cout << "noti length  "<< noti.count() << endl;
+    m_employee->setNotifications(noti);
+    cout << "noti length  "<< m_employee->notificationCount() << endl;
+     emit m_employee->loginSucceeded("NotificationMessage");
     string sendMessage = requestReplyMeetingToString(emailid, result, meetingID, cause);
     cout << "请求回复通知："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -369,15 +407,48 @@ void VideoConferencingClient::handleInitMeetingListResult(QJsonObject qo)
         }
     }
     m_employee->setMeetings(mee);
+    m_employee->sortMeeting();
 }
 
 void VideoConferencingClient::handleReplyLaunchMeetingResult(QJsonObject qo, QString &err)
 {
-//    err.clear();
-//    QString qs = qo.value("DATA")["RESULT"].toString();
-//    result = qs.toInt();
-//    err = qo.value("DATA")["ERROR"].toString();
-//    QString meetingid = qo.value("DATA")["MEETINGID"].toString();
+    err.clear();
+    QString qs = qo.value("DATA")["RESULT"].toString();
+    err = qo.value("DATA")["ERROR"].toString();
+    QString meetingid = qo.value("DATA")["MEETINGID"].toString();
+    mee.at(mee.count() - 1)->setMeetingID(meetingid);
+    m_employee->setMeetings(mee);
+    m_employee->sortMeeting();
+}
+
+void VideoConferencingClient::handleReplyInvitation(QJsonObject qo)
+{
+    QString meetingID = qo.value("DATA")["MEETINGID"].toString();
+    QString assistant = qo.value("DATA")["ASSISTANT"].toString();
+    QString speaker = qo.value("DATA")["SPEAKER"].toString();
+    QString date = qo.value("DATA")["DATE"].toString();
+    QString time = qo.value("DATA")["TIME"].toString();
+    QString subject = qo.value("DATA")["SUBJECT"].toString();
+    QString scale = qo.value("DATA")["MEETINGSCALE"].toString();
+    QString category = qo.value("DATA")["CATEGORY"].toString();
+    QString preDuration = qo.value("DATA")["PREDICTEDDURATION"].toString();
+    QString state = qo.value("DATA")["MEETINGSTATE"].toString();
+    QString remark = qo.value("DATA")["REMARK"].toString();
+
+    Meeting *meeting = new Meeting();
+    meeting->setDate(date);
+    meeting->setTime(time);
+    meeting->setScale(scale);
+    meeting->setState(state);
+    meeting->setTheme(subject);
+    meeting->setSpeaker(speaker);
+    meeting->setCategory(category);
+    meeting->setDuration(preDuration);
+    meeting->setInitiator(assistant);
+    meeting->setMeetingID(meetingID);
+    meeting->setRemark(remark);
+    mee.append(meeting);
+    m_employee->setMeetings(mee);
 }
 
 
