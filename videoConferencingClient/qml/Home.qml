@@ -4,7 +4,8 @@ import QtGraphicalEffects 1.12
 
 Item {
     anchors.fill: parent
-    signal exit()
+    signal exit
+    property var newMessage: [false, false, false, false]
     Column {
         id: mainPage
         Rectangle {
@@ -68,46 +69,85 @@ Item {
         }
 
         Row {
-            Rectangle {
+
+            Loader {
+                id: buttonListLoader
                 height: mainWindow.height * 0.88
                 width: mainWindow.width * 0.15
-                color: "white"
-                Column {
-                    id: tabbarColumn
-                    anchors.fill: parent
-                    spacing: parent.height * 0.05
-                    Repeater {
-                        model: ["会议列表", "会议发布", "通知", "个人资料"]
-                        Button {
-                            width: tabbarColumn.width
-                            height: tabbarColumn.height * 0.85 / 4
-                            Text {
-                                text: qsTr(modelData)
-                                //                                font.pointSize: 50
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                            onClicked: {
-                                if (index === 0) {
-                                    meetingList.visible = true
-                                    publishMeeting.visible = false
-                                    notification.visible = false
-                                    personalData.visible = false
-                                } else if (index === 1) {
-                                    meetingList.visible = false
-                                    publishMeeting.visible = true
-                                    notification.visible = false
-                                    personalData.visible = false
-                                } else if (index === 2) {
-                                    meetingList.visible = false
-                                    publishMeeting.visible = false
-                                    notification.visible = true
-                                    personalData.visible = false
-                                } else if (index === 3) {
-                                    meetingList.visible = false
-                                    publishMeeting.visible = false
-                                    notification.visible = false
-                                    personalData.visible = true
+                sourceComponent: buttonListComponent
+            }
+            Connections {
+                target: conferenceUI.employee
+                onLoginSucceeded: {
+                    if (type === "MeetingListRefresh") {
+                        home.newMessage[0] = true
+                    } else if (type === "NotificationListRefresh") {
+                        home.newMessage[2] = true
+                    }
+                    buttonListLoader.sourceComponent = null
+                    buttonListLoader.sourceComponent = buttonListComponent
+                }
+            }
+
+            Component {
+                id: buttonListComponent
+                Rectangle {
+                    height: mainWindow.height * 0.88
+                    width: mainWindow.width * 0.15
+                    color: "white"
+                    Column {
+                        id: tabbarColumn
+                        anchors.fill: parent
+                        spacing: parent.height * 0.05
+                        Repeater {
+                            model: ["会议列表", "会议发布", "通知", "个人资料"]
+                            Button {
+                                width: tabbarColumn.width
+                                height: tabbarColumn.height * 0.85 / 4
+                                Text {
+                                    text: qsTr(modelData)
+                                    //                                font.pointSize: 50
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Rectangle {
+                                    width: 10
+                                    height: 10
+                                    radius: width / 2
+                                    color: "red"
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    //                                anchors.top: parent.top
+                                    //                                anchors.topMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: newMessage[index]
+                                }
+
+                                onClicked: {
+                                    if (index === 0) {
+                                        meetingList.visible = true
+                                        publishMeeting.visible = false
+                                        notification.visible = false
+                                        personalData.visible = false
+                                    } else if (index === 1) {
+                                        meetingList.visible = false
+                                        publishMeeting.visible = true
+                                        notification.visible = false
+                                        personalData.visible = false
+                                    } else if (index === 2) {
+                                        meetingList.visible = false
+                                        publishMeeting.visible = false
+                                        notification.visible = true
+                                        personalData.visible = false
+                                    } else if (index === 3) {
+                                        meetingList.visible = false
+                                        publishMeeting.visible = false
+                                        notification.visible = false
+                                        personalData.visible = true
+                                    }
+                                    home.newMessage[index] = false
+                                    buttonListLoader.sourceComponent = null
+                                    buttonListLoader.sourceComponent = buttonListComponent
                                 }
                             }
                         }

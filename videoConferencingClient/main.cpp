@@ -81,6 +81,9 @@ int main(int argc, char *argv[])
     conferenceUI.setEmployee(&employee);
     VideoConferencingClient *client = new VideoConferencingClient();
     client->threadTcpReceive();
+    client->threadUdpOnlineReceive();
+
+
     conferenceUI.setVideoConferencing(client);
     conferenceUI.getVideoConferencing()->setEmployee(conferenceUI.employee());
 //    conferenceUI.getVideoConferencing()->setCompany(conferenceUI.company());

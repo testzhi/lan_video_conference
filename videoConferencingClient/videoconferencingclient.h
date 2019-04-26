@@ -8,7 +8,8 @@
 #include <QJsonObject>
 #include "employee.h"
 
-#define BUFFER_LENGTH   2048
+#define BUFFER_LENGTH_TCP     2048
+#define BUFFER_LENGTH_UDP     1048
 
 using namespace boost::asio;
 using boost::asio::ip::tcp;
@@ -24,6 +25,18 @@ public:
     void threadTcpReceive();//TCP-接收 线程
     void tcpReceiveMessage();//TCP-接收数据
     void tcpStrResultAnalysis(std::string str);//TCP-对 接收的数据 的处理
+
+    //TCP--处理在线转发部分
+    void accept(std::string ip);
+    void threadTcpOnlineReceive();
+    void tcpOnlineReceiveMessage();
+    //UDP--处理在线转发部分
+    void threadUdpOnlineReceive();
+    void udpOnlineReceiveMessage();
+    //在线转发数据分析
+    void onlineStrResultAnalysis(std::string str);
+
+
 
     //RTP
     void threadRtpReceive();//RTP-接收 线程
@@ -58,6 +71,10 @@ private:
     void handleInitMeetingListResult(QJsonObject qo);
     void handleReplyLaunchMeetingResult(QJsonObject qo, QString &err);
     void handleReplyInvitation(QJsonObject qo);
+    //处理在线转发
+    void handleOnlineMeetingInvitationResult(QJsonObject qo);//处理发起会议的在线转发
+    void handleOnlineMeetingResult(QJsonObject qo);//针对speaker在线，assistant发起会议，speaker端会议+1
+    void handleOnlineMeetingStateResult(QJsonObject qo);//处理开始、结束会议的在线转发
 
 
 
@@ -68,7 +85,7 @@ private:
     std::string initializeAccountDetailJsonToString(std::string emailId);
     std::string initializeColleagueListToString(std::string emailId);
     std::string initializeMeetingInvitionsListToString(std::string emailid);
-    std::string initializeMeetingListToString(std::string emailID);
+    std::string initializeMeetingsListToString(std::string emailID);
     std::string requestLaunchMeetingToString(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
     std::string requestReplyMeetingToString(std::string emailid, std::string result, std::string meetingID, std::string cause);
     std::string requestStartMeetingToString(std::string emailid, std::string meetingID);
@@ -81,8 +98,13 @@ private:
     io_service m_io;
     tcp::socket m_sockTcp;
     tcp::endpoint m_tcpEP;
-    boost::array<char,BUFFER_LENGTH> m_tcpRecvBuf;//接收数据缓冲区。
-    boost::array<char,BUFFER_LENGTH> m_tcpSendBuf;//接收数据缓冲区。
+
+    boost::array<char,BUFFER_LENGTH_TCP> m_tcpRecvBuf;//接收数据缓冲区。
+    boost::array<char,BUFFER_LENGTH_TCP> m_tcpSendBuf;//接收数据缓冲区。
+
+    boost::array<char,BUFFER_LENGTH_UDP> m_udpRecvBuf;//接收数据缓冲区。
+
+    //    ip::tcp::acceptor m_acceptor;
 
     Employee *m_employee;
     Company com;

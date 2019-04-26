@@ -70,7 +70,7 @@ public:
 
     void insertMeeting(Meeting *meeting);
     void insertNotification(Notification *notification);
-    void sortMeeting();
+    Q_INVOKABLE void sortMeeting();
 
     QQmlListProperty<Notification> notifications();
 

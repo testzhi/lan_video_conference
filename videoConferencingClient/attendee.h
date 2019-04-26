@@ -2,6 +2,9 @@
 #define ATTENDEE_H
 
 #include <string>
+#include <QObject>
+#include <iostream>
+
 extern "C"
 {
 #include <libavcodec/avcodec.h>
@@ -13,18 +16,37 @@ extern "C"
 #include <SDL2/SDL.h>
 };
 
+using std::cout;
+using std::endl;
+
 int sfp_refresh_thread(void *opaque);
 int sdl_play_refresh_thread(void *opaque);
 void fill_audio(void *udata, Uint8 *stream, int len);
 
-class Attendee
+class Attendee:public QObject
 {
 public:
     enum ATTENDEE_KIND{HOST=1, COMMON_ATTENDEE, ASSISTANT};
     enum VIDEO_KIND{CAMERA_VIDEO=1, SCREEN_CAPTURE_VIDEO, FILE_VIDEO};
     enum AUDIO_KIND{RECORD_AUDIO=1, FILE_AUDIO};
 
-    Attendee();
+    Attendee(QObject *parent = 0):QObject(parent){
+        av_register_all();
+        avdevice_register_all();
+        avformat_network_init();
+
+
+
+
+        m_pCameraFrameYUV = av_frame_alloc();
+        m_pScreenCaptureFrameYUV = av_frame_alloc();
+
+        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
+        {
+            cout << "无法初始化SDL - " << SDL_GetError() << endl;
+            exit(0);
+        }
+    }
 
 
     void camera(std::string filePath)
@@ -122,6 +144,10 @@ private:
     //本地录像及录音存储
     FILE *m_fp_yuv_video = nullptr;
     FILE *m_fp_yuv_audio_in = nullptr;
+
+    QString m_userID;
+    QString m_realName;
+//    QString
 };
 
 

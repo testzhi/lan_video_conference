@@ -65,24 +65,6 @@ void fill_audio(void *udata, Uint8 *stream, int len)
     audio_len -= len;
 }
 
-Attendee::Attendee()
-{
-    av_register_all();
-    avdevice_register_all();
-    avformat_network_init();
-
-
-
-
-    m_pCameraFrameYUV = av_frame_alloc();
-    m_pScreenCaptureFrameYUV = av_frame_alloc();
-
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
-    {
-        cout << "无法初始化SDL - " << SDL_GetError() << endl;
-        exit(0);
-    }
-}
 //获取录像 录屏 录音环境
 void Attendee::initScreenCaptureInputSource()
 {

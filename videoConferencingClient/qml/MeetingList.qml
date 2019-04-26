@@ -12,11 +12,15 @@ Item {
     property var speakerName: []
     property var initiatorName: []
     property var initiatorID: []
+    property var meetingState: []
+    property var currentEmployeeID
     property Meeting met
     property Department dep
     property Group gro
-    property Employee emp
+    property ConciseEmployee emp
     function initMeetingMessage() {
+        conferenceUI.employee.sortMeeting()
+        currentEmployeeID = conferenceUI.employee.userID
         console.log("meeting count  ", conferenceUI.employee.meetingCount())
         for (var i = 0; i !== conferenceUI.employee.meetingCount(); i++) {
             met = conferenceUI.employee.getMeeting(i)
@@ -26,6 +30,7 @@ Item {
             category[i] = met.category
             speakerID[i] = met.speaker
             initiatorID[i] = met.initiator
+            meetingState[i] = met.state
         }
         for (var a = 0; a !== speakerID.length; a++) {
 
@@ -36,6 +41,10 @@ Item {
                     gro = dep.getGroup(c)
                     for (var d = 0; d !== gro.conciseEmployeeCount(); d++) {
                         emp = gro.getConciseEmployee(d)
+                        if (emp.userID === speakerID[a])
+                            speakerName[a] = emp.realName
+                        if (emp.userID === initiatorID[a])
+                            initiatorName[a] = emp.realName
                     }
                 }
             }
@@ -76,8 +85,28 @@ Item {
                         anchors.leftMargin: mainWindow.width * 0.01
                         text: {
                             var s = category === 0 ? "讨论会" : "分享会"
-                            return themes[index] + s + "---" + dates[index] + "  " + times[index]
-                                    + "  发起人: " + initiatorID[index] + "  主讲人：" + speakerID[index]
+                            return themes[index] + s + "---" + dates[index] + "  "
+                                    + times[index] + "  发起人: " + initiatorName[index]
+                                    + "  主讲人：" + speakerName[index]
+                        }
+                    }
+                    Row {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        Button {
+                            text: "开始会议"
+                            visible: (currentEmployeeID === initiatorID[index]
+                                      || currentEmployeeID === speakerID[index])
+                                     && meetingState[index] === "0"
+                        }
+                        Button {
+                            visible: meetingState[index] === "1"
+                            text: "加入会议"
+                        }
+                        Button {
+                            text: "记载会议"
+                            visible: meetingState[index] === "2"
                         }
                     }
                 }
