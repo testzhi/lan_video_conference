@@ -19,7 +19,9 @@ public:
     void jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res);
     void jsonStrLaunchMeetingResult(unsigned long long meetingid, std::string &jsonstr);
 
-
+    //online
+    void jsonStrInvitationAddDetail(std::string meetingid, std::string &jsonstr , unsigned long long &res);
+    void jsonStrMeetingAddDetail(std::string meetingid, std::string &jsonstr, int &res);
     DataBaseBroker getDb() const;
 
 private:

@@ -43,7 +43,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     QJsonObject Data = stringToQJsonObject(receive_message);
 
     if(receive_message.length() != 0)
-        cout << "来自客户端的数据：" << receive_message << endl;
+        cout << "#########来自客户端的数据：" << receive_message << endl;
     receive_message.clear();
 
     string type = Data["TYPE"].toString().toStdString();
@@ -95,7 +95,7 @@ void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
     }
     m_sockTcp.send(boost::asio::buffer(msg));
     cout << "～～～～～～" <<"发送完毕" << endl;
-//    m_sockTcp.close();
+    //    m_sockTcp.close();
 }
 
 void VideoConferencingServer::tcpAsyncConnect(std::string ip, std::string msg)
@@ -108,7 +108,7 @@ void VideoConferencingServer::tcpAsyncConnect(std::string ip, std::string msg)
     }
     else {
         cout << "*******" <<"异步发送给" << /*m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
-         m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
+        m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
     }
 }
 void VideoConferencingServer::tcpAsyncConnectionHandler(std::string msg, const boost::system::error_code &ec)
@@ -126,14 +126,14 @@ void VideoConferencingServer::udpSendMessage(std::string ip, std::string msg)
 {
     boost::asio::ip::udp::endpoint send_ep(boost::asio::ip::address::from_string(ip),2444);
 
-    cout  << "-------" << "当前UDP服务端输出：" << msg;
+    cout  << "=========" << "当前UDP服务端输出：" << msg;
     m_sockUdp.async_send_to(boost::asio::buffer(msg), send_ep,
                             boost::bind(&VideoConferencingServer::handleUdpSend, this,
                                         boost::asio::placeholders::error));
 }
 void VideoConferencingServer::handleUdpSend(const boost::system::error_code &ec)
 {
-cout << "=========" <<"UDP发送完毕" << endl;
+    cout << "=========" <<"UDP发送完毕" << endl;
 }
 
 
@@ -172,7 +172,6 @@ void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConf
     {
         dc.getDb().updateStateByEmaiID(emailid, 1, ip);
     }
-    cout << "登录反馈发送前的json str： " << verifyRes <<endl;;
     tcpSendMessage(verifyRes, sock);
 }
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -190,8 +189,7 @@ void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConfere
     string tcpJson, id;
     int res;
     dc.jsonStrAccountDetail(emailID, tcpJson, res);
-    if(res == 1)
-        tcpSendMessage(tcpJson, sock);
+    tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleColleagueList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -201,9 +199,7 @@ void VideoConferencingServer::handleColleagueList(QJsonObject Data, VideoConfere
     string tcpJson, id;
     int res;
     dc.jsonStrColleagueDetail(emailID, tcpJson, res);
-    cout << tcpJson << endl;
-    if(res == 1)
-        tcpSendMessage(tcpJson, sock);
+    tcpSendMessage(tcpJson, sock);
 }
 
 void VideoConferencingServer::handleInvitionsList(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -213,7 +209,6 @@ void VideoConferencingServer::handleInvitionsList(QJsonObject Data, VideoConfere
     string tcpJson;
     unsigned long long res;
     dc.jsonStrInvitationsDetail(emailID, tcpJson, res);
-    cout << tcpJson << endl;
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -224,7 +219,6 @@ void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferenc
     string tcpJson, id;
     unsigned long long res;
     dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
-    cout << tcpJson << endl;
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -248,9 +242,10 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
 
     string tcpJson, id;
     unsigned long long meetingid = dc.getDb().insertIntoTableMeetings(emailID, speaker, date, time, catagro, subject, scale, preDura, remark);
+    string mm = std::to_string(meetingid);
     if(meetingid != 0)
     {
-        string mm = std::to_string(meetingid);
+
         dc.jsonStrLaunchMeetingResult(meetingid, tcpJson);
         dc.getDb().insertIntoTableAttendees(mm, emailID, 1, "");
         //邮件
@@ -265,12 +260,11 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
             if(ss == 1)
             {
                 //若在线 重新发邀请列表json
-                unsigned long long s_res;
+                int s_res;
                 string s_jsonstr;
-                dc.jsonStrInvitationsDetail(emailID, s_jsonstr, s_res);
-                cout << s_jsonstr << endl;
-//                tcpSendTo(sip, s_jsonstr);
-//                tcpAsyncConnect(sip, s_jsonstr);
+                dc.jsonStrMeetingAddDetail(mm, s_jsonstr, s_res);
+                //                tcpSendTo(sip, s_jsonstr);
+                //                tcpAsyncConnect(sip, s_jsonstr);
                 udpSendMessage(sip, s_jsonstr);
 
             }
@@ -296,10 +290,10 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
                     //                //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
                     string atten_invi_jsonstr;
                     unsigned long long atten_invi_res;
-                    dc.jsonStrInvitationsDetail(userid, atten_invi_jsonstr, atten_invi_res);
-                    cout << atten_invi_jsonstr <<endl;
-//                    tcpSendTo(atten_ip, atten_invi_jsonstr);
-//                    tcpAsyncConnect(atten_ip, atten_invi_jsonstr);
+                    dc.jsonStrInvitationAddDetail(mm, atten_invi_jsonstr, atten_invi_res);
+                    //                    cout << atten_invi_jsonstr <<endl;
+                    //                    tcpSendTo(atten_ip, atten_invi_jsonstr);
+                    //                    tcpAsyncConnect(atten_ip, atten_invi_jsonstr);
                     udpSendMessage(atten_ip, atten_invi_jsonstr);
                 }
             }

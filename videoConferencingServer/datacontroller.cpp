@@ -20,7 +20,7 @@ DataController::DataController()
     db.connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
     db.createTables();
 
-////    db.insertIntoTableEmployees("test", "passwd", "TEST测试名", "test@qq.com", "AVATAR", "TESTGROUP", "TESTDEPARTMENT", "Google","phone", "ip");
+//    //    db.insertIntoTableEmployees("test", "passwd", "TEST测试名", "test@qq.com", "AVATAR", "TESTGROUP", "TESTDEPARTMENT", "Google","phone", "ip");
 //    db.insertIntoTableEmployees("5631813", "1717", "Liana",     "563181354@qq.com", "TechGROUP1", "Development", "Google","");
 //    db.insertIntoTableEmployees("563", "1717", "Liana Xu", "5634@qq.com","TechGROUP1", "Development", "Google","");
 //    db.insertIntoTableEmployees("1", "1", "name1", "1@qq.com", "TechGROUP1", "Development", "Google","");
@@ -94,7 +94,6 @@ void DataController::jsonStrCreateRegisteredID(std::string &idJson, string email
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);
     string strJson(byteArray);
     idJson = strJson;
-    cout << strJson << endl;
 }
 
 void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string passwd, std::string &verifyResult, int &result)
@@ -155,7 +154,6 @@ void DataController::jsonStrVerifyAccountResult(std::string emailid, std::string
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);
     string strJson(byteArray);
     verifyResult = strJson;
-    cout << strJson << endl;
 }
 
 void DataController::jsonStrAccountDetail(string emailid, string &jsonstr, int &res)
@@ -179,7 +177,6 @@ void DataController::jsonStrAccountDetail(string emailid, string &jsonstr, int &
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);
     string strJson(byteArray);
     jsonstr = strJson;
-    cout << strJson << endl;
 }
 
 void DataController::jsonStrColleagueDetail(std::string emailid, std::string &jsonstr, int &res)
@@ -282,8 +279,8 @@ void DataController::jsonStrInvitationsDetail(std::string emailid, std::string &
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);
     std::string strJson(byteArray);
     jsonstr = strJson;
-
 }
+
 
 void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res)
 {
@@ -350,6 +347,76 @@ void DataController::jsonStrLaunchMeetingResult(unsigned long long meetingid, st
     QJsonObject json;
     json.insert("DATA", QJsonValue(data));
     json.insert("TYPE", "_LAUNCH_MEETING_RESULT");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+}
+
+void DataController::jsonStrInvitationAddDetail(std::string meetingid, std::string &jsonstr, unsigned long long &res)
+{
+    QJsonObject json;
+    QJsonObject qdata;
+
+    vector<string> data;
+    res = db.queryMeetingOfInvitionInfo(meetingid, data);
+    if(res != 0)
+    {
+        qdata.insert("MEETINGID", data[0].c_str());
+        //            meeting.insert("INITIATOR", data[1].c_str());
+        qdata.insert("ASSISTANT", data[2].c_str());
+        qdata.insert("SPEAKER", data[3].c_str());
+        qdata.insert("DATE", data[4].c_str());
+        qdata.insert("TIME", data[5].c_str());
+        qdata.insert("SUBJECT", data[7].c_str());
+        //            qdata.insert("MEETINGNAME", data[8].c_str());
+        //            qdata.insert("OWNUNIT", data[9].c_str());
+        //                            meeting.insert("MEETINGSCALE", data[10].c_str());
+        //            qdata.insert("PREDICTEDDURATION", data[11].c_str());
+        //            qdata.insert("MEETINGSTATE", data[14].c_str());
+        qdata.insert("REMARK", data[15].c_str());
+    }
+    json.insert("DATA", QJsonValue(qdata));
+    json.insert("TYPE", "_ONLINE_MEETING_INVITATION");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+}
+
+void DataController::jsonStrMeetingAddDetail(std::string meetingid, std::string &jsonstr, int &res)
+{
+    vector<string> meetingIds;
+    QJsonObject qdata;
+
+    vector<string> data;
+    res = db.queryMeetingDetailsOnlyByMeetingID(meetingid, data);
+    if(res > 0)
+    {
+        if(atoi(data[14].c_str()) != 2)//未结束会议
+        {
+            qdata.insert("MEETINGID", data[0].c_str());
+            //                    meeting.insert("INITIATOR", data[1].c_str());
+            qdata.insert("ASSISTANT", data[2].c_str());
+            qdata.insert("SPEAKER", data[3].c_str());
+            qdata.insert("DATE", data[4].c_str());
+            qdata.insert("TIME", data[5].c_str());
+            qdata.insert("CATEGORY", data[6].c_str());
+            qdata.insert("SUBJECT", data[7].c_str());
+            //            meeting.insert("MEETINGNAME", data[8].c_str());
+            //            meeting.insert("OWNUNIT", data[9].c_str());
+            qdata.insert("MEETINGSCALE", data[10].c_str());
+            qdata.insert("PREDICTEDDURATION", data[11].c_str());
+            qdata.insert("MEETINGSTATE", data[14].c_str());
+            qdata.insert("REMARK", data[15].c_str());
+        }
+    }
+
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(qdata));
+    json.insert("TYPE", "_ONLINE_MEETING");
     QJsonDocument document;
     document.setObject(json);
     QByteArray byteArray = document.toJson(QJsonDocument::Compact);

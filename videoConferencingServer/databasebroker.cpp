@@ -374,7 +374,6 @@ int DataBaseBroker::queryResultForLogin(std::string emailID, std::vector<std::st
     MYSQL_ROW line = mysql_fetch_row(result);
     unsigned int field = mysql_num_fields(result);
 
-    cout << line[0] << line[1] <<line[2];
     for(unsigned int i = 0; i != field; ++i)
     {
         if(line[i])
