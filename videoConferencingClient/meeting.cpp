@@ -116,3 +116,41 @@ void Meeting::setRemark(const QString &remark)
 {
     m_remark = remark;
 }
+
+//QQmlListProperty<Attendee> Meeting::attendees()
+//{
+//    return QQmlListProperty<Attendee>(this,nullptr,Meeting::appendAttendee,Meeting::countAttendee,Meeting::atAttendee,Meeting::clearAttendee);
+//}
+
+//void Meeting::appendAttendee(QQmlListProperty<Attendee> *attendees, Attendee *attendee)
+//{
+//    Meeting *meeting = qobject_cast<Meeting *>(attendees->object);
+//    if(attendee) {
+//        attendee->setParent(meeting);
+//        meeting->_attendees.append(attendee);
+//    }
+//}
+
+//int Meeting::countAttendee(QQmlListProperty<Attendee> *attendees)
+//{
+//    Meeting *meeting = qobject_cast<Meeting *>(attendees->object);
+//    if(meeting)
+//        return meeting->_attendees.count();
+//    return 0;
+//}
+
+//Attendee *Meeting::atAttendee(QQmlListProperty<Attendee> *attendees, int i)
+//{
+//    Meeting *meeting = qobject_cast<Meeting *>(attendees->object);
+//    if(meeting)
+//        return meeting->_attendees.at(i);
+//    return nullptr;
+//}
+
+//void Meeting::clearAttendee(QQmlListProperty<Attendee> *attendees)
+//{
+//    Meeting *meeting = qobject_cast<Meeting *>(attendees->object);
+//    if(meeting) {
+//        meeting->_attendees.clear();
+//    }
+//}

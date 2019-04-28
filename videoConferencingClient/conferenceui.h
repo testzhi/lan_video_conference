@@ -25,6 +25,8 @@ public:
     Q_INVOKABLE void getRegisterInformation(QString avator,QString name,QString password,QString company,QString department,QString group,QString phone,QString email);
     Q_INVOKABLE void getLaunchMeetingMessage(QString speaker,QString date,QString time,QString category,QString subject,QString scale,QString dura,QString remark,QList<QString> attendees);
     Q_INVOKABLE void getReplyMeetingInvitation(QString result,QString meetingID,QString cause);
+    Q_INVOKABLE void getExitMessage();
+    Q_INVOKABLE void getBeginMeetingMessage(QString meetingID);
 
     VideoConferencingClient *getVideoConferencing() const;
     void setVideoConferencing(VideoConferencingClient *videoConferencing);

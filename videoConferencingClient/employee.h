@@ -26,6 +26,8 @@ class Employee:public QObject
     Q_PROPERTY(QQmlListProperty<Meeting> meetings READ meetings NOTIFY meetingsChanged)
     Q_PROPERTY(QQmlListProperty<Notification> notifications READ notifications NOTIFY notificationsChanged)
     Q_PROPERTY(Company* companys READ companys WRITE setCompanys NOTIFY companysChanged)
+    Q_PROPERTY(QQmlListProperty<Attendee> attendees READ attendees NOTIFY attendeesChanged)
+    Q_CLASSINFO("DefaultProperty", "attendees")
     Q_CLASSINFO("DefaultProperty", "meetings")
 public:
     Employee(QObject *parent = 0):QObject(parent){
@@ -67,6 +69,8 @@ public:
     Q_INVOKABLE int meetingCount();
     Q_INVOKABLE Notification *getNotification(int i);
     Q_INVOKABLE int notificationCount();
+    Q_INVOKABLE Attendee *getAttendee(int i);
+    Q_INVOKABLE int attendeeCount();
 
     void insertMeeting(Meeting *meeting);
     void insertNotification(Notification *notification);
@@ -80,6 +84,9 @@ public:
     QList<Notification *> getNotifications() const;
     void setNotifications(const QList<Notification *> &notifications);
     void setMeetings(const QList<Meeting *> &meetings);
+    QQmlListProperty<Attendee> attendees();
+    void setAttendees(const QList<Attendee *> &attendees);
+
 signals:
     void userIDChanged();
     void userPasswordChanged();
@@ -94,6 +101,7 @@ signals:
     void meetingsChanged();
     void notificationsChanged();
     void companysChanged();
+    void attendeesChanged();
 
     void registerSuccessfully();//注册成功
     void emailAlreadyRegistered();//注册失败 之 email已被占用
@@ -116,6 +124,12 @@ private:
     QList<Meeting *> _meetings;
     QList<Notification *> _notifications;
     Company *m_companys;
+    QList<Attendee *> _attendees;
+
+    static void appendAttendee(QQmlListProperty<Attendee> *attendees,Attendee *attendee);
+    static int countAttendee(QQmlListProperty<Attendee> *attendees);
+    static Attendee *atAttendee(QQmlListProperty<Attendee> *attendees,int i);
+    static void clearAttendee(QQmlListProperty<Attendee> *attendees);
 
     static void appendMeeting(QQmlListProperty<Meeting> *meetings,Meeting * meeting);
     static int countMeeting(QQmlListProperty<Meeting> *meetings);

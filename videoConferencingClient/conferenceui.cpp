@@ -54,6 +54,16 @@ void ConferenceUI::getReplyMeetingInvitation(QString result, QString meetingID, 
     m_videoConferencing->requestReplyMeetingInvitation(m_employee->userID().toStdString(),result.toStdString(),meetingID.toStdString(),cause.toStdString());
 }
 
+void ConferenceUI::getExitMessage()
+{
+    m_videoConferencing->requestExit(m_employee->userID().toStdString());
+}
+
+void ConferenceUI::getBeginMeetingMessage(QString meetingID)
+{
+    m_videoConferencing->requestBeginMeeting(meetingID.toStdString());
+}
+
 VideoConferencingClient *ConferenceUI::getVideoConferencing() const
 {
     return m_videoConferencing;

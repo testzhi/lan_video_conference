@@ -367,7 +367,7 @@ Item {
         onLoginSucceeded: {
             if (type === "PublishSucceed") {
                 mistake.text = "会议发布成功"
-                subject.text = currentDate.text = speakerID.text
+                subject.text = remark.text = currentDate.text = speakerID.text
                         = speakerName.text = attendeeID.text = ""
                 speakerList.refresh()
                 attendeeList.refreshChoose()

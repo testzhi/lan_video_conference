@@ -30,7 +30,6 @@ Rectangle {
     width: mainWindow.width * 0.25
     height: mainWindow.height * 0.50
     border.color: {
-        //        attendeeList.initListChoose()
         return "blue"
     }
 
@@ -57,7 +56,7 @@ Rectangle {
         for (var a = 0; a !== conferenceUI.employee.companys.departmentCount(
                  ); a++) {
             departmentSelect[departmentSelect.length] = listAllNotChoose
-            dep = conferenceUI.employee.companys.getDepartment([a])
+            dep = conferenceUI.employee.companys.getDepartment(a)
             departmentName[departmentName.length] = dep.departmentName
             departmentGroupNum[departmentGroupNum.length] = dep.groupCount()
             departmentEmployeeNum[departmentEmployeeNum.length] = dep.employeesNumber

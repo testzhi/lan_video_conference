@@ -329,8 +329,8 @@ void Attendee::recordVideo(AVFormatContext *videoFormatCtx, int videoIndex, AVCo
     SDL_Texture *sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, videoCodecCtx->width, videoCodecCtx->height);
 
     SDL_Rect sdlRect;
-    sdlRect.x = 0;
-    sdlRect.y = 0;
+    sdlRect.x = 250;
+    sdlRect.y = 250;
     sdlRect.w = screen_w;
     sdlRect.h = screen_h;
     //SDL_Video End
@@ -393,6 +393,56 @@ void Attendee::recordVideo(AVFormatContext *videoFormatCtx, int videoIndex, AVCo
     av_free(pVideoFrame);
     av_free(videoOutBuffer);
     fclose(m_fp_yuv_video);
+}
+
+QString Attendee::jurisdiction() const
+{
+    return m_jurisdiction;
+}
+
+void Attendee::setJurisdiction(const QString &jurisdiction)
+{
+    m_jurisdiction = jurisdiction;
+}
+
+QString Attendee::avatar() const
+{
+    return m_avatar;
+}
+
+void Attendee::setAvatar(const QString &avatar)
+{
+    m_avatar = avatar;
+}
+
+QString Attendee::email() const
+{
+    return m_email;
+}
+
+void Attendee::setEmail(const QString &email)
+{
+    m_email = email;
+}
+
+QString Attendee::realName() const
+{
+    return m_realName;
+}
+
+void Attendee::setRealName(const QString &realName)
+{
+    m_realName = realName;
+}
+
+QString Attendee::userID() const
+{
+    return m_userID;
+}
+
+void Attendee::setUserID(const QString &userID)
+{
+    m_userID = userID;
 }
 void Attendee::recordCamera(string cameraPath)
 {
@@ -598,7 +648,7 @@ void Attendee::sdlPlayAudio(string audioPath)
     free(pcm_buffer);
 }
 
-Attendee::~Attendee()
+void Attendee::freeAttendee()
 {
     SDL_Quit();
 

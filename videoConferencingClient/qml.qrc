@@ -13,5 +13,6 @@
         <file>qml/Home.qml</file>
         <file>qml/Notification.qml</file>
         <file>qml/PersonalData.qml</file>
+        <file>qml/Meeting.qml</file>
     </qresource>
 </RCC>

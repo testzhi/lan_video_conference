@@ -1,10 +1,5 @@
 #include "employee.h"
 
-//Employee::Employee(std::string userID, std::string userPassword, bool state, std::string avatar, std::string company, std::string department, std::string group, std::string realName, std::string phone):m_userID(userID),m_userPassword(userPassword),m_state(state),m_avatar(avatar),m_company(company),m_department(department),m_group(group),m_realName(realName),m_phone(phone)
-//{
-
-//}
-
 QString Employee::userID() const
 {
     return m_userID;
@@ -130,6 +125,16 @@ int Employee::notificationCount()
     return _notifications.count();
 }
 
+Attendee *Employee::getAttendee(int i)
+{
+    return _attendees.at(i);
+}
+
+int Employee::attendeeCount()
+{
+    return _attendees.count();
+}
+
 void Employee::insertMeeting(Meeting *meeting)
 {
     _meetings.append(meeting);
@@ -144,7 +149,7 @@ void Employee::sortMeeting()
 {
     qSort(_meetings.begin(),_meetings.end(),[](const Meeting *infoA,const Meeting *infoB){
         if(infoA->date() == infoB->date())
-            return infoA->time() > infoB->time();
+            return infoA->time() < infoB->time();
         else return infoA->date() < infoB->date();
     });
 }
@@ -241,4 +246,47 @@ void Employee::clearNotification(QQmlListProperty<Notification> *notification)
     Employee *employee = qobject_cast<Employee *>(notification->object);
     if(employee)
         employee->_notifications.clear();
+}
+
+QQmlListProperty<Attendee> Employee::attendees()
+{
+    return QQmlListProperty<Attendee>(this,nullptr,Employee::appendAttendee,Employee::countAttendee,Employee::atAttendee,Employee::clearAttendee);
+}
+
+void Employee::setAttendees(const QList<Attendee *> &attendees)
+{
+    _attendees = attendees;
+}
+
+void Employee::appendAttendee(QQmlListProperty<Attendee> *attendees, Attendee *attendee)
+{
+    Employee *employee = qobject_cast<Employee *>(attendees->object);
+    if(attendee) {
+        attendee->setParent(employee);
+        employee->_attendees.append(attendee);
+    }
+}
+
+int Employee::countAttendee(QQmlListProperty<Attendee> *attendees)
+{
+    Employee *employee = qobject_cast<Employee *>(attendees->object);
+    if(employee)
+        return employee->_attendees.count();
+    return 0;
+}
+
+Attendee *Employee::atAttendee(QQmlListProperty<Attendee> *attendees, int i)
+{
+    Employee *employee = qobject_cast<Employee *>(attendees->object);
+    if(employee)
+        return employee->_attendees.at(i);
+    return nullptr;
+}
+
+void Employee::clearAttendee(QQmlListProperty<Attendee> *attendees)
+{
+    Employee *employee = qobject_cast<Employee *>(attendees->object);
+    if(employee) {
+        employee->_attendees.clear();
+    }
 }

@@ -43,7 +43,7 @@ Rectangle {
         for (var a = 0; a !== conferenceUI.employee.companys.departmentCount(
                  ); a++) {
             departmentSelect[a] = listOpen
-            dep = conferenceUI.employee.companys.getDepartment([a])
+            dep = conferenceUI.employee.companys.getDepartment(a)
             departmentName[a] = dep.departmentName
             departmentGroupNum[a] = dep.groupCount()
             departmentEmployeeNum[a] = dep.employeesNumber

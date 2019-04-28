@@ -25,6 +25,12 @@ void fill_audio(void *udata, Uint8 *stream, int len);
 
 class Attendee:public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(QString userID READ userID WRITE setUserID NOTIFY userIDChanged)
+    Q_PROPERTY(QString realName READ realName WRITE setRealName NOTIFY realNameChanged)
+    Q_PROPERTY(QString avatar READ avatar WRITE setAvatar NOTIFY avatarChanged)
+    Q_PROPERTY(QString email READ email WRITE setEmail NOTIFY emailChanged)
+    Q_PROPERTY(QString jurisdiction READ jurisdiction WRITE setJurisdiction NOTIFY jurisdictionChanged)
 public:
     enum ATTENDEE_KIND{HOST=1, COMMON_ATTENDEE, ASSISTANT};
     enum VIDEO_KIND{CAMERA_VIDEO=1, SCREEN_CAPTURE_VIDEO, FILE_VIDEO};
@@ -34,10 +40,6 @@ public:
         av_register_all();
         avdevice_register_all();
         avformat_network_init();
-
-
-
-
         m_pCameraFrameYUV = av_frame_alloc();
         m_pScreenCaptureFrameYUV = av_frame_alloc();
 
@@ -49,8 +51,9 @@ public:
     }
 
 
-    void camera(std::string filePath)
+    Q_INVOKABLE void camera(std::string filePath)
     {
+//        widge = screen;
         initCameraInputSource();
         getVideoStream(CAMERA_VIDEO);
         openVideoCodec(CAMERA_VIDEO);
@@ -73,14 +76,33 @@ public:
     void sdlPlayVideo(std::string videoPath);
     void sdlPlayAudio(std::string audioPath);
 
-    ~Attendee();
+    void freeAttendee();
 
 
 
 //    void audioRecordThread(){}
 //    void ScreenCaptureRecordThread(){}
+    QString userID() const;
+    void setUserID(const QString &userID);
 
+    QString realName() const;
+    void setRealName(const QString &realName);
 
+    QString email() const;
+    void setEmail(const QString &email);
+
+    QString avatar() const;
+    void setAvatar(const QString &avatar);
+
+    QString jurisdiction() const;
+    void setJurisdiction(const QString &jurisdiction);
+
+signals:
+    void userIDChanged();
+    void realNameChanged();
+    void avatarChanged();
+    void emailChanged();
+    void jurisdictionChanged();
 protected:
     //获取录像 录屏 录音环境
     void initScreenCaptureInputSource();
@@ -138,6 +160,7 @@ private:
 
 
     SDL_Window *screen;
+    QWidget *widge;
     int screen_w = 0, screen_h = 0;
 
 
@@ -147,7 +170,9 @@ private:
 
     QString m_userID;
     QString m_realName;
-//    QString
+    QString m_email;
+    QString m_avatar;
+    QString m_jurisdiction;
 };
 
 

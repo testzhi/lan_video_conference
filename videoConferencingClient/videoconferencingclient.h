@@ -8,7 +8,7 @@
 #include <QJsonObject>
 #include "employee.h"
 
-#define BUFFER_LENGTH_TCP     2048
+#define BUFFER_LENGTH_TCP     5000
 #define BUFFER_LENGTH_UDP     1048
 
 using namespace boost::asio;
@@ -56,6 +56,7 @@ public:
     void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);//请求回复会议通知
     void requestStartMeeting(std::string emailid, std::string meetingID);
     void requestStopMeeting(std::string emailid, std::string meetingID);
+    void requestBeginMeeting(std::string meetingID);
 
 
     void setEmployee(Employee *employee);
@@ -110,6 +111,7 @@ private:
     Company com;
     QList<Notification *> noti;
     QList<Meeting *> mee;
+    QList<Attendee *> att;
 //    Company *m_company;
 };
 

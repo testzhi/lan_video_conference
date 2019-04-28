@@ -8,6 +8,7 @@ Item {
     property var newMessage: [false, false, false, false]
     Column {
         id: mainPage
+        anchors.fill: parent
         Rectangle {
             height: mainWindow.height * 0.12
             width: mainWindow.width
@@ -59,7 +60,10 @@ Item {
                 text: "退出当前帐号"
                 anchors.right: parent.right
                 anchors.rightMargin: 20
-                onClicked: exit()
+                onClicked: {
+                    conferenceUI.getExitMessage()
+                    exit()
+                }
             }
         }
         Rectangle {
@@ -67,9 +71,29 @@ Item {
             height: 1
             color: "blue"
         }
+        //        Loader {
+        //            height: mainWindow.height * 0.88
+        //            width: parent.width
+        //            id: messageLoader
+        //            sourceComponent: messageComponet
+        //        }
+
+        //        Component {
+        //            id: messageComponet
+        Meeting {
+            id: meeting
+            height: mainWindow.height * 0.88
+            width: parent.width
+            visible: false
+            onMeetingBack: {
+                employeeMessage.visible = true
+                meeting.visible = false
+            }
+        }
 
         Row {
-
+            id: employeeMessage
+            visible: true
             Loader {
                 id: buttonListLoader
                 height: mainWindow.height * 0.88
@@ -168,6 +192,17 @@ Item {
                 MeetingList {
                     id: meetingList
                     visible: true
+                    onBeginMeeting: {
+                        employeeMessage.visible = false
+                        meeting.visible = true
+                    }
+                    onAttendMeeting: {
+                        employeeMessage.visible = false
+                        meeting.visible = true
+                    }
+                    onRecordMeeting: {
+
+                    }
                 }
                 PublishMeeting {
                     id: publishMeeting
@@ -182,6 +217,7 @@ Item {
                     visible: false
                 }
             }
+            //            }
         }
     }
 }

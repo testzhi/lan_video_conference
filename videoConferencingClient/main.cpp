@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Group>("Meeting",1,0,"Group");
     qmlRegisterType<Notification>("Meeting",1,0,"Notification");
     qmlRegisterType<ConciseEmployee>("Meeting",1,0,"ConciseEmployee");
+    qmlRegisterType<Attendee>("Meeting",1,0,"Attendee");
     ConciseEmployee *employee0 = new ConciseEmployee();
     employee0->setUserID("00");
     employee0->setRealName("lzy");
@@ -70,13 +71,8 @@ int main(int argc, char *argv[])
     Employee employee;
     employee.insertNotification(&notification);
     employee.insertNotification(&notification1);
-//    employee.insertMeeting(&meetings);
-//    employee.insertMeeting(&meeting);
-//    employee.insertMeeting(&meeting1);
     employee.sortMeeting();
-//    employee.setCompanys(company);
     ConferenceUI conferenceUI;
-//    conferenceUI.setCompany(&company);
     employee.setCompanys(&company);
     conferenceUI.setEmployee(&employee);
     VideoConferencingClient *client = new VideoConferencingClient();
@@ -99,7 +95,5 @@ int main(int argc, char *argv[])
         std::string userID = conferenceUI.employee()->userID().toStdString();
         conferenceUI.getVideoConferencing()->requestExit(userID);
     }
-    return i;
-
     return app.exec();
 }

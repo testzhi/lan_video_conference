@@ -1,8 +1,10 @@
 #ifndef MEETING_H
 #define MEETING_H
 
-//#include <employee.h>
 #include <QObject>
+#include <QQmlListProperty>
+
+#include "attendee.h"
 
 class Meeting:public QObject
 {
@@ -18,6 +20,7 @@ class Meeting:public QObject
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(QString meetingID READ meetingID WRITE setMeetingID NOTIFY meetingIDChanged)
     Q_PROPERTY(QString remark READ remark WRITE setRemark NOTIFY remarkChanged)
+
 signals:
     void initiatorChanged();
     void speakerChanged();
@@ -51,11 +54,10 @@ public:
     Q_INVOKABLE void setCategory(const QString &category);
     Q_INVOKABLE QString state() const;
     Q_INVOKABLE void setState(const QString &state);
-    QString meetingID() const;
+    Q_INVOKABLE QString meetingID() const;
     Q_INVOKABLE void setMeetingID(const QString &meetingID);
-
-    QString remark() const;
-    void setRemark(const QString &remark);
+    Q_INVOKABLE QString remark() const;
+    Q_INVOKABLE void setRemark(const QString &remark);
 
 private:
     QString m_meetingID;
@@ -69,7 +71,7 @@ private:
     QString m_duration;//会议预期时长
     QString m_category;//会议类别
     QString m_state;//会议状态
-//    std::vector<Employee *> _employees;
+
 };
 
 #endif // MEETING_H

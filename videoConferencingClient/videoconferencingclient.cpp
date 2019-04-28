@@ -119,14 +119,14 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
     }
     else if (type == "_LAUNCH_MEETING_RESULT")
     {
-        QString err;
-        handleReplyLaunchMeetingResult(qo, err);
-        if(err.length() == 0) {
-            emit m_employee->loginSucceeded("PublishSucceed");
-            emit m_employee->loginSucceeded("MeetingMessage");
-            emit m_employee->loginSucceeded("MeetingListRefresh");
-        }
-        else emit m_employee->loginSucceeded(err);
+//        QString err;
+//        handleReplyLaunchMeetingResult(qo, err);
+//        if(err.length() == 0) {
+//            emit m_employee->loginSucceeded("PublishSucceed");
+//            emit m_employee->loginSucceeded("MeetingMessage");
+//            emit m_employee->loginSucceeded("MeetingListRefresh");
+//        }
+//        else emit m_employee->loginSucceeded(err);
 
     }
     else if (type == "_REPLY_INVITATION")
@@ -374,21 +374,21 @@ void VideoConferencingClient::requestMeetingList(std::string emailID)
 
 void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees)
 {
-    Meeting *meeting = new Meeting();
-    meeting->setDate(QString::fromStdString(date));
-    meeting->setTime(QString::fromStdString(time));
-    meeting->setScale(QString::fromStdString(scale));
-    meeting->setState(QString::fromStdString("0"));
-    meeting->setTheme(QString::fromStdString(subject));
-    meeting->setSpeaker(QString::fromStdString(speaker));
-    meeting->setCategory(QString::fromStdString(category));
-    meeting->setDuration(QString::fromStdString(dura));
-    meeting->setInitiator(QString::fromStdString(assistant));
-    //    meeting->setMeetingID(meetingID);
-    meeting->setRemark(QString::fromStdString(remark));
-    mee.append(meeting);
+//    Meeting *meeting = new Meeting();
+//    meeting->setDate(QString::fromStdString(date));
+//    meeting->setTime(QString::fromStdString(time));
+//    meeting->setScale(QString::fromStdString(scale));
+//    meeting->setState(QString::fromStdString("0"));
+//    meeting->setTheme(QString::fromStdString(subject));
+//    meeting->setSpeaker(QString::fromStdString(speaker));
+//    meeting->setCategory(QString::fromStdString(category));
+//    meeting->setDuration(QString::fromStdString(dura));
+//    meeting->setInitiator(QString::fromStdString(assistant));
+//    //    meeting->setMeetingID(meetingID);
+//    meeting->setRemark(QString::fromStdString(remark));
+//    mee.append(meeting);
     //    m_employee->setMeetings(&mee);
-    cout << "mee length  " << mee.count() << endl;
+//    cout << "mee length  " << mee.count() << endl;
     string sendMessage = requestLaunchMeetingToString(emailid, assistant, speaker, date, time, category, subject, scale, dura, remark, attendees);
     cout << "请求发起会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -413,6 +413,25 @@ void VideoConferencingClient::requestStopMeeting(std::string emailid, std::strin
     string sendMessage = requestStopMeetingToString(emailid, meetingID);
     cout << "请求关闭会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestBeginMeeting(std::string meetingID)
+{
+    Attendee *attendee = new Attendee();
+//    for(int i = 0;i != m_employee->meetingCount();i++) {
+//        if(m_employee->getMeeting(i)->meetingID() == QString::fromStdString(meetingID)) {
+//        }
+//    }
+    attendee->setAvatar(m_employee->avatar());
+    attendee->setEmail(m_employee->email());
+    attendee->setJurisdiction("true");
+    attendee->setRealName(m_employee->realName());
+    attendee->setUserID(m_employee->userID());
+    att.append(attendee);
+    m_employee->setAttendees(att);
+    m_employee->loginSucceeded("AttendeeMessage");
+    m_employee->loginSucceeded("BeginMeeting");
+//    m_employee->getAttendee(0)->camera("test.guv");
 }
 
 
@@ -582,10 +601,39 @@ void VideoConferencingClient::handleReplyLaunchMeetingResult(QJsonObject qo, QSt
     err.clear();
     QString qs = qo.value("DATA")["RESULT"].toString();
     err = qo.value("DATA")["ERROR"].toString();
-    QString meetingid = qo.value("DATA")["MEETINGID"].toString();
-    mee.at(mee.count() - 1)->setMeetingID(meetingid);
+//    QString meetingid = qo.value("DATA")["MEETINGID"].toString();
+//    mee.at(mee.count() - 1)->setMeetingID(meetingid);
+    QString meetingID = qo.value("DATA")["MEETINGID"].toString();
+    QString assistant = qo.value("DATA")["ASSISTANT"].toString();
+    QString speaker = qo.value("DATA")["SPEAKER"].toString();
+    QString date = qo.value("DATA")["DATE"].toString();
+    QString time = qo.value("DATA")["TIME"].toString();
+    QString subject = qo.value("DATA")["SUBJECT"].toString();
+    QString scale = qo.value("DATA")["MEETINGSCALE"].toString();
+    QString category = qo.value("DATA")["CATEGORY"].toString();
+    QString preDuration = qo.value("DATA")["PREDICTEDDURATION"].toString();
+    QString state = qo.value("DATA")["MEETINGSTATE"].toString();
+    QString remark = qo.value("DATA")["REMARK"].toString();
+
+    Meeting *meeting = new Meeting();
+    meeting->setDate(date);
+    meeting->setTime(time);
+    meeting->setScale(scale);
+    meeting->setState(state);
+    meeting->setTheme(subject);
+    meeting->setSpeaker(speaker);
+    meeting->setCategory(category);
+    meeting->setDuration(preDuration);
+    meeting->setInitiator(assistant);
+    meeting->setMeetingID(meetingID);
+    meeting->setRemark(remark);
+    mee.append(meeting);
     m_employee->setMeetings(mee);
-    m_employee->sortMeeting();
+        m_employee->sortMeeting();
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        cout << m_employee->getMeeting(i)->theme().toStdString() << "  " << m_employee->getMeeting(i)->date().toStdString() << "  " << m_employee->getMeeting(i)->time().toStdString() << "  " << m_employee->getMeeting(i)->category().toStdString() << "  " << m_employee->getMeeting(i)->speaker().toStdString() << "  " << m_employee->getMeeting(i)->initiator().toStdString() << "  " << m_employee->getMeeting(i)->state().toStdString() << endl;
+    }
+
 }
 
 void VideoConferencingClient::handleReplyInvitation(QJsonObject qo)
