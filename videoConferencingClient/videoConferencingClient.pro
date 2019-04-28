@@ -22,7 +22,9 @@ SOURCES += \
     videoconferencingclient.cpp \
     conferenceui.cpp \
     notification.cpp \
-    attendee.cpp
+    attendee.cpp \
+    xvideo.cpp \
+    xvideorecord.cpp
 
 
 RESOURCES += qml.qrc
@@ -47,7 +49,9 @@ HEADERS += \
     videoconferencingclient.h \
     conferenceui.h \
     notification.h \
-    attendee.h
+    attendee.h \
+    xvideo.h \
+    xvideorecord.h
 
 DISTFILES += \
     resources/1.png \
