@@ -402,12 +402,45 @@ int DataBaseBroker::queryIpByUserID(std::string userID, int state, std::string &
 
     MYSQL_ROW line = mysql_fetch_row(result);
     if(line[0])
+    {
         Ip = line[0];
+        return 1;
+    }
     else
+    {
         Ip = "";
-
-    return 1;
+        return 0;
+    }
 }
+
+int DataBaseBroker::queryNameByUserID(std::string userID, std::string &name)
+{
+    char *cmd = new char[150];
+    sprintf(cmd, "select `REALNAME` from EmployeesTable where USERID = '%s';", userID.c_str());
+
+    if(!query(cmd))
+    {
+        delete [] cmd;
+        return -1;
+    }
+    result = mysql_store_result(mysqlInstance);
+    delete [] cmd;
+    auto row = mysql_num_rows(result);
+    if(row == 0) return 0;
+
+    MYSQL_ROW line = mysql_fetch_row(result);
+    if(line[0])
+    {
+        name = line[0];
+        return 1;
+    }
+    else
+    {
+        name = "";
+        return 0;
+    }
+}
+
 int DataBaseBroker::queryCompanyOfEmployeeID(std::string id, std::string &comid)
 {
     char *cmd = new char[150];
@@ -426,6 +459,8 @@ int DataBaseBroker::queryCompanyOfEmployeeID(std::string id, std::string &comid)
     comid = line[0];
     return 1;
 }
+
+
 
 unsigned long long DataBaseBroker::queryDepartmentsInCompany(std::string comid, vector<vector<string>> &departments)
 {

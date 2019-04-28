@@ -179,8 +179,8 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
     string tcpJson;
     string emailid = Data.value("DATA")["FROM"].toString().toStdString();
 
-    string verifyRes;
-    dc.getDb().updateStateByEmaiID(emailid, 0, "");
+    if(!emailid.empty())
+        dc.getDb().updateStateByEmaiID(emailid, 0, "");
 }
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
@@ -226,7 +226,7 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
 {
     QJsonObject r_data;
 
-    string emailID = Data.value("DATA")["FROM"].toString().toStdString();//与assistant同一人
+    string assistant = Data.value("DATA")["FROM"].toString().toStdString();//与assistant同一人
     //    string initiator = Data.value("DATA")["INITIATOR"].toString().toStdString();
     //    string assistant = Data.value("DATA")["ASSISTANT"].toString().toStdString();
     string speaker = Data.value("DATA")["SPEAKER"].toString().toStdString();
@@ -241,16 +241,29 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
 
 
     string tcpJson, id;
-    unsigned long long meetingid = dc.getDb().insertIntoTableMeetings(emailID, speaker, date, time, catagro, subject, scale, preDura, remark);
+    unsigned long long meetingid = dc.getDb().insertIntoTableMeetings(assistant, speaker, date, time, catagro, subject, scale, preDura, remark);
     string mm = std::to_string(meetingid);
-    if(meetingid != 0)
-    {
 
-        dc.jsonStrLaunchMeetingResult(meetingid, tcpJson);
-        dc.getDb().insertIntoTableAttendees(mm, emailID, 1, "");
-        //邮件
-        //加入会议列表
-        if(emailID != speaker)
+
+    dc.jsonStrLaunchMeetingResult(meetingid, tcpJson);
+    dc.getDb().insertIntoTableAttendees(mm, assistant, 1, "");
+    string aip;
+    int aaa = dc.getDb().queryIpByUserID(assistant, 1, aip);
+    if(aaa == 1)//助手
+    {
+        //若在线 重新发邀请列表json
+        int a_res;
+        string a_jsonstr;
+        dc.jsonStrMeetingAddDetail(mm, a_jsonstr, a_res);
+        //                tcpSendTo(sip, s_jsonstr);
+        //                tcpAsyncConnect(sip, s_jsonstr);
+        udpSendMessage(aip, a_jsonstr);
+    }
+    //邮件
+
+    if(meetingid > 0)
+    {
+        if(!isSameString(assistant, speaker))//演讲者
         {
             dc.getDb().insertIntoTableAttendees(mm, speaker, 1, "");
             //邮件
@@ -276,44 +289,33 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
         {
             QJsonObject per = attendee.toObject();
             string userid = per.value("EMAILID").toString().toStdString();
-            if(userid != emailID && userid != speaker)
+            if((!isSameString(userid, assistant)) )
             {
-                dc.getDb().insertIntoTableAttendees(mm, userid);
-                dc.getDb().insertIntoTableNotifications(userid, emailID, 1, subject, 0, mm);
-                //邮件
-                string atten_ip;
-                int aa = dc.getDb().queryIpByUserID(userid, 1, atten_ip);
-                if(aa == 1)
+                if(!isSameString(userid, speaker))
                 {
-                    //                //若在线 向其他人发会议邀请json
-                    //                //            找userid对应ip？
-                    //                //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
-                    string atten_invi_jsonstr;
-                    unsigned long long atten_invi_res;
-                    dc.jsonStrInvitationAddDetail(mm, atten_invi_jsonstr, atten_invi_res);
-                    //                    cout << atten_invi_jsonstr <<endl;
-                    //                    tcpSendTo(atten_ip, atten_invi_jsonstr);
-                    //                    tcpAsyncConnect(atten_ip, atten_invi_jsonstr);
-                    udpSendMessage(atten_ip, atten_invi_jsonstr);
+                    dc.getDb().insertIntoTableAttendees(mm, userid);
+                    dc.getDb().insertIntoTableNotifications(userid, assistant, 1, subject, 0, mm);
+                    //邮件
+                    string atten_ip;
+                    atten_ip.clear();
+                    int aa = dc.getDb().queryIpByUserID(userid, 1, atten_ip);
+                    if(aa == 1)
+                    {
+                        //若在线 向其他人发会议邀请json
+                        //            找userid对应ip？
+                        //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+                        string atten_invi_jsonstr;
+                        atten_invi_jsonstr.clear();
+                        unsigned long long atten_invi_res = 0;
+                        dc.jsonStrInvitationAddDetail(mm, atten_invi_jsonstr, atten_invi_res);
+                        //                    tcpSendTo(atten_ip, atten_invi_jsonstr);
+                        //                    tcpAsyncConnect(atten_ip, atten_invi_jsonstr);
+                        udpSendMessage(atten_ip, atten_invi_jsonstr);
+                    }
                 }
             }
         }
-        r_data.insert("MEETINGID",mm.c_str());
-        r_data.insert("RESULT","1");
     }
-    else
-    {
-        r_data.insert("RESULT","0");
-    }
-
-    QJsonObject r_json;
-    r_json.insert("DATA", QJsonValue(r_data));
-    r_json.insert("TYPE", "_LAUNCH_MEETING_RESULT");
-    QJsonDocument document;
-    document.setObject(r_json);
-    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
-    std::string r_strJson(byteArray);
-    tcpSendMessage(r_strJson, sock);
 }
 
 void VideoConferencingServer::handleRequestStartMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -361,7 +363,13 @@ void VideoConferencingServer::handleRequestInvitionResult(QJsonObject Data, Vide
         meeting.insert("MEETINGID", meetingID.c_str());
         //            meeting.insert("INITIATOR", data[1].c_str());
         meeting.insert("ASSISTANT", data[2].c_str());
+        string assistantName;
+        dc.getDb().queryNameByUserID(meetingID, assistantName);
+        meeting.insert("ASSISTANTNAME", assistantName.c_str());
+        string speakerName;
+        dc.getDb().queryNameByUserID(meetingID, speakerName);
         meeting.insert("SPEAKER", data[3].c_str());
+        meeting.insert("SPEAKERNAME", speakerName.c_str());
         meeting.insert("DATE", data[4].c_str());
         meeting.insert("TIME", data[5].c_str());
         meeting.insert("CATEGORY", data[6].c_str());
@@ -398,4 +406,11 @@ QJsonObject VideoConferencingServer::stringToQJsonObject(std::string string)
     QJsonObject DATA = QJsonDocument::fromJson(qString.toUtf8()).object();
 
     return DATA;
+}
+
+bool VideoConferencingServer::isSameString(std::string s1, std::string s2)
+{
+    if(s1 == s2)
+        return true;
+    return false;
 }

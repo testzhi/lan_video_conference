@@ -70,6 +70,7 @@ public:
 
 private:
     QJsonObject stringToQJsonObject(std::string string);
+    bool isSameString(string s1, string s2);
 
 
     io_service m_io;

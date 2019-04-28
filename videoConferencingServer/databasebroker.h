@@ -38,6 +38,7 @@ public:
     //id email passwd state ip
     int queryResultForLogin(std::string emailID, std::vector<std::string> &data);
     int queryIpByUserID(std::string userID, int state, std::string &Ip);
+    int queryNameByUserID(std::string userID, std::string &name);
     int queryCompanyOfEmployeeID(std::string id, std::string &comid);
 
 
@@ -69,7 +70,7 @@ public:
     bool updateNotificationsState(std::string notifiedID, std::string meetingid, int state);
 
 
-        void deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID);
+    void deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID);
 
 
 

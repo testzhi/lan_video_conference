@@ -15,36 +15,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-DataController::DataController()
-{
-    db.connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
-    db.createTables();
 
-//    //    db.insertIntoTableEmployees("test", "passwd", "TEST测试名", "test@qq.com", "AVATAR", "TESTGROUP", "TESTDEPARTMENT", "Google","phone", "ip");
-//    db.insertIntoTableEmployees("5631813", "1717", "Liana",     "563181354@qq.com", "TechGROUP1", "Development", "Google","");
-//    db.insertIntoTableEmployees("563", "1717", "Liana Xu", "5634@qq.com","TechGROUP1", "Development", "Google","");
-//    db.insertIntoTableEmployees("1", "1", "name1", "1@qq.com", "TechGROUP1", "Development", "Google","");
-//    db.insertIntoTableEmployees("1693174", "1693", "Liang Zhidong", "1693174982@qq.com", "TechGROUP1", "Development", "Google", "");
-//    db.insertIntoTableEmployees("169", "1693", "Liang", "169@qq.com", "TechGROUP1", "Development", "Google","");
-
-//    db.insertIntoTableEmployees("9129450", "5995", "Li Zhangyu", "912945084@qq.com", "TechGROUP2", "Development", "Google", "");
-//    db.insertIntoTableEmployees("912", "5995", "Li", "912@qq.com", "TechGROUP2", "Development", "Google", "");
-//    db.insertIntoTableEmployees("2", "2", "name2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
-
-//    db.insertIntoTableEmployees("3", "3", "3", "3@qq.com", "TechGROUP3", "Development", "Google", "");
-
-
-//    db.insertIntoTableEmployees("111", "111", "name1", "111@163.com", "GROUP1", "Department1", "Company1","11111111111");
-
-//    db.insertIntoTableEmployees("222", "222", "name2", "222@163.com", "Group2", "Department2", "company2","12121212122");
-
-//    db.insertIntoTableEmployees("7418907", "7418", "Zhang Jinming", "741890707@qq.com", "Analysis", "BigData", "Baidu","");
-//    db.insertIntoTableEmployees("1018772", "1018", "Lu Xingyu", "1018772325@qq.com", "test1", "Test", "Baidu","");
-//    db.insertIntoTableEmployees("741", "7418", "Zhang", "741@qq.com", "Analysis", "BigData", "Baidu","");
-//    db.insertIntoTableEmployees("101", "1018", "Lu", "1018772325@qq.com", "test1", "Test", "Baidu","");
-
-    cout << "建表结束" << endl;
-}
 
 DataController::~DataController()
 {
@@ -257,7 +228,13 @@ void DataController::jsonStrInvitationsDetail(std::string emailid, std::string &
                 meeting.insert("MEETINGID", data[0].c_str());
                 //            meeting.insert("INITIATOR", data[1].c_str());
                 meeting.insert("ASSISTANT", data[2].c_str());
+                string assistantName;   assistantName.clear();
+                db.queryNameByUserID(data[2], assistantName);
+                meeting.insert("ASSISTANTNAME", data[2].c_str());
                 meeting.insert("SPEAKER", data[3].c_str());
+                string speakerName;     speakerName.clear();
+                db.queryNameByUserID(data[3], speakerName);
+                meeting.insert("SPEAKERNAME", speakerName.c_str());
                 meeting.insert("DATE", data[4].c_str());
                 meeting.insert("TIME", data[5].c_str());
                 meeting.insert("SUBJECT", data[7].c_str());
@@ -301,7 +278,13 @@ void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &json
                     meeting.insert("MEETINGID", data[0].c_str());
                     //                    meeting.insert("INITIATOR", data[1].c_str());
                     meeting.insert("ASSISTANT", data[2].c_str());
+                    string assistantName; assistantName.clear();
+                    db.queryNameByUserID(data[2], assistantName);
+                    meeting.insert("ASSISTANTNAME", assistantName.c_str());
                     meeting.insert("SPEAKER", data[3].c_str());
+                    string speakerName; speakerName.clear();
+                    db.queryNameByUserID(data[3], speakerName);
+                    meeting.insert("SPEAKERNAME", speakerName.c_str());
                     meeting.insert("DATE", data[4].c_str());
                     meeting.insert("TIME", data[5].c_str());
                     meeting.insert("CATEGORY", data[6].c_str());
@@ -366,7 +349,13 @@ void DataController::jsonStrInvitationAddDetail(std::string meetingid, std::stri
         qdata.insert("MEETINGID", data[0].c_str());
         //            meeting.insert("INITIATOR", data[1].c_str());
         qdata.insert("ASSISTANT", data[2].c_str());
+        string assistantName; assistantName.clear();
+        db.queryNameByUserID(data[2], assistantName);
+        qdata.insert("ASSISTANTNAME", assistantName.c_str());
         qdata.insert("SPEAKER", data[3].c_str());
+        string speakerName; speakerName.clear();
+        db.queryNameByUserID(data[3], speakerName);
+        qdata.insert("SPEAKERNAME", speakerName.c_str());
         qdata.insert("DATE", data[4].c_str());
         qdata.insert("TIME", data[5].c_str());
         qdata.insert("SUBJECT", data[7].c_str());
@@ -400,7 +389,13 @@ void DataController::jsonStrMeetingAddDetail(std::string meetingid, std::string 
             qdata.insert("MEETINGID", data[0].c_str());
             //                    meeting.insert("INITIATOR", data[1].c_str());
             qdata.insert("ASSISTANT", data[2].c_str());
+            string assistantName; assistantName.clear();
+            db.queryNameByUserID(data[2], assistantName);
+            qdata.insert("ASSISTANTNAME", assistantName.c_str());
             qdata.insert("SPEAKER", data[3].c_str());
+            string speakerName; speakerName.clear();
+            db.queryNameByUserID(data[3], speakerName);
+            qdata.insert("SPEAKERNAME", speakerName.c_str());
             qdata.insert("DATE", data[4].c_str());
             qdata.insert("TIME", data[5].c_str());
             qdata.insert("CATEGORY", data[6].c_str());
