@@ -28,8 +28,11 @@ Client的tcp部分，Client部分请求（注册登录）;  Server tcp连接;   
 n次以后
     systemctl start mysqld
     
-<!--     若需要在终端查看数据库 mysql -u VideoConferencingServer       use VideoConferencingDB  -->
-    
+<!--     若需要在终端查看数据库 mysql -u VideoConferencingServer       use VideoConferencingDB;  -->
+<!--select * from EmployeesTable;
+select * from MeetingsTable;
+select * from AttendeesTable;
+select * from NotificationsTable;-->
     
 [Note:如果想避免重复输入以上语句，可以直接输入（即开机自启数据库）                     ]
 [    systemctl enable mysqld@.service  或者 systemctl enable mysqld           ]
