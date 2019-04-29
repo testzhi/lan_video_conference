@@ -211,6 +211,7 @@ void XVideoRecordThread::run()
                 }
             }
         }
+        av_free_packet(packet);
     }
 
 

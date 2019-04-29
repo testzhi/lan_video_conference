@@ -231,12 +231,19 @@ void VideoConferencingClient::onlineStrResultAnalysis(std::string str)
         emit m_employee->loginSucceeded("MeetingMessage");
         emit m_employee->loginSucceeded("MeetingListRefresh");
     }
-    else if (type == "_ONLINE_START_OR_STOP_A_MEETING")
+    else if (type == "_ONLINE_START_A_MEETING")
     {
-        handleOnlineMeetingStateResult(qo);
+        handleOnlineMeetingStartResult(qo);
         cout << "您有一场会议状态变更" << endl;
         //相关信号处理
     }
+    else if (type == "_ONLINE_STOP_A_MEETING")
+    {
+        handleOnlineMeetingStopResult(qo);
+        cout << "您有一场会议状态变更" << endl;
+        //相关信号处理
+    }
+//    else if(type == "_")
 }
 
 void VideoConferencingClient::handleOnlineMeetingInvitationResult(QJsonObject qo)
@@ -305,9 +312,31 @@ void VideoConferencingClient::handleOnlineMeetingResult(QJsonObject qo)
     m_employee->sortMeeting();
 }
 
-void VideoConferencingClient::handleOnlineMeetingStateResult(QJsonObject qo)
+void VideoConferencingClient::handleOnlineMeetingStartResult(QJsonObject qo)
 {
+    QString meetingID = qo.value("DATA")["MEETINGID"].toString();
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        Meeting *mee = m_employee->getMeeting(i);
+        if(meetingID == mee->meetingID()) {
+            mee->setState("1");
+        }
+    }
+    m_employee->loginSucceeded("MeetingMessage");
+    m_employee->loginSucceeded("MeetingListRefresh");
+}
 
+void VideoConferencingClient::handleOnlineMeetingStopResult(QJsonObject qo)
+{
+    QString meetingID = qo.value("DATA")["MEETINGID"].toString();
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        Meeting *mee = m_employee->getMeeting(i);
+        if(meetingID == mee->meetingID()) {
+            mee->setState("2");
+        }
+    }
+    m_employee->loginSucceeded("MeetingMessage");
+    m_employee->loginSucceeded("MeetingEnd");
+    m_employee->loginSucceeded("MeetingListRefresh");
 }
 
 //RTP
@@ -403,20 +432,6 @@ void VideoConferencingClient::requestReplyMeetingInvitation(std::string emailid,
 
 void VideoConferencingClient::requestStartMeeting(std::string emailid, std::string meetingID)
 {
-    string sendMessage = requestStartMeetingToString(emailid, meetingID);
-    cout << "请求开始会议："  << sendMessage << endl;
-    tcpSendMessage(sendMessage);
-}
-
-void VideoConferencingClient::requestStopMeeting(std::string emailid, std::string meetingID)
-{
-    string sendMessage = requestStopMeetingToString(emailid, meetingID);
-    cout << "请求关闭会议："  << sendMessage << endl;
-    tcpSendMessage(sendMessage);
-}
-
-void VideoConferencingClient::requestBeginMeeting(std::string meetingID)
-{
     Attendee *attendee = new Attendee();
 //    for(int i = 0;i != m_employee->meetingCount();i++) {
 //        if(m_employee->getMeeting(i)->meetingID() == QString::fromStdString(meetingID)) {
@@ -429,11 +444,41 @@ void VideoConferencingClient::requestBeginMeeting(std::string meetingID)
     attendee->setUserID(m_employee->userID());
     att.append(attendee);
     m_employee->setAttendees(att);
+    std::cout << "refresh attendee" << endl;
     m_employee->loginSucceeded("AttendeeMessage");
     m_employee->loginSucceeded("BeginMeeting");
-//    m_employee->getAttendee(0)->camera("test.guv");
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        Meeting *mee = m_employee->getMeeting(i);
+        if(mee->meetingID() == QString::fromStdString(meetingID)) {
+            mee->setState("1");
+        }
+    }
+    m_employee->loginSucceeded("MeetingMessage");
+    string sendMessage = requestStartMeetingToString(emailid, meetingID);
+    cout << "请求开始会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
 }
 
+void VideoConferencingClient::requestStopMeeting(std::string emailid, std::string meetingID)
+{
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        Meeting *mee = m_employee->getMeeting(i);
+        if(mee->meetingID() == QString::fromStdString(meetingID) && (mee->speaker() == m_employee->userID() || mee->initiator() == m_employee->userID())) {
+            mee->setState("2");
+            m_employee->loginSucceeded("MeetingMessage");
+        }
+    }
+    string sendMessage = requestStopMeetingToString(emailid, meetingID);
+    cout << "请求关闭会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestAttendMeeting(std::string userID, std::string meetingID)
+{
+    string sendMessage = requestAttendMeetingToString(userID,meetingID);
+    cout << "请求加入会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
 
 //HANDLE PART：客户端处理来自Server的数据
 void VideoConferencingClient::handleRegisteredResult(QJsonObject qo, int &result, QString &returnID, QString &email, QString &err)
@@ -881,6 +926,23 @@ std::string VideoConferencingClient::requestStopMeetingToString(std::string emai
     QJsonObject json;
     json.insert("DATA", QJsonValue(data));
     json.insert("TYPE", "#REQUEST_STOP_MEETING");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestAttendMeetingToString(std::string emailid, std::string meetingID)
+{
+    QJsonObject data;
+    data.insert("FROM",emailid.c_str());
+    data.insert("MEETINGID",meetingID.c_str());
+    QJsonObject json;
+    json.insert("DATA",QJsonValue(data));
+    json.insert("TYPE","#REQUEST_ATTEND_MEETING");
 
     QJsonDocument document;
     document.setObject(json);

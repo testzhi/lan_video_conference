@@ -56,9 +56,8 @@ public:
     void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);//请求回复会议通知
     void requestStartMeeting(std::string emailid, std::string meetingID);
     void requestStopMeeting(std::string emailid, std::string meetingID);
-    void requestBeginMeeting(std::string meetingID);
-
-
+    void requestSpeak(std::string userID,std::string meetingID);
+    void requestAttendMeeting(std::string userID,std::string meetingID);
     void setEmployee(Employee *employee);
 //    void setCompany(Company *company);
 
@@ -75,7 +74,8 @@ private:
     //处理在线转发
     void handleOnlineMeetingInvitationResult(QJsonObject qo);//处理发起会议的在线转发
     void handleOnlineMeetingResult(QJsonObject qo);//针对speaker在线，assistant发起会议，speaker端会议+1
-    void handleOnlineMeetingStateResult(QJsonObject qo);//处理开始、结束会议的在线转发
+    void handleOnlineMeetingStartResult(QJsonObject qo);//处理开始会议的在线转发
+    void handleOnlineMeetingStopResult(QJsonObject qo);//处理结束会议的在线转发
 
 
 
@@ -91,7 +91,7 @@ private:
     std::string requestReplyMeetingToString(std::string emailid, std::string result, std::string meetingID, std::string cause);
     std::string requestStartMeetingToString(std::string emailid, std::string meetingID);
     std::string requestStopMeetingToString(std::string emailid, std::string meetingID);
-
+    std::string requestAttendMeetingToString(std::string emailid,std::string meetingID);
 
     void tcpSendMessage(std::string msg);
     QJsonObject stringToQJsonObject(std::string str);

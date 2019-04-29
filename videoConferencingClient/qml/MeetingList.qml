@@ -4,9 +4,11 @@ import Meeting 1.0
 
 Item {
     anchors.fill: parent
+    property string currentMeeting: ""
     signal beginMeeting(var index)
     signal attendMeeting(var index)
     signal recordMeeting(var index)
+    signal comeBackMeeting
     property var themes: []
     property var dates: []
     property var times: []
@@ -53,25 +55,6 @@ Item {
             meetingState[i] = met.state
             meetingID[i] = met.meetingID
         }
-
-        //        for (var a = 0; a !== speakerID.length; a++) {
-
-        //            for (var b = 0; b !== conferenceUI.employee.companys.departmentCount(
-        //                     ); b++) {
-        //                dep = conferenceUI.employee.companys.getDepartment(b)
-        //                for (var c = 0; c !== dep.groupCount(); c++) {
-        //                    gro = dep.getGroup(c)
-        //                    for (var d = 0; d !== gro.conciseEmployeeCount(); d++) {
-        //                        emp = gro.getConciseEmployee(d)
-        //                        if (emp.userID === speakerID[a])
-        //                            speakerName[a] = emp.realName
-        //                        if (emp.userID === initiatorID[a])
-        //                            initiatorName[a] = emp.realName
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        console.log("Meeting counts  ", themes.length)
     }
 
     Loader {
@@ -121,22 +104,35 @@ Item {
                             visible: (currentEmployeeID === initiatorID[index]
                                       || currentEmployeeID === speakerID[index])
                                      && meetingState[index] === "0"
+                            && currentMeeting !== meetingID[index]
                             onClicked: {
                                 beginMeeting(index)
-                                conferenceUI.getBeginMeetingMessage(
+                                conferenceUI.getStartMeetingMessage(
                                             meetingID[index])
+                                meetingList.currentMeeting = meetingID[index]
                             }
                         }
                         Button {
+                            visible: currentMeeting === meetingID[index]
+                            text: "回到会议"
+                            onClicked: {
+                                comeBackMeeting()
+                            }
+                        }
+
+                        Button {
                             visible: meetingState[index] === "1"
+                                     && currentMeeting !== meetingID[index]
                             text: "加入会议"
                             onClicked: {
                                 attendMeeting(index)
+                                conferenceUI.getAttendMeetingMessage(meetingID[index])
                             }
                         }
                         Button {
                             text: "记载会议"
                             visible: meetingState[index] === "2"
+                                     && currentMeeting !== meetingID[index]
                                      && initiatorID[index] === currentEmployeeID
                             onClicked: {
                                 recordMeeting(index)

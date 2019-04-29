@@ -1,8 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/1.jpg</file>
-        <file>resources/1.png</file>
-        <file>resources/xly.png</file>
         <file>qml/main.qml</file>
         <file>qml/MeetingList.qml</file>
         <file>qml/PublishMeeting.qml</file>
@@ -14,5 +11,19 @@
         <file>qml/Notification.qml</file>
         <file>qml/PersonalData.qml</file>
         <file>qml/Meeting.qml</file>
+        <file>resources/back.png</file>
+        <file>resources/check.png</file>
+        <file>resources/closeMeeting.png</file>
+        <file>resources/home.png</file>
+        <file>resources/listDown.png</file>
+        <file>resources/listUp.png</file>
+        <file>resources/notCheck.png</file>
+        <file>resources/listDown.ico</file>
+        <file>resources/avatar.jpg</file>
+        <file>resources/listUp.ico</file>
+        <file>resources/exit.ico</file>
+        <file>resources/background1.gif</file>
+        <file>resources/background2.jpg</file>
+        <file>resources/voiceClose.png</file>
     </qresource>
 </RCC>

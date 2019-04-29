@@ -7,13 +7,18 @@ Item {
     signal back
     signal registerSuccess(var userID)
     anchors.fill: parent
-    Image {
+    Rectangle {
         anchors.left: parent.left
         anchors.top: parent.top
-        source: "../resources/1.png"
-        MouseArea {
+        width: 30
+        height: 30
+        Image {
             anchors.fill: parent
-            onClicked: back()
+            source: "../resources/back.png"
+            MouseArea {
+                anchors.fill: parent
+                onClicked: back()
+            }
         }
     }
 
@@ -39,7 +44,7 @@ Item {
                         smooth: true
                         visible: false
                         anchors.fill: parent
-                        source: "../resources/xly.png"
+                        source: "../resources/avatar.jpg"
                         antialiasing: true
                     }
                     Rectangle {
@@ -227,7 +232,7 @@ Item {
             mistake.text = "该邮箱已被注册"
         }
         onRegisterSuccessfully: {
-            _image.source = "../resources/xly.png"
+            _image.source = "../resources/avatar.png"
             name.text = password.text = company.text = department.text
                     = group.text = phone.text = email.text = confirm.text = ""
             registerSuccess(conferenceUI.employee.userID)

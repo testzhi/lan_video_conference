@@ -26,7 +26,10 @@ public:
     Q_INVOKABLE void getLaunchMeetingMessage(QString speaker,QString date,QString time,QString category,QString subject,QString scale,QString dura,QString remark,QList<QString> attendees);
     Q_INVOKABLE void getReplyMeetingInvitation(QString result,QString meetingID,QString cause);
     Q_INVOKABLE void getExitMessage();
-    Q_INVOKABLE void getBeginMeetingMessage(QString meetingID);
+    Q_INVOKABLE void getStartMeetingMessage(QString meetingID);
+    Q_INVOKABLE void getStopMeetingMessage(QString meetingID);
+    Q_INVOKABLE void getAttendMeetingMessage(QString meetingID);
+//    Q_INVOKABLE void getSpeakMessage(QString meetingID);
 
     VideoConferencingClient *getVideoConferencing() const;
     void setVideoConferencing(VideoConferencingClient *videoConferencing);

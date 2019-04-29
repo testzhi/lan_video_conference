@@ -117,7 +117,7 @@ Item {
             anchors.right: parent.right
             Image {
                 id: back
-                source: "../resources/1.png"
+                source: "../resources/back.png"
                 anchors.fill: parent
                 MouseArea {
                     anchors.fill: parent

@@ -30,7 +30,7 @@ Item {
                         smooth: true
                         visible: false
                         anchors.fill: parent
-                        source: "../resources/xly.png"
+                        source: "../resources/avatar.jpg"
                         antialiasing: true
                     }
                     Rectangle {

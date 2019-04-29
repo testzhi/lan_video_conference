@@ -60,9 +60,19 @@ void ConferenceUI::getExitMessage()
     m_videoConferencing->requestExit(m_employee->userID().toStdString());
 }
 
-void ConferenceUI::getBeginMeetingMessage(QString meetingID)
+void ConferenceUI::getStartMeetingMessage(QString meetingID)
 {
-    m_videoConferencing->requestBeginMeeting(meetingID.toStdString());
+    m_videoConferencing->requestStartMeeting(m_employee->userID().toStdString(),meetingID.toStdString());
+}
+
+void ConferenceUI::getStopMeetingMessage(QString meetingID)
+{
+    m_videoConferencing->requestStopMeeting(m_employee->userID().toStdString(),meetingID.toStdString());
+}
+
+void ConferenceUI::getAttendMeetingMessage(QString meetingID)
+{
+    m_videoConferencing->requestAttendMeeting(m_employee->userID().toStdString(),meetingID.toStdString());
 }
 
 VideoConferencingClient *ConferenceUI::getVideoConferencing() const

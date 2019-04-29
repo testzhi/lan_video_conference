@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.2
 import QtGraphicalEffects 1.12
+import QtQuick.Dialogs 1.2
 import Meeting 1.0
 
 Item {
@@ -21,50 +22,6 @@ Item {
         }
     }
 
-    Rectangle {
-        width: 20
-        height: 20
-        anchors.top: parent.top
-        anchors.right: parent.right
-        Image {
-            id: back
-            source: "../resources/1.png"
-            anchors.fill: parent
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    meetingBack()
-                }
-            }
-        }
-    }
-    Rectangle {
-        width: 20
-        height: 20
-        anchors.top: parent.top
-        anchors.right: parent.right
-        z: 1
-        Image {
-            id: changeScreen
-            property string screenType: "0"
-            source: "../resources/1.png"
-            anchors.fill: parent
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (changeScreen.screenType === "0") {
-                        xvideoCamera.pausePlay()
-                        xvideoScreen.startPlay()
-                        changeScreen.screenType = "1"
-                    } else {
-                        xvideoCamera.startPlay()
-                        xvideoScreen.pausePlay()
-                        changeScreen.screenType = "0"
-                    }
-                }
-            }
-        }
-    }
     Row {
         anchors.fill: parent
         Column {
@@ -117,7 +74,7 @@ Item {
                                             smooth: true
                                             visible: false
                                             anchors.fill: parent
-                                            source: "../resources/xly.png"
+                                            source: "../resources/avatar.jpg"
                                             antialiasing: true
                                         }
                                         Rectangle {
@@ -177,28 +134,132 @@ Item {
                 anchors.fill: parent
                 anchors.centerIn: parent
             }
+            Item {
+                z: 1
+                width: 40
+                height: 40
+                anchors.top: parent.top
+                anchors.left: parent.left
+                Image {
+                    id: back
+                    source: "../resources/back.png"
+                    anchors.fill: parent
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            meetingBack()
+                        }
+                    }
+                }
+            }
+            Switch {
+                id: screenSwitch
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                z: 1
+                checked: true
+                visible: false
+                onClicked: {
+                    if (checked === false) {
+                        xvideoCamera.pausePlay()
+                        xvideoScreen.startPlay()
+                    } else {
+                        xvideoCamera.startPlay()
+                        xvideoScreen.pausePlay()
+                    }
+                }
+            }
+            Item {
+                id: meetingEnd
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 30
+                width: 60
+                height: 40
+
+                Image {
+                    anchors.fill: parent
+                    source: "../resources/closeMeeting.png"
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: {
+                        meetingEnd.opacity = 0.5
+                    }
+                    onReleased: {
+                        meetingEnd.opacity = 1
+                    }
+                    onClicked: {
+                        conferenceUI.getStopMeetingMessage(
+                                    meetingList.currentMeeting)
+                    }
+                }
+            }
+            Item {
+                id: voice
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 30
+                width: 40
+                height: 40
+                Image {
+                    anchors.fill: parent
+                    source: "../resources/voiceClose.png"
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onPressed: {
+                        voice.opacity = 0.5
+                    }
+                    onReleased: {
+                        voice.opacity = 1
+                    }
+                }
+            }
+            MessageDialog {
+                id: messageDialog
+                title: "提醒"
+                text: "该会议已结束."
+                onAccepted: {
+                    console.log("And of course you could only agree.")
+                    xvideoScreen.pausePlay()
+                    xvideoCamera.pausePlay()
+                    meetingBack()
+                    meetingList.currentMeeting = ""
+                    screenSwitch.visible = false
+                    Qt.quit()
+                }
+                Component.onCompleted: visible = false
+            }
+
             Connections {
+                id: meetingConnect
                 target: conferenceUI.employee
-                //                property Attendee att
+                property Meeting mee
                 onLoginSucceeded: {
                     if (type === "BeginMeeting") {
                         console.log("begin meeting")
-                        meeting.att = conferenceUI.employee.getAttendee(0)
-                        //                        att.camera("./")
-                        console.log("xvideo width height", meetingScreen.width,
-                                    meetingScreen.height)
-                        xvideoScreen.setScale("2.5")
-                        xvideoCamera.setScale("2.5")
-                        //                        xvideoScreen.startPlay()
-                        xvideoCamera.startPlay()
+                        for (var i = 0; i !== conferenceUI.employee.meetingCount(
+                                 ); i++) {
+                            meetingConnect.mee = conferenceUI.employee.getMeeting(
+                                        i)
+                            if (meetingConnect.mee.meetingID(
+                                        ) === meetingList.currentMeeting) {
+                                if (conferenceUI.employee.userID(
+                                            ) === meetingConnect.mee.speaker) {
+                                    xvideoScreen.setScale("2.4")
+                                    xvideoCamera.setScale("2.4")
+                                    xvideoCamera.startPlay()
+                                    screenSwitch.visible = true
+                                }
+                            }
+                        }
                     } else if (type === "Exit") {
                         xvideoScreen.pausePlay()
                         xvideoCamera.pausePlay()
-                        //                        if (changeScreen.screenType === "0") {
-                        //                            xvideoCamera.pausePlay()
-                        //                        } else {
-                        //                            xvideoScreen.pausePlay()
-                        //                        }
+                    } else if (type === "MeetingEnd") {
+                        messageDialog.visible = true
                     }
                 }
             }

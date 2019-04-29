@@ -13,12 +13,17 @@ Item {
             height: mainWindow.height * 0.12
             width: mainWindow.width
             z: 1
+            Image {
+                id: background
+                anchors.fill: parent
+                source: "../resources/background2.jpg"
+            }
             Row {
                 anchors.fill: parent
                 anchors.left: parent.left
                 anchors.leftMargin: mainWindow.width * 0.03
                 spacing: mainWindow.width * 0.03
-                Rectangle {
+                Item {
                     id: img
                     width: mainWindow.height * 0.07
                     height: mainWindow.height * 0.07
@@ -28,7 +33,7 @@ Item {
                         smooth: true
                         visible: false
                         anchors.fill: parent
-                        source: "../resources/xly.png"
+                        source: "../resources/avatar.jpg"
                         antialiasing: true
                     }
                     Rectangle {
@@ -55,16 +60,36 @@ Item {
                     //                    font.pixelSize: 25
                 }
             }
-            Button {
+
+            Item {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "退出当前帐号"
                 anchors.right: parent.right
                 anchors.rightMargin: 20
-                onClicked: {
-                    conferenceUI.getExitMessage()
-                    exit()
+                width: 40
+                height: 40
+                Image {
+                    //                    id: exit
+                    anchors.fill: parent
+                    source: "../resources/exit.ico"
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        conferenceUI.getExitMessage()
+                        exit()
+                    }
                 }
             }
+            //            Button {
+            //                anchors.verticalCenter: parent.verticalCenter
+            //                text: "退出当前帐号"
+            //                anchors.right: parent.right
+            //                anchors.rightMargin: 20
+            //                onClicked: {
+            //                    conferenceUI.getExitMessage()
+            //                    exit()
+            //                }
+            //            }
         }
         Rectangle {
             width: mainWindow.width
@@ -196,6 +221,11 @@ Item {
                         employeeMessage.visible = false
                         meeting.visible = true
                     }
+                    onComeBackMeeting: {
+                        employeeMessage.visible = false
+                        meeting.visible = true
+                    }
+
                     onAttendMeeting: {
                         employeeMessage.visible = false
                         meeting.visible = true

@@ -7,10 +7,10 @@ import QtGraphicalEffects 1.0
 
 Window {
     id: mainWindow
-    property string listOpen: "../resources/1.png"
-    property string listClose: "../resources/xly.png"
-    property string listAllChoose: "../resources/1.png"
-    property string listAllNotChoose: "../resources/xly.png"
+    property string listOpen: "../resources/listDown.ico"
+    property string listClose: "../resources/listUp.ico"
+    property string listAllChoose: "../resources/check.png"
+    property string listAllNotChoose: "../resources/notCheck.png"
     visible: true
     width: 400
     height: 600
