@@ -81,7 +81,7 @@ Item {
     Connections {
         target: conferenceUI.employee
         onLoginSucceeded: {
-            console.log(type)
+            //            console.log(type)
             if (type === "MeetingMessage") {
                 console.log("refresh meeting list")
                 initMeetingMessage()

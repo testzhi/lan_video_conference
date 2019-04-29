@@ -62,9 +62,9 @@ void XVideoRecordThread::stopPlay()
 void XVideoRecordThread::pausePlay()
 {
     m_playerState = Pause;
-    if( this->isRunning() ) {
-        this->wait();
-    }
+//    if( this->isRunning() ) {
+//        this->wait();
+//    }
     qDebug() << "Pause...";
 }
 
@@ -179,6 +179,9 @@ void XVideoRecordThread::run()
 
     while (1)
     {
+        if(m_playerState == Pause) {
+            break;
+        }
         if(av_read_frame(m_formatCtx, packet)>=0)
         {
             if(packet->stream_index == videoStream)
@@ -219,7 +222,7 @@ void XVideoRecordThread::run()
     emit sig_GetOneFrame(QImage());
     pausePlay();
 
-    av_free(out_buffer);
+//    av_free(out_buffer);
     av_free(pFrameYUV);
     avcodec_close(m_pCodecCtx);
     avformat_close_input(&m_formatCtx);

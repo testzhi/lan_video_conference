@@ -1,11 +1,11 @@
-#ifndef XVIDEO_H
-#define XVIDEO_H
+#ifndef XSCREEN_H
+#define XSCREEN_H
 #include <QQuickPaintedItem>
 #include <QImage>
 
 #include "xvideorecord.h"
 
-class XVideo : public QQuickPaintedItem
+class XScreen : public QQuickPaintedItem
 {
     Q_OBJECT
 public:
@@ -16,8 +16,8 @@ public:
     Q_PROPERTY(int          nDuration        READ getDuration      WRITE setDuration     NOTIFY durationChanged)
     Q_PROPERTY(int          nPosition        READ getPosition      WRITE setPosition     NOTIFY positionChanged)
 Q_INVOKABLE void SetSize(int width, int height);
-    explicit XVideo();
-    ~XVideo();
+    explicit XScreen();
+    ~XScreen();
     int getHeight() const;
     void setHeight(int value);
 

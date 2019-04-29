@@ -38,6 +38,33 @@ Item {
             }
         }
     }
+    Rectangle {
+        width: 20
+        height: 20
+        anchors.top: parent.top
+        anchors.right: parent.right
+        z: 1
+        Image {
+            id: changeScreen
+            property string screenType: "0"
+            source: "../resources/1.png"
+            anchors.fill: parent
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (changeScreen.screenType === "0") {
+                        xvideoCamera.pausePlay()
+                        xvideoScreen.startPlay()
+                        changeScreen.screenType = "1"
+                    } else {
+                        xvideoCamera.startPlay()
+                        xvideoScreen.pausePlay()
+                        changeScreen.screenType = "0"
+                    }
+                }
+            }
+        }
+    }
     Row {
         anchors.fill: parent
         Column {
@@ -56,7 +83,7 @@ Item {
                     target: conferenceUI.employee
                     onLoginSucceeded: {
                         if (type === "AttendeeMessage") {
-                            console.log("attendee message")
+                            console.log("ssattendee message")
                             initAttendeeMessage()
                             currentMeetingAttendeeLoader.sourceComponent = null
                             currentMeetingAttendeeLoader.sourceComponent
@@ -128,22 +155,50 @@ Item {
             }
 
             Rectangle {
+
                 width: parent.width
                 height: parent.height / 2 - 1
                 //                border.width: 1
             }
         }
         Rectangle {
+            id: meetingScreen
             width: parent.width * 0.8
             height: parent.height
             border.width: 1
+            XScreen {
+                id: xvideoScreen
+                //                visible: false
+                anchors.fill: parent
+                anchors.centerIn: parent
+            }
+            XVideo {
+                id: xvideoCamera
+                anchors.fill: parent
+                anchors.centerIn: parent
+            }
             Connections {
                 target: conferenceUI.employee
                 //                property Attendee att
-                onLoginSucceed: {
+                onLoginSucceeded: {
                     if (type === "BeginMeeting") {
+                        console.log("begin meeting")
                         meeting.att = conferenceUI.employee.getAttendee(0)
-                        att.camera("./")
+                        //                        att.camera("./")
+                        console.log("xvideo width height", meetingScreen.width,
+                                    meetingScreen.height)
+                        xvideoScreen.setScale("2.5")
+                        xvideoCamera.setScale("2.5")
+                        //                        xvideoScreen.startPlay()
+                        xvideoCamera.startPlay()
+                    } else if (type === "Exit") {
+                        xvideoScreen.pausePlay()
+                        xvideoCamera.pausePlay()
+                        //                        if (changeScreen.screenType === "0") {
+                        //                            xvideoCamera.pausePlay()
+                        //                        } else {
+                        //                            xvideoScreen.pausePlay()
+                        //                        }
                     }
                 }
             }

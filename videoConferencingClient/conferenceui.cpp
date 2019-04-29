@@ -56,6 +56,7 @@ void ConferenceUI::getReplyMeetingInvitation(QString result, QString meetingID, 
 
 void ConferenceUI::getExitMessage()
 {
+    m_employee->loginSucceeded("Exit");
     m_videoConferencing->requestExit(m_employee->userID().toStdString());
 }
 

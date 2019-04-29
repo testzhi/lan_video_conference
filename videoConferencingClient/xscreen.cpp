@@ -1,27 +1,27 @@
-#include "xvideo.h"
+#include "xscreen.h"
 #include <QPainter>
 #include <QDebug>
 #include "xvideorecord.h"
 
-void XVideo::SetSize(int width, int height)
+void XScreen::SetSize(int width, int height)
 {
     nWidth = width;
     nHeight = height;
 }
 
 
-XVideo::XVideo()
+XScreen::XScreen()
 {
     qDebug()<<"create";
-//    m_pCameraRecord = new XVideoRecordThread(":0.0+10,20", "x11grab");
-    m_pCameraRecord = new XVideoRecordThread("/dev/video0", "video4linux2");
+//    m_pCameraRecord = new XScreenRecordThread(":0.0+10,20", "x11grab");
+    m_pCameraRecord = new XVideoRecordThread(":0.0+10,20", "x11grab");
 //    m_pScreenRecord = new XVideoRecordThread(":0.0+10,20", "x11grab");
-    connect(m_pCameraRecord, &XVideoRecordThread::sig_GetOneFrame, this, &XVideo::slot_GetOneFrame);
+    connect(m_pCameraRecord, &XVideoRecordThread::sig_GetOneFrame, this, &XScreen::slot_GetOneFrame);
     connect(m_pCameraRecord, SIGNAL(sig_totalTimeChanged(QString,qint64)), this, SLOT(slot_totalTimeChanged(QString,qint64)));
     connect(m_pCameraRecord, SIGNAL(sig_currentTimeChanged(QString,qint64)), this, SLOT(slot_currentTimeChanged(QString,qint64)));
 }
 
-XVideo::~XVideo()
+XScreen::~XScreen()
 {
     qDebug()<<"distory";
     m_pCameraRecord->deleteLater();
@@ -29,7 +29,7 @@ XVideo::~XVideo()
 
 }
 
-void XVideo::startPlay()
+void XScreen::startPlay()
 {
 //    int i = type.toInt();
 //    if(i == 0)
@@ -37,7 +37,7 @@ void XVideo::startPlay()
 //    else m_pScreenRecord->startPlay();
 }
 
-void XVideo::pausePlay()
+void XScreen::pausePlay()
 {
 //    int i = type.toInt();
 //    if(i == 0)
@@ -45,30 +45,30 @@ void XVideo::pausePlay()
 //    else m_pScreenRecord->pausePlay();
 }
 
-void XVideo::setScale(QString s)
+void XScreen::setScale(QString s)
 {
     m_pCameraRecord->setImageScale(s.toDouble());
 }
 
-void XVideo::slot_GetOneFrame(QImage image)
+void XScreen::slot_GetOneFrame(QImage image)
 {
     m_Frame = image.copy();
     update();
 }
 
-void XVideo::slot_totalTimeChanged(QString str, qint64 sec)
+void XScreen::slot_totalTimeChanged(QString str, qint64 sec)
 {
     setDuration(sec);
     emit sig_totalTimeChanged(str);
 }
 
-void XVideo::slot_currentTimeChanged(QString str, qint64 sec)
+void XScreen::slot_currentTimeChanged(QString str, qint64 sec)
 {
     setPosition(sec);
     emit sig_currentTimeChanged(str);
 }
 
-void XVideo::paint(QPainter *pPainter)
+void XScreen::paint(QPainter *pPainter)
 {
 
     if (!m_Frame.isNull())
@@ -78,61 +78,61 @@ void XVideo::paint(QPainter *pPainter)
     }
 }
 
-QString XVideo::getStrVideoPath() const
+QString XScreen::getStrVideoPath() const
 {
     return strVideoPath;
 }
 
-void XVideo::setStrVideoPath(QString &value)
+void XScreen::setStrVideoPath(QString &value)
 {
     emit strVideoPathChanged(value);
     strVideoPath = value;
     if (m_pCameraRecord)
     {
         m_pCameraRecord->setVideoSource(value);
-        qDebug() << "XVideo::setStrVideoPath:" << value;
+        qDebug() << "XScreen::setStrVideoPath:" << value;
     }
 }
 
-int XVideo::getWidth() const
+int XScreen::getWidth() const
 {
     return nWidth;
 }
 
-void XVideo::setWidth(int value)
+void XScreen::setWidth(int value)
 {
     nWidth = value;
     emit widthChanged(value);
 }
 
-int XVideo::getHeight() const
+int XScreen::getHeight() const
 {
     return nHeight;
 }
 
-void XVideo::setHeight(int value)
+void XScreen::setHeight(int value)
 {
     nHeight = value;
     emit heightChanged(value);
 }
 
-int XVideo::getDuration() const
+int XScreen::getDuration() const
 {
     return nDuration;
 }
 
-void XVideo::setDuration(int value)
+void XScreen::setDuration(int value)
 {
     nDuration = value;
     emit durationChanged(value);
 }
 
-int XVideo::getPosition() const
+int XScreen::getPosition() const
 {
     return nPosition;
 }
 
-void XVideo::setPosition(int value)
+void XScreen::setPosition(int value)
 {
     nPosition = value;
     emit positionChanged(value);

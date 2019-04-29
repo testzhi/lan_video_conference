@@ -24,7 +24,8 @@ SOURCES += \
     notification.cpp \
     attendee.cpp \
     xvideo.cpp \
-    xvideorecord.cpp
+    xvideorecord.cpp \
+    xscreen.cpp
 
 
 RESOURCES += qml.qrc
@@ -51,7 +52,8 @@ HEADERS += \
     notification.h \
     attendee.h \
     xvideo.h \
-    xvideorecord.h
+    xvideorecord.h \
+    xscreen.h
 
 DISTFILES += \
     resources/1.png \

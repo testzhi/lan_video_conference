@@ -4,6 +4,8 @@
 #include <iostream>
 #include "conferenceui.h"
 #include "videoconferencingclient.h"
+#include "xvideo.h"
+#include "xscreen.h"
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +25,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<Notification>("Meeting",1,0,"Notification");
     qmlRegisterType<ConciseEmployee>("Meeting",1,0,"ConciseEmployee");
     qmlRegisterType<Attendee>("Meeting",1,0,"Attendee");
+    qmlRegisterType<XVideo>("Meeting",1,0,"XVideo");
+    qmlRegisterType<XScreen>("Meeting",1,0,"XScreen");
     ConciseEmployee *employee0 = new ConciseEmployee();
     employee0->setUserID("00");
     employee0->setRealName("lzy");
@@ -92,8 +96,9 @@ int main(int argc, char *argv[])
     auto i = app.exec();
     if(i  ==  0)
     {
-        std::string userID = conferenceUI.employee()->userID().toStdString();
-        conferenceUI.getVideoConferencing()->requestExit(userID);
+//        std::string userID = conferenceUI.employee()->userID().toStdString();
+//        conferenceUI.getVideoConferencing()->requestExit(userID);
+        conferenceUI.getExitMessage();
     }
     return app.exec();
 }
