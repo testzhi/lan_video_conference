@@ -70,6 +70,15 @@ Item {
                 initMeetingMessage()
                 meetingLoader.sourceComponent = null
                 meetingLoader.sourceComponent = meetingComponent
+            } else if (type === "RefreshMeetingID") {
+                console.log("refresh meetingID")
+                for (var i = 0; i !== conferenceUI.employee.meetingCount(
+                         ); i++) {
+                    met = conferenceUI.employee.getMeeting(i)
+                    if (meetingID[i] !== met.meetingID) {
+                        meetingID[i] = met.meetingID
+                    }
+                }
             }
         }
     }
@@ -126,7 +135,8 @@ Item {
                             text: "加入会议"
                             onClicked: {
                                 attendMeeting(index)
-                                conferenceUI.getAttendMeetingMessage(meetingID[index])
+                                conferenceUI.getAttendMeetingMessage(
+                                            meetingID[index])
                             }
                         }
                         Button {

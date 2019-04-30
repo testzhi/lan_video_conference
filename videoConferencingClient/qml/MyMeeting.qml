@@ -6,8 +6,8 @@ import Meeting 1.0
 
 Item {
     id: meeting
-    signal meetingBack()
-    signal meetingExit()
+    signal meetingBack
+    signal meetingExit
     property var meetingNotifications: []
     property string currentMeetingID: ""
     property var attendeeRealName: []
@@ -115,13 +115,13 @@ Item {
             }
 
             Loader {
-                id:meetingNotificationLoader
+                id: meetingNotificationLoader
                 width: parent.width
                 height: parent.height / 2 - 1
             }
             Connections {
                 target: conferenceUI.employee
-                onRegisterSuccessfully:{
+                onRegisterSuccessfully: {
                     if (message !== "RegisterSuccess") {
                         meeting.meetingNotifications[meeting.meetingNotifications.length] = message
                         meetingNotificationLoader.sourceComponent = null
@@ -213,7 +213,7 @@ Item {
                         xvideoScreen.pausePlay()
                         xvideoCamera.pausePlay()
                         screenSwitch.visible = false
-                        while(meeting.meetingNotifications.length !== 0)
+                        while (meeting.meetingNotifications.length !== 0)
                             meeting.meetingNotifications.pop()
                         meetingExit()
                         conferenceUI.getStopMeetingMessage(
@@ -252,9 +252,9 @@ Item {
                     xvideoScreen.pausePlay()
                     xvideoCamera.pausePlay()
                     meetingExit()
-//                    meetingList.currentMeeting = ""
+                    //                    meetingList.currentMeeting = ""
                     screenSwitch.visible = false
-                    while(meeting.meetingNotifications.length !== 0)
+                    while (meeting.meetingNotifications.length !== 0)
                         meeting.meetingNotifications.pop()
                     Qt.quit()
                 }
@@ -293,9 +293,6 @@ Item {
                     } else if (type === "MeetingEnd") {
                         messageDialog.visible = true
                     }
-                }
-                onAddAttendeeMessage: {
-                    console.log(message)
                 }
             }
         }

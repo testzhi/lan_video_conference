@@ -72,7 +72,7 @@ private:
     void handleReplyLaunchMeetingResult(QJsonObject qo, QString &err);
     void handleReplyInvitation(QJsonObject qo);
     //处理在线转发
-    void handleOnlineMeetingInvitationResult(QJsonObject qo, QString &speaker);//处理发起会议的在线转发
+    void handleOnlineMeetingInvitationResult(QJsonObject qo, QString &speaker, QString &assistant);//处理发起会议的在线转发
     void handleOnlineMeetingResult(QJsonObject qo);//针对speaker在线，assistant发起会议，speaker端会议+1
     void handleOnlineMeetingStartResult(QJsonObject qo);//处理开始会议的在线转发
     void handleOnlineMeetingStopResult(QJsonObject qo);//处理结束会议的在线转发
