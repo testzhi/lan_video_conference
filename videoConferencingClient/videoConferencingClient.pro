@@ -25,7 +25,8 @@ SOURCES += \
     attendee.cpp \
     xvideo.cpp \
     xvideorecord.cpp \
-    xscreen.cpp
+    xscreen.cpp \
+    videosender.cpp
 
 
 RESOURCES += qml.qrc
@@ -53,9 +54,21 @@ HEADERS += \
     attendee.h \
     xvideo.h \
     xvideorecord.h \
-    xscreen.h
+    xscreen.h \
+    videodata.h \
+    videosender.h
 
 DISTFILES += \
     resources/1.png \
     resources/xly.png
 LIBS += -lboost_system -lboost_date_time -lboost_thread -lavformat -lavcodec -lavfilter -lavutil -lSDL2 -lswscale -lswresample -lavdevice -lpthread
+
+
+INCLUDEPATH +=  ./usr/local/include
+
+LIBS += -L./usr/local/lib/ -lavcodec -lavdevice -lavfilter \
+-lavformat -lavutil -lswresample -lswscale
+
+LIBS += -L./usr/local/lib/ -lSDL2
+
+LIBS += -L./usr/local/lib -ljthread -ljrtp
