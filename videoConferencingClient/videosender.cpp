@@ -5,7 +5,7 @@ void CheckError(int rtperr)
 {
     if (rtperr < 0)
     {
-//        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
         exit(-1);
     }
 }
