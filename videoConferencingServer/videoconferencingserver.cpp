@@ -20,9 +20,10 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
 {
     if(ec)
         return;
-    //    _remote_endpoint = sock->remote_endpoint();
+    //    _remote_endpoint = sock.remote_endpoint();
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
+    clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, boost::asio::placeholders::error, sock, sock->remote_endpoint().address().to_string()));
     accept();
 }
@@ -64,13 +65,14 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleMeetingList(Data, sock);
     else if(type == "#REQUEST_LAUNCH_MEETING")
         handleRequestLaunchMeeting(Data, sock);
-    //    else if(type == "#REQUEST_START_MEETING")
-    //        handleRequestStartMeeting(Data, sock);
+    else if(type == "#REQUEST_START_MEETING")
+        handleRequestStartMeeting(Data, sock);
     //    else if(type == "#REQUEST_STOP_MEETING")
     //        handleRequestStopMeeting(Data, sock);
     else if(type == "#REQUEST_SEND_INVITATION_RESULT")
         handleRequestInvitionResult(Data, sock);
 
+    clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
 }
 void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingServer::sock_ptr sock)
@@ -180,7 +182,65 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
     string emailid = Data.value("DATA")["FROM"].toString().toStdString();
 
     if(!emailid.empty())
+    {
         dc.getDb().updateStateByEmaiID(emailid, 0, "");
+        vector<string> meetingIDs;
+        dc.getDb().queryMeetingIDByAttendeeIDAndAttendeeState(emailid, 2, meetingIDs);
+        if(!meetingIDs.empty())
+        {
+            for(auto &meetingid:meetingIDs)
+            {
+                if(!meetingid.empty())
+                {
+                    string speaker, assistant;
+                    dc.getDb().queryMeetingSpeakerAndAssistantByMeetingID(meetingid, speaker, assistant);
+                    if(emailid == speaker || emailid == assistant)
+                    {
+                        dc.getDb().updateMeetingStateByMeetingID(meetingid, 2);
+                        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, emailid, 4, "");
+                        vector<string> attendees;
+                        dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 2, attendees);
+                        string json;
+                        dc.jsonStopMeeting(meetingid, json);
+
+                        if(!attendees.empty())
+                        {
+                            for(auto &attendee:attendees)
+                            {
+                                if(attendee != emailid)
+                                {
+                                    dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, attendee, 4, "");
+                                    string ip;
+                                    int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                                    if(r2 == 1)
+                                        udpSendMessage(ip, json);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, emailid, 3, "");
+                        vector<string> attendees;
+                        dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 2, attendees);
+                        if(!attendees.empty())
+                        {
+                            string json;
+                            dc.jsonExitMeeting(meetingid, emailid, json);
+                            for(auto &atten : attendees)
+                            {
+                                string ip;
+                                int r2 = dc.getDb().queryIpByUserID(atten, 1, ip);
+                                if(r2 == 1)
+                                    udpSendMessage(ip, json);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
 }
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
@@ -293,7 +353,7 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
             {
                 if(!isSameString(userid, speaker))
                 {
-                    dc.getDb().insertIntoTableAttendees(mm, userid);
+                    dc.getDb().insertIntoTableAttendees(mm, userid, 0, "");
                     dc.getDb().insertIntoTableNotifications(userid, assistant, 1, subject, 0, mm);
                     //邮件
                     string atten_ip;
@@ -323,11 +383,34 @@ void VideoConferencingServer::handleRequestStartMeeting(QJsonObject Data, VideoC
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
     string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
 
-    string tcpJson, id;
-    dc.getDb().updateMeetingStateByMeetingID(meetingID, 1);
-    //告诉其他人发会议状态更改
-    //            找userid对应ip？
-    //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+    int meetingState = -1;
+    dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
+    if(meetingState == 0)
+    {
+        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 2, "");
+        dc.getDb().updateMeetingStateByMeetingID(meetingID, 1);
+        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 2, "");
+        dc.getDb().updateMeetingStateByMeetingID(meetingID, 1);
+
+        vector<string> attendees;
+        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
+
+        string json;
+        dc.jsonStartMeeting(meetingID, json);
+        if(!attendees.empty())
+        {
+            for(auto &attendee:attendees)
+            {
+                if(attendee != emailID)
+                {
+                    string ip;
+                    int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                    if(r2 == 1)
+                        udpSendMessage(ip, json);
+                }
+            }
+        }
+    }
 }
 
 void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -335,12 +418,56 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
     string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
 
-    string tcpJson, id;
-    dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
-    //    dc.
-    //告诉其他人发会议状态更改
-    //            找userid对应ip？
-    //        向其他人广播？？客户端请求他人IP，服务器回馈IP给客户端UDP发送？
+    int meetingState = -1;
+    dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
+    if(meetingState == 1)
+    {
+        string speaker, assistant;
+        dc.getDb().queryMeetingSpeakerAndAssistantByMeetingID(meetingID, speaker, assistant);
+        if(emailID == speaker || emailID == assistant)
+        {
+            dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
+            dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 4, "");
+            vector<string> attendees;
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
+
+            string json;
+            dc.jsonStopMeeting(meetingID, json);
+
+            if(!attendees.empty())
+            {
+                for(auto &attendee:attendees)
+                {
+                    if(attendee != emailID)
+                    {
+                        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
+                        string ip;
+                        int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                        if(r2 == 1)
+                            udpSendMessage(ip, json);
+                    }
+                }
+            }
+        }
+        else
+        {
+            dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 3, "");
+            vector<string> attendees;
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
+            if(!attendees.empty())
+            {
+                string json;
+                dc.jsonExitMeeting(meetingID, emailID, json);
+                for(auto &atten : attendees)
+                {
+                    string ip;
+                    int r2 = dc.getDb().queryIpByUserID(atten, 1, ip);
+                    if(r2 == 1)
+                        udpSendMessage(ip, json);
+                }
+            }
+        }
+    }
 }
 
 void VideoConferencingServer::handleRequestInvitionResult(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -395,9 +522,39 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
 {
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
     string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
-    dc.getDb().insertIntoTableAttendees(meetingID, emailID, 1, "");
-}
+    int meetingState = -1;
+    dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
+    if(meetingState == 1)
+    {
+        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 2, "");
+        string jsonstr;
+        dc.jsonNewMeetingAttendeesList(meetingID, jsonstr);
+        string ownIp; ownIp.clear();
+                int r2 =dc.getDb().queryIpByUserID(emailID, 1, ownIp);
+        if(r2 == 1)
+            udpSendMessage(ownIp, jsonstr);
 
+        vector<string> attendees;
+        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
+        string jsonstr2;
+        dc.jsonStrNewAttendeeDetail(emailID, meetingID,jsonstr2);
+
+        if(!attendees.empty())
+        {
+            for(auto &atten:attendees)
+            {
+                if(atten != emailID)
+                {
+                    string attenip;
+                    attenip.clear();
+                    int r = dc.getDb().queryIpByUserID(atten, 1, attenip);
+                    if(r == 1)
+                        udpSendMessage(attenip, jsonstr2);
+                }
+            }
+        }
+    }
+}
 
 
 QJsonObject VideoConferencingServer::stringToQJsonObject(std::string string)
@@ -413,4 +570,12 @@ bool VideoConferencingServer::isSameString(std::string s1, std::string s2)
     if(s1 == s2)
         return true;
     return false;
+}
+
+void VideoConferencingServer::clearTcpRecBuffer()
+{
+    for(unsigned long i = 0; i != BUFFER_LENGTH; ++i)
+    {
+        m_tcpRecvBuf[i] = '\0';
+    }
 }

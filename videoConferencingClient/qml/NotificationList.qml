@@ -5,15 +5,15 @@ import Meeting 1.0
 Item {
     id: notification
     anchors.fill: parent
-    property var xvisible: false
+//    property var xvisible: false
     property var notificationMessage: []
     property var notificationCategory: []
     property var meetingID: []
     property var currentMeetingIndex
 
-    onVisibleChanged: {
-        notification.visible = xvisible
-    }
+//    onVisibleChanged: {
+//        notification.visible = xvisible
+//    }
 
     property Notification not
     function initNotification() {

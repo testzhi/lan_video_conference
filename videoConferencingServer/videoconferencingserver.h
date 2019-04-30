@@ -71,7 +71,7 @@ public:
 private:
     QJsonObject stringToQJsonObject(std::string string);
     bool isSameString(string s1, string s2);
-
+ void clearTcpRecBuffer();
 
     io_service m_io;
     ip::tcp::acceptor m_acceptor;
