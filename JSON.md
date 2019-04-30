@@ -72,6 +72,34 @@
                   ]
         }
     }
+请求开始会议{
+    TYPE： #REQUEST_START_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }
+请求终止会议{
+    TYPE： #REQUEST_STOP_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }
+请求加入会议{
+    TYPE： #REQUEST_ATTEND_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }
+请求退出会议{
+    TYPE： #REQUEST_EXIT_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }
 <!--请求回复邀请{
     TYPE： #REQUEST_SEND_INVITATION_RESULT
     DATA：{
@@ -250,3 +278,17 @@
         ERROR
         }
     }  
+开始会议{
+    TYPE： _ONLINE_START_A_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }
+终止会议{
+    TYPE： _ONLINE_STOP_A_MEETING
+    DATA：{
+        FROM：xxxIDxxx
+        MEETINGID:
+        }
+    }

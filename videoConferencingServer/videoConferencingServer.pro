@@ -13,6 +13,6 @@ HEADERS += \
     databasebroker.h \
     datacontroller.h
 
-LIBS += -lboost_system -lboost_thread -lboost_date_time -lpthread -lmysqlclient
+LIBS += -lboost_system -lboost_thread -lboost_date_time -lpthread -lmysqlclient -ljrtp -ljthread
 # -lmysqlclient
 QT += core
