@@ -86,6 +86,8 @@ private:
     QString m_videoOutputPath;
 
     PlayerState m_playerState;
+    QString m_H264OutputPath;
+    int save;//0dont 1save
 
     AVFormatContext	*m_formatCtx;
     AVCodecContext *m_pCodecCtx;

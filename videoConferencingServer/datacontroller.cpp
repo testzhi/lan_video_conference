@@ -407,6 +407,7 @@ void DataController::jsonNewMeetingAttendeesList(std::string meetingID, std::str
 
 void DataController::jsonStrNewAttendeeDetail(std::string emailid, std::string meetingID, std::string &jsonstr)
 {
+    cout <<"++++++++++++++"<<endl;
     vector<string> data;
     db.queryEmployeeInfoByEmailID(emailid, data);
     QJsonObject dd;

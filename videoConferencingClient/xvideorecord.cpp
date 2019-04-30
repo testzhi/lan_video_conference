@@ -1,6 +1,7 @@
 #include "xvideorecord.h"
 #include <QDebug>
 #include <stdio.h>
+#include <iostream>
 
 #define SDL_AUDIO_BUFFER_SIZE 1024
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000 // 1 second of 48khz 32bit audio
@@ -62,14 +63,13 @@ void XVideoRecordThread::stopPlay()
 void XVideoRecordThread::pausePlay()
 {
     m_playerState = Pause;
-//    if( this->isRunning() ) {
-//        this->wait();
-//    }
     qDebug() << "Pause...";
 }
 
 void XVideoRecordThread::run()
 {
+    m_H264OutputPath.clear();
+    m_H264OutputPath = "TEMP_H264_VIDEO.h264";
     m_videoOutputPath = "test.yuv";
     m_videoOutputYUV420 = nullptr;
     m_videoOptions = nullptr;
@@ -80,6 +80,7 @@ void XVideoRecordThread::run()
     avformat_network_init();
 
     m_formatCtx = avformat_alloc_context();
+    AVFormatContext* switchFormatCtx = avformat_alloc_context();
     if(!m_videoInputFormat.isEmpty())
     {
         if(m_videoInputFormat == QString("video4linux2"))
@@ -153,6 +154,8 @@ void XVideoRecordThread::run()
 
     if(!m_videoOutputPath.isEmpty())
         m_videoOutputYUV420 = fopen(m_videoOutputPath.toStdString().c_str(), "wb+");
+    if(!m_H264OutputPath.isEmpty() && save == 1)
+        FILE *m_H264Output= fopen(m_H264OutputPath.toStdString().c_str(), "wb+");
 
 
     AVFrame *pFrame = av_frame_alloc();
@@ -197,6 +200,7 @@ void XVideoRecordThread::run()
 
                     sws_scale(img_convert_ctx, (const uint8_t* const*)pFrame->data, pFrame->linesize, 0, m_pCodecCtx->height, pFrameYUV->data, pFrameYUV->linesize);
                     int yy_size = m_pCodecCtx->width * m_pCodecCtx->height;
+                    std::cout << pFrame->pts<<std::endl;
                     QSize qsize(m_pixWidth, m_pixHeight);
                     QImage *tmpImg = new QImage((uchar *)out_buffer, m_pCodecCtx->width, m_pCodecCtx->height, QImage::Format_RGB555);
 
@@ -218,15 +222,18 @@ void XVideoRecordThread::run()
     sws_freeContext(img_convert_ctx);
     av_free(pFrame);
     av_free(out_buffer);
-    fclose(m_videoOutputYUV420);
-
-    emit sig_GetOneFrame(QImage());
+    if(!m_videoOutputPath.isEmpty())
+        fclose(m_videoOutputYUV420);
+    if(!m_H264OutputPath.isEmpty() && save == 1)
+        fclose(m_H264Output)
+                emit sig_GetOneFrame(QImage());
     pausePlay();
 
-//    av_free(out_buffer);
+    //    av_free(out_buffer);
     av_free(pFrameYUV);
     avcodec_close(m_pCodecCtx);
     avformat_close_input(&m_formatCtx);
+    avformat_close_input(&switchFormatCtx);
 }
 
 double XVideoRecordThread::imageScale() const

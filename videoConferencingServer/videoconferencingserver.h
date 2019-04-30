@@ -46,6 +46,7 @@ public:
 
     //UDP
     void udpSendMessage(std::string ip, string msg);
+    void udpSysSendMessage(std::string ip, string msg);
     void handleUdpSend(const boost::system::error_code &ec);
 
     //RTP

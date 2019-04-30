@@ -67,10 +67,12 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleRequestLaunchMeeting(Data, sock);
     else if(type == "#REQUEST_START_MEETING")
         handleRequestStartMeeting(Data, sock);
-    //    else if(type == "#REQUEST_STOP_MEETING")
-    //        handleRequestStopMeeting(Data, sock);
+    else if(type == "#REQUEST_STOP_MEETING")
+        handleRequestStopMeeting(Data, sock);
     else if(type == "#REQUEST_SEND_INVITATION_RESULT")
         handleRequestInvitionResult(Data, sock);
+    else if(type == "#REQUEST_ATTEND_MEETING")
+        handleRequestAttendMeeting(Data, sock);
 
     clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
@@ -82,7 +84,7 @@ void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingS
 }
 void VideoConferencingServer::handleTcpSend(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock)
 {
-    cout << "-------" <<"发送完毕" << endl;
+    cout << sock->remote_endpoint() << "-------" <<"发送完毕" << endl;
 }
 
 void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
@@ -96,7 +98,7 @@ void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
         m_sockTcp.connect(send_ep);
     }
     m_sockTcp.send(boost::asio::buffer(msg));
-    cout << "～～～～～～" <<"发送完毕" << endl;
+    cout << send_ep << "～～～～～～" <<"发送完毕" << endl;
     //    m_sockTcp.close();
 }
 
@@ -109,13 +111,13 @@ void VideoConferencingServer::tcpAsyncConnect(std::string ip, std::string msg)
         m_sockTcp.async_connect(send_ep, boost::bind(&VideoConferencingServer::tcpAsyncConnectionHandler, this, msg, boost::asio::placeholders::error));
     }
     else {
-        cout << "*******" <<"异步发送给" << /*m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
+        cout << "*******" <<"异步发送给" <</* m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
         m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
     }
 }
 void VideoConferencingServer::tcpAsyncConnectionHandler(std::string msg, const boost::system::error_code &ec)
 {
-    cout << "*******" <<"异步连接成功,异步发送给 " << /*m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
+    cout << "*******" <<"异步连接成功,异步发送给 " /*<< m_sockTcp.remote_endpoint() << " 内容： "*/<< msg;
     m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
 }
 void VideoConferencingServer::tcpAsyncSendToHandler(const boost::system::error_code &ec)
@@ -128,10 +130,18 @@ void VideoConferencingServer::udpSendMessage(std::string ip, std::string msg)
 {
     boost::asio::ip::udp::endpoint send_ep(boost::asio::ip::address::from_string(ip),2444);
 
-    cout  << "=========" << "当前UDP服务端输出：" << msg;
+    cout  << "=========" << "当前UDP服务端输出：" << msg <<"   ip:  " << send_ep;
     m_sockUdp.async_send_to(boost::asio::buffer(msg), send_ep,
                             boost::bind(&VideoConferencingServer::handleUdpSend, this,
                                         boost::asio::placeholders::error));
+}
+
+void VideoConferencingServer::udpSysSendMessage(std::string ip, std::string msg)
+{
+    boost::asio::ip::udp::endpoint send_ep(boost::asio::ip::address::from_string(ip),2444);
+    cout  << "~~~~~~~~~~~" << "当前UDP服务端输出：" << msg <<"   ip:  " << send_ep;
+    m_sockUdp.send_to(boost::asio::buffer(msg), send_ep);
+    cout << "~~~~~~~~~~~" <<"UDP发送完毕" << endl;
 }
 void VideoConferencingServer::handleUdpSend(const boost::system::error_code &ec)
 {
@@ -526,25 +536,28 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
     dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
     if(meetingState == 1)
     {
+        vector<string> attendees;
+        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
+        string jsonstr2;
+        dc.jsonStrNewAttendeeDetail(emailID, meetingID,jsonstr2);//给所有已经在会人员
+
         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 2, "");
+
         string jsonstr;
-        dc.jsonNewMeetingAttendeesList(meetingID, jsonstr);
+        dc.jsonNewMeetingAttendeesList(meetingID, jsonstr);//给当前参会人员
         string ownIp; ownIp.clear();
-                int r2 =dc.getDb().queryIpByUserID(emailID, 1, ownIp);
+        int r2 =dc.getDb().queryIpByUserID(emailID, 1, ownIp);
         if(r2 == 1)
             udpSendMessage(ownIp, jsonstr);
 
-        vector<string> attendees;
-        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
-        string jsonstr2;
-        dc.jsonStrNewAttendeeDetail(emailID, meetingID,jsonstr2);
-
         if(!attendees.empty())
         {
+            cout <<"sssssssssssr"<<r2<<endl;
             for(auto &atten:attendees)
             {
                 if(atten != emailID)
                 {
+                    cout <<"ggggggattengggggggg"<<atten<<endl;
                     string attenip;
                     attenip.clear();
                     int r = dc.getDb().queryIpByUserID(atten, 1, attenip);

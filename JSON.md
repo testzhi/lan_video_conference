@@ -93,14 +93,7 @@
         MEETINGID:
         }
     }
-请求退出会议{
-    TYPE： #REQUEST_EXIT_MEETING
-    DATA：{
-        FROM：xxxIDxxx
-        MEETINGID:
-        }
-    }
-<!--请求回复邀请{
+请求回复邀请{
     TYPE： #REQUEST_SEND_INVITATION_RESULT
     DATA：{
         FROM：xxxIDxxx
@@ -108,21 +101,7 @@
         MEETINGID:
         CAUSE
         }
-    }-->
-<!--请求开始会议{
-    TYPE： #REQUEST_START_MEETING
-    DATA：{
-        FROM：xxxIDxxx
-        MEETINGID:
-        }
-    }-->
-<!--请求终止会议{
-    TYPE： #REQUEST_STOP_MEETING
-    DATA：{
-        FROM：xxxIDxxx
-        MEETINGID:
-        }
-    }-->
+    }
 # 由服务端发送 
 注册结果{
     TYPE：_REGISTER
