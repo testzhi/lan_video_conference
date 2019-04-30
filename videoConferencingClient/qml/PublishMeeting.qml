@@ -314,6 +314,8 @@ Item {
                 width: mainWindow.width * 0.85
                 height: mainWindow.height * 0.06
                 Button {
+                    id: confirmButton
+                    property string buttonClick: "false"
                     anchors.left: parent.left
                     anchors.leftMargin: mainWindow.width * 0.05 + 50
                     //                highlighted: true
@@ -333,6 +335,7 @@ Item {
                         } else if (currDate > date) {
                             mistake.text = "无效的会议日期时间"
                         } else {
+                            confirmButton.buttonClick = "true"
                             mistake.text = ""
                             var scaleNum = 0
                             if (category.currentIndex === 1)
@@ -366,12 +369,15 @@ Item {
         target: conferenceUI.employee
         onLoginSucceeded: {
             if (type === "PublishSucceed") {
-                mistake.text = "会议发布成功"
-                subject.text = remark.text = currentDate.text = speakerID.text
-                        = speakerName.text = attendeeID.text = ""
-                speakerList.refresh()
-                attendeeList.refreshChoose()
-                attendeeList.refresh()
+                if (confirmButton.buttonClick === "true") {
+                    mistake.text = "会议发布成功"
+                    subject.text = remark.text = currentDate.text = speakerID.text
+                            = speakerName.text = attendeeID.text = ""
+                    speakerList.refresh()
+                    attendeeList.refreshChoose()
+                    attendeeList.refresh()
+                    confirmButton.buttonClick = "false"
+                }
             }
         }
     }

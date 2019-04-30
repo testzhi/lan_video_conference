@@ -10,11 +10,14 @@ Item {
     signal meetingExit
     property var meetingNotifications: []
     property string currentMeetingID: ""
+    property real currentExitAttendeeNum: 0
     property var attendeeRealName: []
     property var attendeeID: []
     property var attendeeAvatar: []
     property var attendeeJurisdiction: []
+    property var attendeeState: []
     property Attendee att
+
     function initAttendeeMessage() {
         for (var i = 0; i !== conferenceUI.employee.attendeeCount(); i++) {
             att = conferenceUI.employee.getAttendee(i)
@@ -22,6 +25,28 @@ Item {
             attendeeID[i] = att.userID
             attendeeAvatar[i] = att.avatar
             attendeeJurisdiction[i] = att.jurisdiction
+            attendeeState = "true"
+        }
+    }
+    function addAttendee() {
+        att = conferenceUI.employee.getAttendee(
+                    conferenceUI.employee.attendeeCount() - 1)
+        attendeeRealName[attendeeRealName.length] = att.realName
+        attendeeAvatar[attendeeAvatar.length] = att.avatar
+        attendeeID[attendeeID.length] = att.userID
+        attendeeJurisdiction[attendeeJurisdiction.length] = att.jurisdiction
+        attendeeState[attendeeState.length] = "true"
+    }
+    function refreshAttendeeState() {
+        var currentExitAttendee = 0
+        for (var i = 0; i !== conferenceUI.employee.attendeeCount(); i++) {
+            att = conferenceUI.employee.getAttendee(i)
+            while (attendeeID[i + currentExitAttendee] !== att.userID) {
+                console.log("employee not exit ID  ",
+                            attendeeID[i + currentExitAttendee])
+                currentExitAttendee += 1
+                attendeeState[i + currentExitAttendee] = "false"
+            }
         }
     }
 
@@ -48,6 +73,19 @@ Item {
                             currentMeetingAttendeeLoader.sourceComponent = null
                             currentMeetingAttendeeLoader.sourceComponent
                                     = currentMeetingAttendeeComponent
+                        } else if (type === "AddAttendeeMessage") {
+                            console.log("add attendee message")
+                            addAttendee()
+                            currentMeetingAttendeeLoader.sourceComponent = null
+                            currentMeetingAttendeeLoader.sourceComponent
+                                    = currentMeetingAttendeeComponent
+                        } else if (type === "RefreshAttendeeState") {
+                            console.log("refresh attendee state")
+                            refreshAttendeeState()
+                            currentMeetingAttendeeLoader.sourceComponent = null
+                            currentMeetingAttendeeLoader.sourceComponent
+                                    = currentMeetingAttendeeComponent
+                            currentExitAttendeeNum += 1
                         }
                     }
                 }
@@ -55,13 +93,14 @@ Item {
                 Component {
                     id: currentMeetingAttendeeComponent
                     ScrollView {
+                        id: attendeesScroll
+                        property real exitAttendee: 0
                         anchors.fill: parent
                         ListView {
-
-                            model: attendeeID.length
+                            model: attendeeID.length - currentExitAttendeeNum
                             delegate: Rectangle {
                                 width: meeting.width * 0.2
-                                height: meeting.height * 0.08
+                                height: meeting.height * 0.06
                                 //                                border.width: 1
                                 Row {
                                     anchors.fill: parent
@@ -100,7 +139,13 @@ Item {
                                     }
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: attendeeRealName[index]
+                                        text: {
+                                            while (attendeeState[index + attendeesScroll.exitAttendee] === "false") {
+                                                attendeesScroll.exitAttendee += 1
+                                            }
+
+                                            attendeeRealName[index + attendeesScroll.exitAttendee]
+                                        }
                                     } //text
                                 }
                             }
@@ -114,27 +159,42 @@ Item {
                 color: "blue"
             }
 
-            Loader {
-                id: meetingNotificationLoader
+            Rectangle {
                 width: parent.width
                 height: parent.height / 2 - 1
-            }
-            Connections {
-                target: conferenceUI.employee
-                onRegisterSuccessfully: {
-                    if (message !== "RegisterSuccess") {
-                        meeting.meetingNotifications[meeting.meetingNotifications.length] = message
-                        meetingNotificationLoader.sourceComponent = null
-                        meetingNotificationLoader.sourceComponent = meetingNotificationComponent
+                Loader {
+                    id: meetingNotificationLoader
+                    anchors.fill: parent
+                }
+                Connections {
+                    target: conferenceUI.employee
+                    onRegisterSuccessfully: {
+                        if (message !== "RegisterSuccess") {
+                            console.log(message)
+                            meeting.meetingNotifications[meeting.meetingNotifications.length]
+                                    = message
+                            meetingNotificationLoader.sourceComponent = null
+                            meetingNotificationLoader.sourceComponent = meetingNotificationComponent
+                        }
                     }
                 }
-            }
 
-            Component {
-                id: meetingNotificationComponent
-                Rectangle {
-                    width: parent.width
-                    height: parent.height / 2 - 1
+                Component {
+                    id: meetingNotificationComponent
+                    ScrollView {
+                        anchors.fill: parent
+                        ListView {
+                            model: meeting.meetingNotifications.length
+                            delegate: Rectangle {
+                                width: meeting.width * 0.2
+                                height: meeting.height * 0.06
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: meeting.meetingNotifications[index]
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -216,8 +276,8 @@ Item {
                         while (meeting.meetingNotifications.length !== 0)
                             meeting.meetingNotifications.pop()
                         meetingExit()
-                        conferenceUI.getStopMeetingMessage(
-                                    meetingList.currentMeeting)
+                        conferenceUI.getStopMeetingMessage(currentMeetingID)
+                        meetingList.currentMeeting = ""
                     }
                 }
             }
@@ -252,48 +312,47 @@ Item {
                     xvideoScreen.pausePlay()
                     xvideoCamera.pausePlay()
                     meetingExit()
-                    //                    meetingList.currentMeeting = ""
+                    meetingList.currentMeeting = ""
                     screenSwitch.visible = false
                     while (meeting.meetingNotifications.length !== 0)
                         meeting.meetingNotifications.pop()
-                    Qt.quit()
+                    //                    Qt.quit()
+                    meetingExit()
                 }
                 Component.onCompleted: visible = false
             }
-
-            Connections {
-                id: meetingConnect
-                target: conferenceUI.employee
-                property Meeting mee
-                onLoginSucceeded: {
-                    if (type === "BeginMeeting") {
-                        console.log("begin meeting")
-                        for (var i = 0; i !== conferenceUI.employee.meetingCount(
-                                 ); i++) {
-                            meetingConnect.mee = conferenceUI.employee.getMeeting(
-                                        i)
-                            console.log("meetingID  + currentMeetingID  ",
-                                        meetingConnect.mee.meetingID, "  s  ",
-                                        meeting.currentMeetingID)
-                            if (meetingConnect.mee.meetingID === meeting.currentMeetingID) {
-                                console.log("speaker + userID",
-                                            meetingConnect.mee.speaker, "  ",
-                                            conferenceUI.employee.userID)
-                                if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
-                                    xvideoScreen.setScale("2.4")
-                                    xvideoCamera.setScale("2.4")
-                                    xvideoCamera.startPlay()
-                                    screenSwitch.visible = true
-                                }
-                            }
+        }
+    }
+    Connections {
+        id: meetingConnect
+        target: conferenceUI.employee
+        property Meeting mee
+        onLoginSucceeded: {
+            if (type === "BeginMeeting") {
+                console.log("begin meeting")
+                for (var i = 0; i !== conferenceUI.employee.meetingCount(
+                         ); i++) {
+                    meetingConnect.mee = conferenceUI.employee.getMeeting(i)
+                    console.log("meetingID  + currentMeetingID  ",
+                                meetingConnect.mee.meetingID, "  s  ",
+                                meeting.currentMeetingID)
+                    if (meetingConnect.mee.meetingID === meeting.currentMeetingID) {
+                        console.log("speaker + userID",
+                                    meetingConnect.mee.speaker, "  ",
+                                    conferenceUI.employee.userID)
+                        if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
+                            xvideoScreen.setScale("2.4")
+                            xvideoCamera.setScale("2.4")
+                            xvideoCamera.startPlay()
+                            screenSwitch.visible = true
                         }
-                    } else if (type === "Exit") {
-                        xvideoScreen.pausePlay()
-                        xvideoCamera.pausePlay()
-                    } else if (type === "MeetingEnd") {
-                        messageDialog.visible = true
                     }
                 }
+            } else if (type === "Exit") {
+                xvideoScreen.pausePlay()
+                xvideoCamera.pausePlay()
+            } else if (type === "MeetingEnd") {
+                messageDialog.visible = true
             }
         }
     }

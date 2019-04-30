@@ -133,7 +133,7 @@ void VideoConferencingClient::tcpStrResultAnalysis(string str)
     else if (type == "_REPLY_INVITATION")
     {
         handleReplyInvitation(qo);
-        emit m_employee->loginSucceeded("MeetingMessage");
+        emit m_employee->loginSucceeded("AddMeetingMessage");
         emit m_employee->loginSucceeded("MeetingListRefresh");
     }
 }
@@ -224,7 +224,7 @@ void VideoConferencingClient::onlineStrResultAnalysis(std::string str)
         handleOnlineMeetingInvitationResult(qo,speaker,initiator);
         cout << "您有一条新的会议邀请通知" << endl;
         if(speaker != m_employee->userID() && initiator != m_employee->userID()) {
-            emit m_employee->loginSucceeded("NotificationMessage");
+            emit m_employee->loginSucceeded("AddNotificationMessage");
             emit m_employee->loginSucceeded("NotificationListRefresh");
         }
         //相关信号处理
@@ -233,8 +233,9 @@ void VideoConferencingClient::onlineStrResultAnalysis(std::string str)
     {
         handleOnlineMeetingResult(qo);
         cout << "您有一场新的会议待参加" << endl;
-        emit m_employee->loginSucceeded("MeetingMessage");
+        emit m_employee->loginSucceeded("AddMeetingMessage");
         emit m_employee->loginSucceeded("MeetingListRefresh");
+        emit m_employee->loginSucceeded("PublishSucceed");
     }
     else if (type == "_ONLINE_START_A_MEETING")
     {
@@ -252,7 +253,7 @@ void VideoConferencingClient::onlineStrResultAnalysis(std::string str)
     {
         handleOnlineMeetingAttendeesResult(qo);
     }
-    else if(type == "_ONLINE_MEETING_ATTENDEE") {
+    else if(type == "_ONLINE_ATTENDEE") {
         handleOnlineMeetingAttendeeResult(qo);
     }
     else if(type == "_ONLINE_EXIT_A_MEETING") {
@@ -331,7 +332,7 @@ void VideoConferencingClient::handleOnlineMeetingResult(QJsonObject qo)
         meeting->setRemark(remark);
         mee.append(meeting);
         m_employee->setMeetings(mee);
-        m_employee->sortMeeting();
+//        m_employee->sortMeeting();
 //    }
 //    else {
 //        m_employee->getMeeting(changeMeetingID)->setMeetingID(meetingID);
@@ -348,8 +349,8 @@ void VideoConferencingClient::handleOnlineMeetingStartResult(QJsonObject qo)
             mee->setState("1");
         }
     }
-    m_employee->loginSucceeded("MeetingMessage");
-    m_employee->loginSucceeded("MeetingListRefresh");
+    m_employee->loginSucceeded("RefreshMeetingState");
+//    m_employee->loginSucceeded("MeetingListRefresh");
 }
 
 void VideoConferencingClient::handleOnlineMeetingStopResult(QJsonObject qo)
@@ -362,9 +363,9 @@ void VideoConferencingClient::handleOnlineMeetingStopResult(QJsonObject qo)
         }
     }
     //    emit m_employee->addAttendeeMessage("hh");
-    emit m_employee->loginSucceeded("MeetingMessage");
+    emit m_employee->loginSucceeded("RefreshMeetingState");
     emit m_employee->loginSucceeded("MeetingEnd");
-    emit m_employee->loginSucceeded("MeetingListRefresh");
+//    emit m_employee->loginSucceeded("MeetingListRefresh");
 }
 
 void VideoConferencingClient::handleOnlineMeetingAttendeesResult(QJsonObject qo)
@@ -407,7 +408,7 @@ void VideoConferencingClient::handleOnlineMeetingAttendeeResult(QJsonObject qo)
     attendee->setUserID(userid);
     att.append(attendee);
     m_employee->setAttendees(att);
-    emit m_employee->loginSucceeded("AttendeeMessage");
+    emit m_employee->loginSucceeded("AddAttendeeMessage");
     QString s = name + " 加入会议";
     emit m_employee->registerSuccessfully(s);
 }
@@ -428,7 +429,7 @@ void VideoConferencingClient::handleOnlineMeetingExitResult(QJsonObject qo)
     }
     att = attendee;
     m_employee->setAttendees(att);
-    emit m_employee->loginSucceeded("AttendeeMessage");
+    emit m_employee->loginSucceeded("RefreshAttendeeState");
     QString s = name + " 退出会议";
     emit m_employee->registerSuccessfully(s);
 }
@@ -522,6 +523,17 @@ void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::str
 
 void VideoConferencingClient::requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause)
 {
+    QList<Notification *>notifications;
+//    if(result == "0") {
+        for(int i = 0;i != m_employee->notificationCount();i++) {
+            if(m_employee->getNotification(i)->meetingID() != QString::fromStdString(meetingID)) {
+                notifications.append(m_employee->getNotification(i));
+            }
+        }
+        noti = notifications;
+        m_employee->setNotifications(noti);
+        m_employee->loginSucceeded("RefreshNotificationMessage");
+//    }
     string sendMessage = requestReplyMeetingToString(emailid, result, meetingID, cause);
     cout << "请求回复通知："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -550,7 +562,7 @@ void VideoConferencingClient::requestStartMeeting(std::string emailid, std::stri
             mee->setState("1");
         }
     }
-    m_employee->loginSucceeded("MeetingMessage");
+    m_employee->loginSucceeded("RefreshMeetingState");
     string sendMessage = requestStartMeetingToString(emailid, meetingID);
     cout << "请求开始会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -774,7 +786,7 @@ void VideoConferencingClient::handleReplyLaunchMeetingResult(QJsonObject qo, QSt
     meeting->setRemark(remark);
     mee.append(meeting);
     m_employee->setMeetings(mee);
-    m_employee->sortMeeting();
+//    m_employee->sortMeeting();
     for(int i = 0;i != m_employee->meetingCount();i++) {
         cout << m_employee->getMeeting(i)->theme().toStdString() << "  " << m_employee->getMeeting(i)->date().toStdString() << "  " << m_employee->getMeeting(i)->time().toStdString() << "  " << m_employee->getMeeting(i)->category().toStdString() << "  " << m_employee->getMeeting(i)->speaker().toStdString() << "  " << m_employee->getMeeting(i)->initiator().toStdString() << "  " << m_employee->getMeeting(i)->state().toStdString() << endl;
     }
@@ -819,7 +831,7 @@ void VideoConferencingClient::handleReplyInvitation(QJsonObject qo)
     cout << "noti length  "<< noti.count() << endl;
     m_employee->setNotifications(noti);
     cout << "noti length  "<< m_employee->notificationCount() << endl;
-    emit m_employee->loginSucceeded("NotificationMessage");
+//    emit m_employee->loginSucceeded("AddNotificationMessage");
 }
 
 

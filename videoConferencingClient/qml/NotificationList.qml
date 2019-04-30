@@ -5,31 +5,35 @@ import Meeting 1.0
 Item {
     id: notification
     anchors.fill: parent
-//    property var xvisible: false
     property var notificationMessage: []
     property var notificationCategory: []
     property var meetingID: []
+    property var dealNotification: []
+    property real dealNotificationNum: 0
     property var currentMeetingIndex
 
-//    onVisibleChanged: {
-//        notification.visible = xvisible
-//    }
-
-    property Notification not
+    property Notification noti
     function initNotification() {
         while (notificationMessage.length != 0) {
             notificationCategory.pop()
             notificationMessage.pop()
             meetingID.pop()
         }
-
-        //        notificationMessage.length = notificationCategory.length = meetingID.length = 0
         for (var i = 0; i !== conferenceUI.employee.notificationCount(); i++) {
-            not = conferenceUI.employee.getNotification(i)
-            notificationMessage[i] = not.notificationMessage
-            notificationCategory[i] = not.notificationCategory
-            meetingID[i] = not.meetingID
+            noti = conferenceUI.employee.getNotification(i)
+            notificationMessage[i] = noti.notificationMessage
+            notificationCategory[i] = noti.notificationCategory
+            meetingID[i] = noti.meetingID
+            dealNotification[i] = "0"
         }
+    }
+    function addNotificationMessage() {
+        noti = conferenceUI.employee.getNotification(
+                    conferenceUI.employee.notificationCount() - 1)
+        notificationCategory[notificationCategory.length] = noti.notificationCategory
+        notificationMessage[notificationMessage.length] = noti.notificationMessage
+        meetingID[meetingID.length] = noti.meetingID
+        dealNotification[dealNotification.length] = "0"
     }
 
     Loader {
@@ -41,10 +45,21 @@ Item {
         target: conferenceUI.employee
         onLoginSucceeded: {
             if (type === "NotificationMessage") {
-
                 initNotification()
                 console.log("refresh notification  ",
                             notificationMessage.length)
+                for (var i = 0; i != notificationMessage.length; i++) {
+                    console.log("notification message  ",
+                                notificationMessage[i])
+                }
+
+                notificationLoader.sourceComponent = null
+                notificationLoader.sourceComponent = notificationComponent
+            } else if (type === "AddNotificationMessage") {
+                addNotificationMessage()
+                notificationLoader.sourceComponent = null
+                notificationLoader.sourceComponent = notificationComponent
+            } else if (type === "RefreshNotificationMessage") {
                 notificationLoader.sourceComponent = null
                 notificationLoader.sourceComponent = notificationComponent
             }
@@ -57,19 +72,23 @@ Item {
             id: notificationList
             anchors.fill: parent
             ListView {
-                model: notificationMessage.length
+                id: notificationListView
+                model: notificationMessage.length - dealNotificationNum
+                property real dnn: 0
                 spacing: 0.1
                 delegate: Rectangle {
                     width: mainWindow.width * 0.85
                     height: mainWindow.height * 0.10
                     border.width: 0.5
-                    //                border.color: "blue"
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
                         anchors.leftMargin: mainWindow.width * 0.01
-                        text: notificationMessage[index]
-                        //                    font.pixelSize: 15
+                        text: {
+                            while (dealNotification[index + notificationListView.dnn] === "1")
+                                notificationListView.dnn += 1
+                            notificationMessage[index + notificationListView.dnn]
+                        }
                     }
                     Rectangle {
                         width: mainWindow.width * 0.30
@@ -79,7 +98,7 @@ Item {
                         visible: {
                             console.log("notificationCategory  ",
                                         notificationCategory[index])
-                            var s = notificationCategory[index]
+                            var s = notificationCategory[index + notificationListView.dnn]
                             if (s === "MEETING_INVITATION")
                                 return true
                             else
@@ -92,14 +111,18 @@ Item {
                             Button {
                                 text: "同意"
                                 onClicked: {
+                                    dealNotification[index + notificationListView.dnn] = "1"
                                     conferenceUI.getReplyMeetingInvitation(
-                                                "1", meetingID[index], "")
+                                                "1",
+                                                meetingID[index + notificationListView.dnn],
+                                                "")
+                                    dealNotificationNum += 1
                                 }
                             }
                             Button {
                                 text: "拒绝"
                                 onClicked: {
-                                    currentMeetingIndex = index
+                                    currentMeetingIndex = index + notificationListView.dnn
                                     refuse.visible = true
                                     notificationLoader.opacity = 0.1
                                 }
@@ -159,6 +182,8 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     if (refuseText.text.length !== 0) {
+                        dealNotification[currentMeetingIndex] = "1"
+                        dealNotificationNum += 1
                         conferenceUI.getReplyMeetingInvitation(
                                     "0", meetingID[currentMeetingIndex],
                                     refuseText.text)
