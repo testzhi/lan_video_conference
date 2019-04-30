@@ -67,6 +67,7 @@ void ConferenceUI::getStartMeetingMessage(QString meetingID)
 
 void ConferenceUI::getStopMeetingMessage(QString meetingID)
 {
+    std::cout << "stop meetingID " << meetingID.toStdString() << std::endl;
     m_videoConferencing->requestStopMeeting(m_employee->userID().toStdString(),meetingID.toStdString());
 }
 

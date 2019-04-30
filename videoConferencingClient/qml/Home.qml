@@ -7,6 +7,15 @@ Item {
     anchors.fill: parent
     signal exit
     property var newMessage: [false, false, false, false]
+    property real currentChooseMeeting: -1
+    property Meeting mee
+    onCurrentChooseMeetingChanged: {
+        console.log("choose meeting index  ", currentChooseMeeting)
+        mee = conferenceUI.employee.getMeeting(currentChooseMeeting)
+        meeting.currentMeetingID = mee.meetingID
+        console.log("meetingID  ", meeting.currentMeetingID)
+    }
+
     Column {
         id: mainPage
         anchors.fill: parent
@@ -81,16 +90,6 @@ Item {
                     }
                 }
             }
-            //            Button {
-            //                anchors.verticalCenter: parent.verticalCenter
-            //                text: "退出当前帐号"
-            //                anchors.right: parent.right
-            //                anchors.rightMargin: 20
-            //                onClicked: {
-            //                    conferenceUI.getExitMessage()
-            //                    exit()
-            //                }
-            //            }
         }
         Rectangle {
             width: mainWindow.width
@@ -121,7 +120,6 @@ Item {
                 meetingList.currentMeeting = ""
             }
         }
-
         Row {
             id: employeeMessage
             visible: true
@@ -223,10 +221,10 @@ Item {
                 MeetingList {
                     id: meetingList
                     visible: true
-                    property Meeting mee
                     onBeginMeeting: {
-                        mee = conferenceUI.employee.getMeeting(index)
-                        meeting.currentMeetingID = mee.meetingID
+                        //                        mee = conferenceUI.employee.getMeeting(index)
+                        //                        meeting.currentMeetingID = mee.meetingID
+                        currentChooseMeeting = index
                         employeeMessage.visible = false
                         meeting.visible = true
                     }
@@ -236,8 +234,9 @@ Item {
                     }
 
                     onAttendMeeting: {
-                        mee = conferenceUI.employee.getMeeting(index)
-                        meeting.currentMeetingID = mee.meetingID
+                        currentChooseMeeting = index
+                        //                        mee = conferenceUI.employee.getMeeting(index)
+                        //                        meeting.currentMeetingID = mee.meetingID
                         employeeMessage.visible = false
                         meeting.visible = true
                     }

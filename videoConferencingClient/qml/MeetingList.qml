@@ -56,6 +56,28 @@ Item {
             meetingID[i] = met.meetingID
         }
     }
+    function addMeetingMessage() {
+        met = conferenceUI.employee.getMeeting(
+                    conferenceUI.employee.meetingCount() - 1)
+        themes[themes.length] = met.theme
+        dates[dates.length] = met.date
+        times[times.length] = met.time
+        category[category.length] = met.category
+        speakerID[speakerID.length] = met.speaker
+        initiatorID[initiatorID.length] = met.initiator
+        meetingState[meetingState.length] = met.state
+        meetingID[meetingID.length] = met.meetingID
+    }
+    function refreshMeetingState() {
+        for (var i = 0; i !== conferenceUI.employee.meetingCount(); i++) {
+            met = conferenceUI.employee.getMeeting(i)
+            meetingState[i] = met.state
+        }
+    }
+    onCurrentMeetingChanged: {
+        meetingLoader.sourceComponent = null
+        meetingLoader.sourceComponent = meetingComponent
+    }
 
     Loader {
         id: meetingLoader
@@ -70,15 +92,16 @@ Item {
                 initMeetingMessage()
                 meetingLoader.sourceComponent = null
                 meetingLoader.sourceComponent = meetingComponent
-            } else if (type === "RefreshMeetingID") {
-                console.log("refresh meetingID")
-                for (var i = 0; i !== conferenceUI.employee.meetingCount(
-                         ); i++) {
-                    met = conferenceUI.employee.getMeeting(i)
-                    if (meetingID[i] !== met.meetingID) {
-                        meetingID[i] = met.meetingID
-                    }
-                }
+            } else if (type == "AddMeetingMessage") {
+                console.log("add meeting message")
+                addMeetingMessage()
+                meetingLoader.sourceComponent = null
+                meetingLoader.sourceComponent = meetingComponent
+            } else if (type === "RefreshMeetingState") {
+                console.log("refresh meeting state")
+                refreshMeetingState()
+                meetingLoader.sourceComponent = null
+                meetingLoader.sourceComponent = meetingComponent
             }
         }
     }
@@ -137,6 +160,7 @@ Item {
                                 attendMeeting(index)
                                 conferenceUI.getAttendMeetingMessage(
                                             meetingID[index])
+                                meetingList.currentMeeting = meetingID[index]
                             }
                         }
                         Button {
