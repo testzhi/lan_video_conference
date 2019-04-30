@@ -497,6 +497,13 @@ void VideoConferencingClient::requestMeetingList(std::string emailID)
     tcpSendMessage(sendMessage);
 }
 
+void VideoConferencingClient::requestUnnotedMeetings(std::string userID)
+{
+    string sendMessage = initializeUnnotedMeetingsListToString(userID);
+    cout << "请求记载会议列表 : " << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
 void VideoConferencingClient::requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees)
 {
 //    Meeting *meeting = new Meeting();
@@ -951,6 +958,23 @@ std::string VideoConferencingClient::initializeMeetingsListToString(std::string 
     QJsonObject json;
     json.insert("DATA", QJsonValue(data));
     json.insert("TYPE", "#REQUEST_MEETINGS_LIST");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::initializeUnnotedMeetingsListToString(std::string userID)
+{
+    QJsonObject data;
+    data.insert("FROM",QString::fromStdString(userID));
+
+    QJsonObject json;
+    json.insert("DATA",QJsonValue(data));
+    json.insert("TYPE","#REQUEST_UNNOTED_MEETINGS");
 
     QJsonDocument document;
     document.setObject(json);
