@@ -232,10 +232,12 @@ Item {
             mistake.text = "该邮箱已被注册"
         }
         onRegisterSuccessfully: {
-            _image.source = "../resources/avatar.png"
-            name.text = password.text = company.text = department.text
-                    = group.text = phone.text = email.text = confirm.text = ""
-            registerSuccess(conferenceUI.employee.userID)
+            if (message === "RegisterSuccess") {
+                _image.source = "../resources/avatar.png"
+                name.text = password.text = company.text = department.text
+                        = group.text = phone.text = email.text = confirm.text = ""
+                registerSuccess(conferenceUI.employee.userID)
+            }
         }
     }
 }

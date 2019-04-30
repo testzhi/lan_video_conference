@@ -6,7 +6,10 @@ import Meeting 1.0
 
 Item {
     id: meeting
-    signal meetingBack
+    signal meetingBack()
+    signal meetingExit()
+    property var meetingNotifications: []
+    property string currentMeetingID: ""
     property var attendeeRealName: []
     property var attendeeID: []
     property var attendeeAvatar: []
@@ -111,11 +114,28 @@ Item {
                 color: "blue"
             }
 
-            Rectangle {
-
+            Loader {
+                id:meetingNotificationLoader
                 width: parent.width
                 height: parent.height / 2 - 1
-                //                border.width: 1
+            }
+            Connections {
+                target: conferenceUI.employee
+                onRegisterSuccessfully:{
+                    if (message !== "RegisterSuccess") {
+                        meeting.meetingNotifications[meeting.meetingNotifications.length] = message
+                        meetingNotificationLoader.sourceComponent = null
+                        meetingNotificationLoader.sourceComponent = meetingNotificationComponent
+                    }
+                }
+            }
+
+            Component {
+                id: meetingNotificationComponent
+                Rectangle {
+                    width: parent.width
+                    height: parent.height / 2 - 1
+                }
             }
         }
         Rectangle {
@@ -190,6 +210,12 @@ Item {
                         meetingEnd.opacity = 1
                     }
                     onClicked: {
+                        xvideoScreen.pausePlay()
+                        xvideoCamera.pausePlay()
+                        screenSwitch.visible = false
+                        while(meeting.meetingNotifications.length !== 0)
+                            meeting.meetingNotifications.pop()
+                        meetingExit()
                         conferenceUI.getStopMeetingMessage(
                                     meetingList.currentMeeting)
                     }
@@ -225,9 +251,11 @@ Item {
                     console.log("And of course you could only agree.")
                     xvideoScreen.pausePlay()
                     xvideoCamera.pausePlay()
-                    meetingBack()
-                    meetingList.currentMeeting = ""
+                    meetingExit()
+//                    meetingList.currentMeeting = ""
                     screenSwitch.visible = false
+                    while(meeting.meetingNotifications.length !== 0)
+                        meeting.meetingNotifications.pop()
                     Qt.quit()
                 }
                 Component.onCompleted: visible = false
@@ -244,10 +272,14 @@ Item {
                                  ); i++) {
                             meetingConnect.mee = conferenceUI.employee.getMeeting(
                                         i)
-                            if (meetingConnect.mee.meetingID(
-                                        ) === meetingList.currentMeeting) {
-                                if (conferenceUI.employee.userID(
-                                            ) === meetingConnect.mee.speaker) {
+                            console.log("meetingID  + currentMeetingID  ",
+                                        meetingConnect.mee.meetingID, "  s  ",
+                                        meeting.currentMeetingID)
+                            if (meetingConnect.mee.meetingID === meeting.currentMeetingID) {
+                                console.log("speaker + userID",
+                                            meetingConnect.mee.speaker, "  ",
+                                            conferenceUI.employee.userID)
+                                if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
                                     xvideoScreen.setScale("2.4")
                                     xvideoCamera.setScale("2.4")
                                     xvideoCamera.startPlay()
@@ -261,6 +293,9 @@ Item {
                     } else if (type === "MeetingEnd") {
                         messageDialog.visible = true
                     }
+                }
+                onAddAttendeeMessage: {
+                    console.log(message)
                 }
             }
         }

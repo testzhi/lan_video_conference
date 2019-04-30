@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.2
 import QtGraphicalEffects 1.12
+import Meeting 1.0
 
 Item {
     anchors.fill: parent
@@ -105,7 +106,7 @@ Item {
 
         //        Component {
         //            id: messageComponet
-        Meeting {
+        MyMeeting {
             id: meeting
             height: mainWindow.height * 0.88
             width: parent.width
@@ -113,6 +114,11 @@ Item {
             onMeetingBack: {
                 employeeMessage.visible = true
                 meeting.visible = false
+            }
+            onMeetingExit: {
+                employeeMessage.visible = true
+                meeting.visible = false
+                meetingList.currentMeeting = ""
             }
         }
 
@@ -217,7 +223,10 @@ Item {
                 MeetingList {
                     id: meetingList
                     visible: true
+                    property Meeting mee
                     onBeginMeeting: {
+                        mee = conferenceUI.employee.getMeeting(index)
+                        meeting.currentMeetingID = mee.meetingID
                         employeeMessage.visible = false
                         meeting.visible = true
                     }
@@ -227,6 +236,8 @@ Item {
                     }
 
                     onAttendMeeting: {
+                        mee = conferenceUI.employee.getMeeting(index)
+                        meeting.currentMeetingID = mee.meetingID
                         employeeMessage.visible = false
                         meeting.visible = true
                     }
@@ -238,10 +249,11 @@ Item {
                     id: publishMeeting
                     visible: false
                 }
-                Notification {
+                NotificationList {
                     id: notification
                     visible: false
                 }
+
                 PersonalData {
                     id: personalData
                     visible: false

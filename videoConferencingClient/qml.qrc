@@ -8,9 +8,7 @@
         <file>qml/Register.qml</file>
         <file>qml/Login.qml</file>
         <file>qml/Home.qml</file>
-        <file>qml/Notification.qml</file>
         <file>qml/PersonalData.qml</file>
-        <file>qml/Meeting.qml</file>
         <file>resources/back.png</file>
         <file>resources/check.png</file>
         <file>resources/closeMeeting.png</file>
@@ -25,5 +23,7 @@
         <file>resources/background1.gif</file>
         <file>resources/background2.jpg</file>
         <file>resources/voiceClose.png</file>
+        <file>qml/MyMeeting.qml</file>
+        <file>qml/NotificationList.qml</file>
     </qresource>
 </RCC>

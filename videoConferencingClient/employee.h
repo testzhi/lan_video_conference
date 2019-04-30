@@ -103,13 +103,14 @@ signals:
     void companysChanged();
     void attendeesChanged();
 
-    void registerSuccessfully();//注册成功
+    void registerSuccessfully(QString message);//注册成功
     void emailAlreadyRegistered();//注册失败 之 email已被占用
     void loginSucceeded(QString type);//登录成功
     void loginFailed(QString err);
-    void initCompanyMessage();
-    void initNotificationMessage();
-    void initMeetingList();
+//    void initCompanyMessage();
+//    void initNotificationMessage();
+//    void initMeetingList();
+//    void addAttendeeMessage(QString message);
 private:
     QString m_userID;
     QString m_userPassword;

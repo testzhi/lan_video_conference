@@ -72,12 +72,13 @@ private:
     void handleReplyLaunchMeetingResult(QJsonObject qo, QString &err);
     void handleReplyInvitation(QJsonObject qo);
     //处理在线转发
-    void handleOnlineMeetingInvitationResult(QJsonObject qo);//处理发起会议的在线转发
+    void handleOnlineMeetingInvitationResult(QJsonObject qo, QString &speaker);//处理发起会议的在线转发
     void handleOnlineMeetingResult(QJsonObject qo);//针对speaker在线，assistant发起会议，speaker端会议+1
     void handleOnlineMeetingStartResult(QJsonObject qo);//处理开始会议的在线转发
     void handleOnlineMeetingStopResult(QJsonObject qo);//处理结束会议的在线转发
-
-
+    void handleOnlineMeetingAttendeesResult(QJsonObject qo);//处理加入会议的在线转发
+    void handleOnlineMeetingAttendeeResult(QJsonObject qo);
+    void handleOnlineMeetingExitResult(QJsonObject qo);
 
     //COLLECTION PART：客户端 收集整理 数据
     std::string registerJsonToString(std::string realName, std::string passwd, std::string email, QByteArray avatar, std::string company, std::string department, std::string group, std::string phoneNumber);
