@@ -26,7 +26,8 @@ SOURCES += \
     xvideo.cpp \
     xvideorecord.cpp \
     xscreen.cpp \
-    videosender.cpp
+    videosender.cpp \
+    xaudiorecord.cpp
 
 
 RESOURCES += qml.qrc
@@ -56,7 +57,8 @@ HEADERS += \
     xvideorecord.h \
     xscreen.h \
     videodata.h \
-    videosender.h
+    videosender.h \
+    xaudiorecord.h
 
 DISTFILES += \
     resources/1.png \
