@@ -103,6 +103,7 @@ public:
 
     //通过被通知的userID和meetingid删除notification
     void deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID);
+    void deleteMeetingEndUndisposedNotifications(std::string meetingID, int category);
     std::string getErrorInfo();
 
 

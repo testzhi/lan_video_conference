@@ -38,7 +38,7 @@ void DataBaseBroker::closeMySQL()
 bool DataBaseBroker::createTables()
 {
     string employees = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`EmployeesTable` ("
-                       "`USERID` VARCHAR(7) NOT NULL,"
+                       "`USERID` VARCHAR(11) NOT NULL,"
                        "`PASSWD` CHAR(20) NOT NULL,"
                        "`REALNAME` VARCHAR(10) NOT NULL,"
                        "`EMAIL` VARCHAR(20) NOT NULL,"
@@ -75,8 +75,8 @@ bool DataBaseBroker::createTables()
     string meetings = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`MeetingsTable` ("
                       "`MEETINGID` INT NOT NULL AUTO_INCREMENT,"
                       "`INITIATOR` VARCHAR(10),"
-                      "`ASSISTANT` CHAR(7) NOT NULL,"
-                      "`SPEAKER` CHAR(7) NOT NULL,"
+                      "`ASSISTANT` CHAR(11) NOT NULL,"
+                      "`SPEAKER` CHAR(11) NOT NULL,"
                       "`DATE` DATE NOT NULL,"
                       "`TIME` TIME NOT NULL,"
                       "`CATEGORY` TINYINT NOT NULL,"
@@ -95,20 +95,33 @@ bool DataBaseBroker::createTables()
                       ");";
     string attendees = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`AttendeesTable` ("
                        "`MEETINGID` INT NOT NULL,"
-                       "`ATTENDEEID` INT NOT NULL,"
+                       "`ATTENDEEID` CHAR(11) NOT NULL,"
                        "`ATTENDSTATE` TINYINT,"
                        "`REMARK` VARCHAR(20),"
                        "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)"
                        ");";
     string notifications = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`NotificationsTable` ("
-                           "`NOTIFIEDID` CHAR(7) NOT NULL,"
-                           "`NOTIFYID` CHAR(7),"
+                           "`NOTIFIEDID` CHAR(11) NOT NULL,"
+                           "`NOTIFYID` CHAR(11),"
                            "`CATEGORY` TINYINT,"
                            "`SUBJECT` VARCHAR(20),"
                            "`STATE` INT NOT NULL,"
                            "`MEETINGID` INT NOT NULL,"
                            "CONSTRAINT `FK_NOTIFIEDID` FOREIGN KEY (`NOTIFIEDID`) REFERENCES `EmployeesTable` (`USERID`)"
                            ");";
+    string meetingNotes = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`MeetingNotesTable` ("
+                          "`MEETINGID` INT NOT NULL,"
+                          "`NOTERID` CHAR(11),"
+                          "`CONTENT` VARCHAR(20),"
+                          "`NOTEDATE` DATE,"
+                          "`NOTETIME` TIME,"
+                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
+    string jurisdictions = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`jurisdictationsTable` ("
+                          "`CATEGORY` INT NOT NULL,"
+                          "`USERID` CHAR(11),"
+                          "`LEVEL` VARCHAR(20),"
+                          "`CATEGORYID` INT NOT NULL,"
+                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
 
 
     if(!query(employees)) return false;
@@ -118,6 +131,7 @@ bool DataBaseBroker::createTables()
     if(!query(meetings)) return false;
     if(!query(attendees)) return false;
     if(!query(notifications)) return false;
+    if(!query(meetingNotes)) return false;
     cout << "建表成功" << endl;
     return true;
 }
@@ -603,7 +617,8 @@ unsigned long long DataBaseBroker::queryInvitationsInvalid(std::string emailID, 
 unsigned long long DataBaseBroker::queryMeetingOfInvitionInfo(std::string meetingID, std::vector<std::string> &data)
 {
     auto row = queryMeetingDetailsByMeetingIDAndMeetingState(meetingID, 0, data);
-    return row;
+    auto row2 = queryMeetingDetailsByMeetingIDAndMeetingState(meetingID, 1, data);
+    return row+row2;
 }
 
 unsigned long long DataBaseBroker::queryMeetingNOTENDByMeetingID(std::string meetingID, int meetingState, std::vector<std::string> &data)
@@ -909,9 +924,21 @@ bool DataBaseBroker::updateNotificationsState(std::string notifiedID, std::strin
 
 void DataBaseBroker::deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID)
 {
-
     char *cmd = new char[200];
-    sprintf(cmd, "delete from NotificationsTable where `NOTIFIEDID` = '%s' and `MEETINGID` = '%s';", userID.c_str(), meetingID.c_str() );
+    sprintf(cmd, "delete from NotificationsTable where `NOTIFIEDID` = '%s' and `MEETINGID` = '%s' and `CATEGORY` = '1';", userID.c_str(), meetingID.c_str() );
+
+    if(!query(cmd))
+    {
+        delete [] cmd;
+    }
+    delete [] cmd;
+    cout << "删除通知成功"<<endl;
+}
+
+void DataBaseBroker::deleteMeetingEndUndisposedNotifications(std::string meetingID, int category)
+{
+    char *cmd = new char[200];
+    sprintf(cmd, "delete from NotificationsTable where `CATEGORY` = '%d' and `MEETINGID` = '%s';", category, meetingID.c_str() );
 
     if(!query(cmd))
     {

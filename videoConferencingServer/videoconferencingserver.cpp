@@ -212,6 +212,7 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
                     if(emailid == speaker || emailid == assistant)
                     {
                         dc.getDb().updateMeetingStateByMeetingID(meetingid, 2);
+                        dc.getDb().deleteMeetingEndUndisposedNotifications(meetingid, 1);//删除会议结束时未处理的通知
                         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, emailid, 4, "");
                         vector<string> attendees;
                         dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 2, attendees);
@@ -459,6 +460,7 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
         {
             cout << "ttttttttttttttttttttttttttt" << endl;
             dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
+            dc.getDb().deleteMeetingEndUndisposedNotifications(meetingID, 1);//删除会议结束时未处理的通知
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 4, "");
             vector<string> attendeesList;
             dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendeesList);
@@ -467,46 +469,38 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
             dc.jsonStopMeeting(meetingID, json);
 
             for(auto m:attendeesList)
-            cout << "ghhhhhhhhhhhhhhh--" << m << endl;
-            if(!attendeesList.empty())
-            {
-                cout << "gggggggggggggggggggggggggg--" << endl;
-                for(auto &attendee:attendeesList)
+                if(!attendeesList.empty())
                 {
-                    if(attendee != emailID)
+                    for(auto &attendee:attendeesList)
                     {
-                        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
-                        string ip;
-                        int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
-                        cout << "mmmmmmmmmmmmmmmmmm"<<r2<<endl;
-                        if(r2 == 1)
+                        if(attendee != emailID)
                         {
-                            cout << "qqqqqqqqqqqqqqq"<<r2<<endl;
-                            udpSendMessage(ip, json);
+                            dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
+                            string ip;
+                            int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                            if(r2 == 1)
+                            {
+                                udpSendMessage(ip, json);
+                            }
                         }
                     }
                 }
-            }
         }
         else
         {
-            cout << "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]" << endl;
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 3, "");
             vector<string> attendees;
             dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
             if(!attendees.empty())
             {
-                cout << "rrrrrrrrrrrrrrrrrrrrrrr" << endl;
                 string json;
                 dc.jsonExitMeeting(meetingID, emailID, json);
                 for(auto &atten : attendees)
                 {
                     string ip;
                     int r2 = dc.getDb().queryIpByUserID(atten, 1, ip);
-                    cout << "vvvvvvvvvvvvvvvvvvvvv"<<r2<<endl;
                     if(r2 == 1)
                     {
-                        cout << "iiiiiiiiiiiiiiiiiiiiiiiii"<<r2<<endl;
                         udpSendMessage(ip, json);
                     }
                 }

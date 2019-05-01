@@ -22,7 +22,7 @@ using namespace jrtplib;
 #define SSRC           100
 
 void checkerror(int rtperr);
-void videoForward();
+void videoForward(std::vector<std::string> destIps);
 
 int main()
 {
@@ -50,7 +50,7 @@ void checkerror(int rtperr)
     }
 }
 
-void videoForward()
+void videoForward(std::vector<std::string> destIps)
 {
     RTPSession serverVideoRecvSess;//接收
     uint16_t portbase;
@@ -68,18 +68,9 @@ void videoForward()
 
 
     RTPSession serverVideoSendSess;//发送
-    uint16_t portbase1,destport1;
-    uint32_t destip1;
-    std::string ipstr1;
-    portbase1 = 4000;//输入用于发送的本地端口号
-    ipstr1 = "10.253.77.87";//输入发送数据的目的IP地址
-    destip1 = inet_addr(ipstr1.c_str());
-    if (destip1 == INADDR_NONE)
-    {
-        std::cerr << "IP有误" << std::endl;
-    }
-    destip1 = ntohl(destip1);
-    destport1 = 3000;//输入发送数据的目的端口号
+    uint16_t portbase1 = 4000;//输入用于发送的本地端口号
+
+
 
     RTPUDPv4TransmissionParams transparams1;
     RTPSessionParams sessparams1;
@@ -96,8 +87,19 @@ void videoForward()
     status = serverVideoSendSess.Create(sessparams1,&transparams1);
     checkerror(status);
 
-    RTPIPv4Address addr1(destip1,destport1);
-    status = serverVideoSendSess.AddDestination(addr1);
+
+    uint16_t destport1 = 3000;//输入发送数据的目的端口号
+    for(auto &dip:destIps)
+    {
+        uint32_t destip1= inet_addr(dip.c_str());
+        if (destip1 == INADDR_NONE)
+        {
+            std::cerr << "IP有误" << std::endl;
+        }
+        destip1 = ntohl(destip1);
+        RTPIPv4Address addr1(destip1,destport1);
+        status = serverVideoSendSess.AddDestination(addr1);
+    }
 
     serverVideoSendSess.SetDefaultPayloadType(96);//设置默认传输参数
     serverVideoSendSess.SetDefaultMark(true);
@@ -130,9 +132,9 @@ void videoForward()
                 {
                     printf("Got packet !\n");
 
-//                    uint8_t t = pack->GetPayloadType();
-//                    bool mark = pack->HasMarker();
-//                    uint32_t timestam = pack->GetTimestamp();
+                    //                    uint8_t t = pack->GetPayloadType();
+                    //                    bool mark = pack->HasMarker();
+                    //                    uint32_t timestam = pack->GetTimestamp();
 
                     int nLen = pack->GetPayloadLength();
 
