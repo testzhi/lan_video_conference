@@ -24,7 +24,7 @@ class VideoConferencingServer
 public:
     VideoConferencingServer(): m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333)), m_sockTcp(m_io) , m_sockUdp(m_io)
     {
-        m_sockUdp.open(ip::udp::v4());
+                m_sockUdp.open(ip::udp::v4());
         accept();
     }
 
@@ -46,7 +46,6 @@ public:
 
     //UDP
     void udpSendMessage(std::string ip, string msg);
-    void udpSysSendMessage(std::string ip, string msg);
     void handleUdpSend(const boost::system::error_code &ec);
 
     //RTP
@@ -61,9 +60,6 @@ public:
     void handleColleagueList(QJsonObject Data, sock_ptr sock);
     void handleInvitionsList(QJsonObject Data, sock_ptr sock);
     void handleMeetingList(QJsonObject Data, sock_ptr sock);
-    void handleRequestFinishedMeetingsNotes(QJsonObject Data, sock_ptr sock);//for all(include assistant)
-    void handleRequestNoteMeeting(QJsonObject Data, sock_ptr sock);//for assistant 请求记录
-    void handleRequestUnnotedMeetings(QJsonObject Data, sock_ptr sock);//for assistant未记录的会议
     void handleRequestLaunchMeeting(QJsonObject Data, sock_ptr sock);//发起人
     void handleRequestStartMeeting(QJsonObject Data, sock_ptr sock);
     void handleRequestStopMeeting(QJsonObject Data, sock_ptr sock);
@@ -75,7 +71,7 @@ public:
 private:
     QJsonObject stringToQJsonObject(std::string string);
     bool isSameString(string s1, string s2);
-    void clearTcpRecBuffer();
+ void clearTcpRecBuffer();
 
     io_service m_io;
     ip::tcp::acceptor m_acceptor;
