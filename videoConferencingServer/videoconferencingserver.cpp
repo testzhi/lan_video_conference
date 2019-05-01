@@ -20,7 +20,6 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
 {
     if(ec)
         return;
-    //    _remote_endpoint = sock.remote_endpoint();
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
     clearTcpRecBuffer();
@@ -36,7 +35,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
 {
     std::string receive_message;
 
-    for(int i = 0;i != BUFFER_LENGTH; i++)
+    for(unsigned int i = 0;i != BUFFER_LENGTH; i++)
     {
         if (m_tcpRecvBuf[i] != '\0')
             receive_message.push_back(m_tcpRecvBuf[i]);
@@ -73,6 +72,12 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleRequestInvitionResult(Data, sock);
     else if(type == "#REQUEST_ATTEND_MEETING")
         handleRequestAttendMeeting(Data, sock);
+    else if(type == "#REQUEST_FINISHED_MEETINGS_NOTES")
+        handleRequestFinishedMeetingsNotes(Data, sock);
+    else if(type == "#REQUEST_UNNOTED_MEETINGS")
+        handleRequestUnnotedMeetings(Data, sock);
+    else if(type == "#REQUEST_NOTE_MEETING")
+        handleRequestNoteMeeting(Data, sock);
 
     clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
@@ -210,6 +215,7 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
                         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, emailid, 4, "");
                         vector<string> attendees;
                         dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 2, attendees);
+                        dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 3, attendees);
                         string json;
                         dc.jsonStopMeeting(meetingid, json);
 
@@ -290,6 +296,21 @@ void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferenc
     unsigned long long res;
     dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
     tcpSendMessage(tcpJson, sock);
+}
+
+void VideoConferencingServer::handleRequestFinishedMeetingsNotes(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
+}
+
+void VideoConferencingServer::handleRequestNoteMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
+}
+
+void VideoConferencingServer::handleRequestUnnotedMeetings(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
 }
 
 void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -436,44 +457,58 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
         dc.getDb().queryMeetingSpeakerAndAssistantByMeetingID(meetingID, speaker, assistant);
         if(emailID == speaker || emailID == assistant)
         {
+            cout << "ttttttttttttttttttttttttttt" << endl;
             dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 4, "");
-            vector<string> attendees;
-            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
-
+            vector<string> attendeesList;
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendeesList);
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 3, attendeesList);
             string json;
             dc.jsonStopMeeting(meetingID, json);
 
-            if(!attendees.empty())
+            for(auto m:attendeesList)
+            cout << "ghhhhhhhhhhhhhhh--" << m << endl;
+            if(!attendeesList.empty())
             {
-                for(auto &attendee:attendees)
+                cout << "gggggggggggggggggggggggggg--" << endl;
+                for(auto &attendee:attendeesList)
                 {
                     if(attendee != emailID)
                     {
                         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
                         string ip;
                         int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                        cout << "mmmmmmmmmmmmmmmmmm"<<r2<<endl;
                         if(r2 == 1)
+                        {
+                            cout << "qqqqqqqqqqqqqqq"<<r2<<endl;
                             udpSendMessage(ip, json);
+                        }
                     }
                 }
             }
         }
         else
         {
+            cout << "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]" << endl;
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 3, "");
             vector<string> attendees;
             dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
             if(!attendees.empty())
             {
+                cout << "rrrrrrrrrrrrrrrrrrrrrrr" << endl;
                 string json;
                 dc.jsonExitMeeting(meetingID, emailID, json);
                 for(auto &atten : attendees)
                 {
                     string ip;
                     int r2 = dc.getDb().queryIpByUserID(atten, 1, ip);
+                    cout << "vvvvvvvvvvvvvvvvvvvvv"<<r2<<endl;
                     if(r2 == 1)
+                    {
+                        cout << "iiiiiiiiiiiiiiiiiiiiiiiii"<<r2<<endl;
                         udpSendMessage(ip, json);
+                    }
                 }
             }
         }
