@@ -52,6 +52,7 @@ public:
     void requestColleagueList(std::string emaiId);//请求同事列表
     void requestMeetingInvitionsList(std::string emaiId);//请求会议被邀请列表
     void requestMeetingList(std::string emailID);//会议列表
+    void requestUnnotedMeetings(std::string userID);//申请未记载的会议
     void requestLaunchMeeting(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
     void requestReplyMeetingInvitation(std::string emailid, std::string result, std::string meetingID, std::string cause);//请求回复会议通知
     void requestStartMeeting(std::string emailid, std::string meetingID);
@@ -88,6 +89,8 @@ private:
     std::string initializeColleagueListToString(std::string emailId);
     std::string initializeMeetingInvitionsListToString(std::string emailid);
     std::string initializeMeetingsListToString(std::string emailID);
+    std::string initializeUnnotedMeetingsListToString(std::string userID);
+
     std::string requestLaunchMeetingToString(std::string emailid, std::string assistant, std::string speaker, std::string date, std::string time, std::string category, std::string subject, std::string scale, std::string dura, std::string remark, std::vector<std::string> attendees);
     std::string requestReplyMeetingToString(std::string emailid, std::string result, std::string meetingID, std::string cause);
     std::string requestStartMeetingToString(std::string emailid, std::string meetingID);

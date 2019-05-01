@@ -48,19 +48,22 @@ class XVideoRecordThread  : public QThread
 public:
     explicit XVideoRecordThread(QString devSource, QString imtSource);
     ~XVideoRecordThread();
+
+    void initVideoRecord();
+    void closeVideoRecord();
+
+    void initH264OutputFile();
+    void closeH264OutputFile();
+
     void setFileName(QString &path);
     void setVideoSource(const QString &videoSource);
     void setVideoInputFormat(const QString &videoInputFormat);
-    void setVideoOutputPath(const QString &videoOutputPath);
     void startPlay();
     void stopPlay();
     void pausePlay();
 
     int pixWidth() const;
     int pixHeight() const;
-
-
-
 
 
     double imageScale() const;
@@ -78,20 +81,22 @@ protected:
 private:
     QString m_fileName;
     VideoState m_videoState{};//用来 传递给 SDL音频回调函数的数据
-    QString m_videoSource;
-    QString m_videoInputFormat{"video4linux2"};///音频"alsa"
     double m_imageScale;
-
-    FILE *m_videoOutputYUV420;
-    QString m_videoOutputPath;
-
-    PlayerState m_playerState;
-    QString m_H264OutputPath;
-    int save;//0dont 1save
 
     AVFormatContext	*m_formatCtx;
     AVCodecContext *m_pCodecCtx;
     AVDictionary *m_videoOptions;
+    int m_videoStream;
+    QString m_videoInputFormat{"video4linux2"};///音频"alsa"
+    QString m_videoSource;
+    PlayerState m_playerState;
+
+    AVFormatContext *m_outFormatCtx;
+    AVCodecContext *m_pOutCodecCtx;
+    AVDictionary *m_videoOutputOptions;
+    QString m_H264OutputFilePath;
+    AVStream *m_video_st;
+
     int m_pixWidth;
     int m_pixHeight;
 };

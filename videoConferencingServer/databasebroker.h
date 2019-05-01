@@ -73,8 +73,8 @@ public:
     unsigned long long queryMeetingNOTENDByMeetingID(std::string meetingID, int meetingState, std::vector<std::string>  &data);
 
 
-    //通过attendeeid查询该用户的所有meetingid s
-    unsigned long long queryMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds);
+    //通过attendeeid查询该用户的所有未曾结束meetingid s
+    unsigned long long queryUnfinishedMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds);
     //通过meetingid查询meeting表所有字段对应信息
     int queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string>  &data);
     //通过meetingid查询meeting表subject

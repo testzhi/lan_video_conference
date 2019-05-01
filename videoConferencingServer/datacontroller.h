@@ -16,16 +16,16 @@ public:
         ////    drop database VideoConferencingDB;  create database VideoConferencingDB;     use VideoConferencingDB;
         ////    select * from EmployeesTable; select * from MeetingsTable; select * from AttendeesTable; select * from NotificationsTable;
 
-//        db.insertIntoTableEmployees("5631813", "1717", "Liana",     "563181@qq.com", "TechGROUP1", "Development", "Google","");
-//        db.insertIntoTableEmployees("563", "1717", "Liana Xu", "5634@qq.com","TechGROUP1", "Development", "Google","");
-//        db.insertIntoTableEmployees("1", "3", "name1", "1@qq.com", "TechGROUP1", "Development", "Google","");
-//        db.insertIntoTableEmployees("7", "7", "name7", "16931742@qq.com", "TechGROUP1", "Development", "Google", "");
-//        db.insertIntoTableEmployees("6", "6", "name6", "169@qq.com", "TechGROUP1", "Development", "Google","");
+        db.insertIntoTableEmployees("5631813", "1717", "Liana",     "563181@qq.com", "TechGROUP1", "Development", "Google","");
+        db.insertIntoTableEmployees("563", "1717", "Liana Xu", "5634@qq.com","TechGROUP1", "Development", "Google","");
+        db.insertIntoTableEmployees("1", "3", "name1", "1@qq.com", "TechGROUP1", "Development", "Google","");
+        db.insertIntoTableEmployees("7", "7", "name7", "16931742@qq.com", "TechGROUP1", "Development", "Google", "");
+        db.insertIntoTableEmployees("6", "6", "name6", "169@qq.com", "TechGROUP1", "Development", "Google","");
 
-//        db.insertIntoTableEmployees("4", "4", "梁组", "9129484@qq.com", "TechGROUP2", "Development", "Google", "");
-//        db.insertIntoTableEmployees("5", "5", "凉凉", "912@qq.com", "TechGROUP2", "Development", "Google", "");
-//        db.insertIntoTableEmployees("2", "2", "章鱼专用2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
-//        db.insertIntoTableEmployees("3", "3", "章鱼", "3@qq.com", "TechGROUP3", "Development", "Google", "");
+        db.insertIntoTableEmployees("4", "4", "梁组", "9129484@qq.com", "TechGROUP2", "Development", "Google", "");
+        db.insertIntoTableEmployees("5", "5", "凉凉", "912@qq.com", "TechGROUP2", "Development", "Google", "");
+        db.insertIntoTableEmployees("2", "2", "章鱼专用2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
+        db.insertIntoTableEmployees("3", "3", "章鱼", "3@qq.com", "TechGROUP3", "Development", "Google", "");
 
 
         std::cout << "建表结束" << std::endl;

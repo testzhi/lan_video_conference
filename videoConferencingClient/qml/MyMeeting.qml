@@ -97,6 +97,8 @@ Item {
                         property real exitAttendee: 0
                         anchors.fill: parent
                         ListView {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 5
                             model: attendeeID.length - currentExitAttendeeNum
                             delegate: Rectangle {
                                 width: meeting.width * 0.2
@@ -107,7 +109,7 @@ Item {
                                     spacing: 10
                                     Rectangle {
                                         id: img
-                                        width: mainWindow.height * 0.03
+                                        width: mainWindow.height * 0.03 - 5
                                         height: mainWindow.height * 0.03
                                         anchors.verticalCenter: parent.verticalCenter
 
@@ -184,10 +186,12 @@ Item {
                     ScrollView {
                         anchors.fill: parent
                         ListView {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 5
                             model: meeting.meetingNotifications.length
                             delegate: Rectangle {
-                                width: meeting.width * 0.2
-                                height: meeting.height * 0.06
+                                width: meeting.width * 0.2 - 5
+                                height: meeting.height * 0.04
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: meeting.meetingNotifications[index]
@@ -341,8 +345,10 @@ Item {
                                     meetingConnect.mee.speaker, "  ",
                                     conferenceUI.employee.userID)
                         if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
-                            xvideoScreen.setScale("2.4")
-                            xvideoCamera.setScale("2.4")
+                            xvideoScreen.setScale("1.6")
+                            xvideoCamera.setScale("1.6")
+                            xvideoScreen.pausePlay()
+                            xvideoCamera.pausePlay()
                             xvideoCamera.startPlay()
                             screenSwitch.visible = true
                         }
@@ -352,7 +358,8 @@ Item {
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
             } else if (type === "MeetingEnd") {
-                messageDialog.visible = true
+                if (meeting.visible === true)
+                    messageDialog.visible = true
             }
         }
     }
