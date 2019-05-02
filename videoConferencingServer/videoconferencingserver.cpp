@@ -13,8 +13,12 @@ using std::vector;
 
 void VideoConferencingServer::accept()
 {
+    m_destIps.clear();
     sock_ptr sock(new socket_type(m_io));
-    m_acceptor.async_accept(*sock,boost::bind(&VideoConferencingServer::handle_accepter,this, boost::asio::placeholders::error, sock));
+    cout <<  "最大连接数" << m_acceptor.max_connections << endl;
+    cout << "最大监听数" << m_acceptor.max_listen_connections << endl;
+    cout << "message_peek" << m_acceptor.message_peek<<endl;
+    m_acceptor.async_accept(*sock,boost::bind(&VideoConferencingServer::handle_accepter, this, boost::asio::placeholders::error, sock));
 }
 void VideoConferencingServer::handle_accepter(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock)
 {
@@ -78,6 +82,8 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleRequestUnnotedMeetings(Data, sock);
     else if(type == "#REQUEST_NOTE_MEETING")
         handleRequestNoteMeeting(Data, sock);
+    else if(type == "#REQUEST_START_VIDEO")
+        handleRequestStartVideo(Data, sock);
 
     clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
@@ -104,7 +110,6 @@ void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
     }
     m_sockTcp.send(boost::asio::buffer(msg));
     cout << send_ep << "～～～～～～" <<"发送完毕" << endl;
-    //    m_sockTcp.close();
 }
 
 void VideoConferencingServer::tcpAsyncConnect(std::string ip, std::string msg)
@@ -458,7 +463,6 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
         dc.getDb().queryMeetingSpeakerAndAssistantByMeetingID(meetingID, speaker, assistant);
         if(emailID == speaker || emailID == assistant)
         {
-            cout << "ttttttttttttttttttttttttttt" << endl;
             dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
             dc.getDb().deleteMeetingEndUndisposedNotifications(meetingID, 1);//删除会议结束时未处理的通知
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 4, "");
@@ -563,6 +567,7 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
     string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
     int meetingState = -1;
     dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
+    m_srsVideo.addNewDestIP(emailID);
     if(meetingState == 1)
     {
         vector<string> attendees;
@@ -581,12 +586,10 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
 
         if(!attendees.empty())
         {
-            cout <<"sssssssssssr"<<r2<<endl;
             for(auto &atten:attendees)
             {
                 if(atten != emailID)
                 {
-                    cout <<"ggggggattengggggggg"<<atten<<endl;
                     string attenip;
                     attenip.clear();
                     int r = dc.getDb().queryIpByUserID(atten, 1, attenip);
@@ -596,6 +599,36 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
             }
         }
     }
+}
+
+void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+    string emailID = Data.value("DATA")["FROM"].toString().toStdString();
+    string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
+
+    vector<string> attendees;
+    dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
+
+    if(!attendees.empty())
+    {
+        for(auto &attendee:attendees)
+        {
+            if(attendee != emailID)
+            {
+                string ip;
+                int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                if(r2 == 1)
+                {
+                    m_destIps.push_back(ip);
+                    cout<<"<<<<<<<<加入ip："<<ip <<endl;
+                }
+            }
+        }
+    }
+    cout << "kkkkkkkkkkkkkkkkkkkkk" << m_destIps.size() << endl;
+    m_srsVideo.addDestIPs(m_destIps);
+    std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
+    t1.detach();
 }
 
 
@@ -622,122 +655,6 @@ void VideoConferencingServer::clearTcpRecBuffer()
     }
 }
 
-void VideoConferencingServer::checkerror(int rtperr)
-{
-    if (rtperr < 0)
-    {
-        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
-        exit(-1);
-    }
-}
-
-void VideoConferencingServer::videoForward(std::vector<std::string> destIps)
-{
-    RTPSession serverVideoRecvSess;//接收
-    uint16_t portbase;
-    int status;
-    portbase = 5000;//服务器接收客户端数据端口号
-
-    RTPUDPv4TransmissionParams transparams;
-    RTPSessionParams sessparams;
-    sessparams.SetOwnTimestampUnit(1.0/90000.0);
-    sessparams.SetAcceptOwnPackets(true);
-    transparams.SetPortbase(portbase);
-    status = serverVideoRecvSess.Create(sessparams,&transparams);
-    checkerror(status);
 
 
-
-    RTPSession serverVideoSendSess;//发送
-    uint16_t portbase1 = 4000;//输入用于发送的本地端口号
-
-
-
-    RTPUDPv4TransmissionParams transparams1;
-    RTPSessionParams sessparams1;
-
-    sessparams1.SetOwnTimestampUnit(1.0/90000.0);//时间戳单位
-    sessparams1.SetAcceptOwnPackets(true);//接收自己发送的数据包
-    sessparams1.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
-    sessparams1.SetPredefinedSSRC(SSRC);     //定义SSRC
-
-    transparams1.SetPortbase(portbase1);
-
-    int oldBufSize = transparams1.GetRTPReceiveBuffer();
-    transparams1.SetRTPReceiveBuffer(oldBufSize * 2);
-    status = serverVideoSendSess.Create(sessparams1,&transparams1);
-    checkerror(status);
-
-
-    uint16_t destport1 = 3000;//发送数据到客户端的目的端口号
-    for(auto &dip:destIps)
-    {
-        uint32_t destip1= inet_addr(dip.c_str());
-        if (destip1 == INADDR_NONE)
-        {
-            std::cerr << "IP有误" << std::endl;
-        }
-        destip1 = ntohl(destip1);
-        RTPIPv4Address addr1(destip1,destport1);
-        status = serverVideoSendSess.AddDestination(addr1);
-    }
-
-    serverVideoSendSess.SetDefaultPayloadType(96);//设置默认传输参数
-    serverVideoSendSess.SetDefaultMark(true);
-    serverVideoSendSess.SetTimestampUnit(1.0/90000.0);
-    serverVideoSendSess.SetDefaultTimestampIncrement(3600);
-    checkerror(status);
-
-    //int newBufSize = transparams1.GetRTPReceiveBuffer();
-    int oldBufSizec = transparams1.GetRTCPReceiveBuffer();
-    transparams1.SetRTCPReceiveBuffer(oldBufSizec * 2);
-    //int newBufSizec = transparams1.GetRTCPReceiveBuffer();
-
-    unsigned char *pfBuffer;
-    unsigned char *pBuffer;
-
-
-    while(1)
-    {
-
-        serverVideoRecvSess.BeginDataAccess();
-
-        // check incoming packets
-        if (serverVideoRecvSess.GotoFirstSourceWithData())
-        {
-            do
-            {
-                RTPPacket *pack;
-
-                while ((pack = serverVideoRecvSess.GetNextPacket()) != nullptr)
-                {
-                    printf("Got packet !\n");
-
-                    //                    uint8_t t = pack->GetPayloadType();
-                    //                    bool mark = pack->HasMarker();
-                    //                    uint32_t timestam = pack->GetTimestamp();
-
-                    int nLen = pack->GetPayloadLength();
-
-                    pfBuffer = (unsigned char*)pack->GetPayloadData();
-                    pBuffer = new unsigned char[nLen + 1];
-                    memcpy(pBuffer, pfBuffer, nLen);
-                    pBuffer[nLen] = 0;
-
-                    status = serverVideoSendSess.SendPacket((void *)pBuffer, nLen);
-
-                    checkerror(status);
-                    serverVideoRecvSess.DeletePacket(pack);
-                }
-            } while (serverVideoRecvSess.GotoNextSourceWithData());
-        }
-
-        serverVideoRecvSess.EndDataAccess();
-
-        RTPTime::Wait(RTPTime(1,0));
-    }
-
-    serverVideoRecvSess.BYEDestroy(RTPTime(10,0),0,0);
-    serverVideoSendSess.BYEDestroy(RTPTime(10,0),0,0);
-}
 

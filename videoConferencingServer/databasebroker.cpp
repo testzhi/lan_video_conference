@@ -114,14 +114,14 @@ bool DataBaseBroker::createTables()
                           "`NOTERID` CHAR(11),"
                           "`CONTENT` VARCHAR(20),"
                           "`NOTEDATE` DATE,"
-                          "`NOTETIME` TIME,"
-                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
-    string jurisdictions = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`jurisdictationsTable` ("
+                          "`NOTETIME` TIME)";
+//                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
+    string jurisdictions = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`JurisdictationsTable` ("
                           "`CATEGORY` INT NOT NULL,"
                           "`USERID` CHAR(11),"
                           "`LEVEL` VARCHAR(20),"
-                          "`CATEGORYID` INT NOT NULL,"
-                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
+                          "`CATEGORYID` INT NOT NULL)";
+//                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
 
 
     if(!query(employees)) return false;
@@ -132,6 +132,7 @@ bool DataBaseBroker::createTables()
     if(!query(attendees)) return false;
     if(!query(notifications)) return false;
     if(!query(meetingNotes)) return false;
+    if(!query(jurisdictions)) return false;
     cout << "建表成功" << endl;
     return true;
 }

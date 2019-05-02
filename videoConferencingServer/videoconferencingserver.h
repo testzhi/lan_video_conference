@@ -8,24 +8,12 @@
 #include <QJsonObject>
 #include <string>
 #include "datacontroller.h"
+#include "streamingmediaforwading.h"
 
-#include <jrtplib3/rtpsession.h>
-#include <jrtplib3/rtpudpv4transmitter.h>
-#include <jrtplib3/rtpipv4address.h>
-#include <jrtplib3/rtpsessionparams.h>
-#include <jrtplib3/rtperrors.h>
-#include <jrtplib3/rtplibraryversion.h>
-#include <jrtplib3/rtppacket.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <string>
+
+
 
 #define BUFFER_LENGTH 1024
-
-using namespace jrtplib;
-
-#define SSRC           100
 
 using namespace boost::asio;
 using boost::asio::ip::udp;
@@ -84,11 +72,9 @@ public:
     void handleRequestStartMeeting(QJsonObject Data, sock_ptr sock);
     void handleRequestStopMeeting(QJsonObject Data, sock_ptr sock);
     void handleRequestInvitionResult(QJsonObject Data, sock_ptr sock);
-    void handleRequestAttendMeeting(QJsonObject Data, sock_ptr);//参会人
+    void handleRequestAttendMeeting(QJsonObject Data, sock_ptr sock);//参会人
+    void handleRequestStartVideo(QJsonObject Data, sock_ptr sock);
 
-
-    void checkerror(int rtperr);
-    void videoForward(std::vector<std::string> destIps);//jrtplib转发数据部分
 
 
 
@@ -108,6 +94,9 @@ private:
     udp::socket m_sockUdp;
 
     DataController dc;
+
+    std::vector<std::string> m_destIps;
+    StreamingMediaForwading m_srsVideo;
 };
 
 #endif // VIDEOCONFERENCINGSERVER_H
