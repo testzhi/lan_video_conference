@@ -21,11 +21,11 @@ Item {
     function initAttendeeMessage() {
         for (var i = 0; i !== conferenceUI.employee.attendeeCount(); i++) {
             att = conferenceUI.employee.getAttendee(i)
-            attendeeRealName[i] = att.realName
-            attendeeID[i] = att.userID
-            attendeeAvatar[i] = att.avatar
-            attendeeJurisdiction[i] = att.jurisdiction
-            attendeeState = "true"
+            attendeeRealName.push(att.realName)
+            attendeeID.push(att.userID)
+            attendeeAvatar.push(att.avatar)
+            attendeeJurisdiction.push(att.jurisdiction)
+            attendeeState.push("true")
         }
     }
     function addAttendee() {
@@ -47,6 +47,15 @@ Item {
                 currentExitAttendee += 1
                 attendeeState[i + currentExitAttendee] = "false"
             }
+        }
+    }
+    function clearAttendeeMessage() {
+        while (attendeeRealName.length !== 0) {
+            attendeeRealName.pop()
+            attendeeID.pop()
+            attendeeAvatar.pop()
+            attendeeJurisdiction.pop()
+            attendeeState.pop()
         }
     }
 
@@ -279,6 +288,7 @@ Item {
                         screenSwitch.visible = false
                         while (meeting.meetingNotifications.length !== 0)
                             meeting.meetingNotifications.pop()
+                        clearAttendeeMessage()
                         meetingExit()
                         conferenceUI.getStopMeetingMessage(currentMeetingID)
                         meetingList.currentMeeting = ""
@@ -320,6 +330,7 @@ Item {
                     screenSwitch.visible = false
                     while (meeting.meetingNotifications.length !== 0)
                         meeting.meetingNotifications.pop()
+                    clearAttendeeMessage()
                     //                    Qt.quit()
                     meetingExit()
                 }
@@ -345,8 +356,13 @@ Item {
                                     meetingConnect.mee.speaker, "  ",
                                     conferenceUI.employee.userID)
                         if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
+                            console.log("pixHeight  ",
+                                        xvideoCamera.getPixHeight())
                             xvideoScreen.setScale("2.4")
                             xvideoCamera.setScale("2.4")
+                            xvideoCamera.pausePlay()
+                            xvideoScreen.pausePlay()
+                            conferenceUI.getStartVideoMessage(currentMeetingID)
                             xvideoCamera.startPlay()
                             screenSwitch.visible = true
                         }

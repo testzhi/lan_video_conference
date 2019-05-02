@@ -68,12 +68,6 @@ Item {
         meetingState[meetingState.length] = met.state
         meetingID[meetingID.length] = met.meetingID
     }
-    function refreshMeetingState() {
-        for (var i = 0; i !== conferenceUI.employee.meetingCount(); i++) {
-            met = conferenceUI.employee.getMeeting(i)
-            meetingState[i] = met.state
-        }
-    }
     onCurrentMeetingChanged: {
         meetingLoader.sourceComponent = null
         meetingLoader.sourceComponent = meetingComponent
@@ -84,7 +78,9 @@ Item {
         anchors.fill: parent
     }
     Connections {
+        id: employeeConnect
         target: conferenceUI.employee
+        property string str
         onLoginSucceeded: {
             //            console.log(type)
             if (type === "MeetingMessage") {
@@ -97,11 +93,21 @@ Item {
                 addMeetingMessage()
                 meetingLoader.sourceComponent = null
                 meetingLoader.sourceComponent = meetingComponent
-            } else if (type === "RefreshMeetingState") {
-                console.log("refresh meeting state")
-                refreshMeetingState()
-                meetingLoader.sourceComponent = null
-                meetingLoader.sourceComponent = meetingComponent
+            }
+            employeeConnect.str = type
+            if (employeeConnect.str.length > 19) {
+                var s = employeeConnect.str.substring(0, 19)
+                console.log("refresh meeting state  ", s)
+                if (s === "RefreshMeetingState") {
+                    var ss = employeeConnect.str.substring(19, 20)
+                    var sss = employeeConnect.str.substring(20, employeeConnect.str.length)
+                    console.log("refresh meeting sate index and num  ", ss,
+                                "  ", sss)
+                    console.log("refresh meeting state")
+                    meetingState[sss] = ss
+                    meetingLoader.sourceComponent = null
+                    meetingLoader.sourceComponent = meetingComponent
+                }
             }
         }
     }

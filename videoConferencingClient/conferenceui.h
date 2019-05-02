@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void getStartMeetingMessage(QString meetingID);
     Q_INVOKABLE void getStopMeetingMessage(QString meetingID);
     Q_INVOKABLE void getAttendMeetingMessage(QString meetingID);
+    Q_INVOKABLE void getStartVideoMessage(QString meetingID);
 //    Q_INVOKABLE void getSpeakMessage(QString meetingID);
 
     VideoConferencingClient *getVideoConferencing() const;

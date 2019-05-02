@@ -92,6 +92,11 @@ QString Meeting::state() const
     return m_state;
 }
 
+QString Meeting::getState()
+{
+    return m_state;
+}
+
 void Meeting::setState(const QString &state)
 {
     m_state = state;

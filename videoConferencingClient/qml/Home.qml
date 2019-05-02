@@ -10,10 +10,7 @@ Item {
     property real currentChooseMeeting: -1
     property Meeting mee
     onCurrentChooseMeetingChanged: {
-        console.log("choose meeting index  ", currentChooseMeeting)
-        mee = conferenceUI.employee.getMeeting(currentChooseMeeting)
-        meeting.currentMeetingID = mee.meetingID
-        console.log("meetingID  ", meeting.currentMeetingID)
+        meeting.currentMeetingID = currentChooseMeeting
     }
 
     Column {
@@ -96,15 +93,6 @@ Item {
             height: 1
             color: "blue"
         }
-        //        Loader {
-        //            height: mainWindow.height * 0.88
-        //            width: parent.width
-        //            id: messageLoader
-        //            sourceComponent: messageComponet
-        //        }
-
-        //        Component {
-        //            id: messageComponet
         MyMeeting {
             id: meeting
             height: mainWindow.height * 0.88
@@ -224,7 +212,7 @@ Item {
                     onBeginMeeting: {
                         //                        mee = conferenceUI.employee.getMeeting(index)
                         //                        meeting.currentMeetingID = mee.meetingID
-                        currentChooseMeeting = index
+                        currentChooseMeeting = meetingID[index]
                         employeeMessage.visible = false
                         meeting.visible = true
                     }
@@ -234,7 +222,7 @@ Item {
                     }
 
                     onAttendMeeting: {
-                        currentChooseMeeting = index
+                        currentChooseMeeting = meetingID[index]
                         //                        mee = conferenceUI.employee.getMeeting(index)
                         //                        meeting.currentMeetingID = mee.meetingID
                         employeeMessage.visible = false

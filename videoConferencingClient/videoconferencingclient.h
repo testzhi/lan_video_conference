@@ -59,6 +59,7 @@ public:
     void requestStopMeeting(std::string emailid, std::string meetingID);
     void requestSpeak(std::string userID,std::string meetingID);
     void requestAttendMeeting(std::string userID,std::string meetingID);
+    void requestStartVideo(std::string userID,std::string meetingID);
     void setEmployee(Employee *employee);
 //    void setCompany(Company *company);
 
@@ -96,6 +97,7 @@ private:
     std::string requestStartMeetingToString(std::string emailid, std::string meetingID);
     std::string requestStopMeetingToString(std::string emailid, std::string meetingID);
     std::string requestAttendMeetingToString(std::string emailid,std::string meetingID);
+    std::string requestStartVideoToString(std::string userID,std::string meetingID);
 
     void tcpSendMessage(std::string msg);
     QJsonObject stringToQJsonObject(std::string str);

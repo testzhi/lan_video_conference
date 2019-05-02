@@ -50,6 +50,11 @@ void XVideo::setScale(QString s)
     m_pCameraRecord->setImageScale(s.toDouble());
 }
 
+int XVideo::getPixHeight()
+{
+    return m_pCameraRecord->pixHeight();
+}
+
 void XVideo::slot_GetOneFrame(QImage image)
 {
     m_Frame = image.copy();

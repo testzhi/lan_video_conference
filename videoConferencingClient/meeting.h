@@ -53,6 +53,7 @@ public:
     Q_INVOKABLE QString category() const;
     Q_INVOKABLE void setCategory(const QString &category);
     Q_INVOKABLE QString state() const;
+    Q_INVOKABLE QString getState();
     Q_INVOKABLE void setState(const QString &state);
     Q_INVOKABLE QString meetingID() const;
     Q_INVOKABLE void setMeetingID(const QString &meetingID);

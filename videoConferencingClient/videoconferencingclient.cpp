@@ -342,30 +342,34 @@ void VideoConferencingClient::handleOnlineMeetingResult(QJsonObject qo)
 
 void VideoConferencingClient::handleOnlineMeetingStartResult(QJsonObject qo)
 {
+    int index = 0;
     QString meetingID = qo.value("DATA")["MEETINGID"].toString();
     for(int i = 0;i != m_employee->meetingCount();i++) {
         Meeting *mee = m_employee->getMeeting(i);
         if(meetingID == mee->meetingID()) {
             mee->setState("1");
+            index = i;
         }
     }
-    m_employee->loginSucceeded("RefreshMeetingState");
+    QString s = "RefreshMeetingState1" + QString::number(index,10);
+    m_employee->loginSucceeded(s);
 //    m_employee->loginSucceeded("MeetingListRefresh");
 }
 
 void VideoConferencingClient::handleOnlineMeetingStopResult(QJsonObject qo)
 {
+    int index = 0;
     QString meetingID = qo.value("DATA")["MEETINGID"].toString();
     for(int i = 0;i != m_employee->meetingCount();i++) {
         Meeting *mee = m_employee->getMeeting(i);
         if(meetingID == mee->meetingID()) {
             mee->setState("2");
+            index = i;
         }
     }
-    //    emit m_employee->addAttendeeMessage("hh");
-    emit m_employee->loginSucceeded("RefreshMeetingState");
+    QString s = "RefreshMeetingState2" + QString::number(index,10) ;
+    emit m_employee->loginSucceeded(s);
     emit m_employee->loginSucceeded("MeetingEnd");
-//    emit m_employee->loginSucceeded("MeetingListRefresh");
 }
 
 void VideoConferencingClient::handleOnlineMeetingAttendeesResult(QJsonObject qo)
@@ -596,6 +600,13 @@ void VideoConferencingClient::requestAttendMeeting(std::string userID, std::stri
     m_employee->loginSucceeded("BeginMeeting");
     string sendMessage = requestAttendMeetingToString(userID,meetingID);
     cout << "请求加入会议："  << sendMessage << endl;
+    tcpSendMessage(sendMessage);
+}
+
+void VideoConferencingClient::requestStartVideo(std::string userID, std::string meetingID)
+{
+    string sendMessage = requestStartVideoToString(userID,meetingID);
+    cout << "请求开始音视频："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
 }
 
@@ -1079,6 +1090,23 @@ std::string VideoConferencingClient::requestAttendMeetingToString(std::string em
     QJsonObject json;
     json.insert("DATA",QJsonValue(data));
     json.insert("TYPE","#REQUEST_ATTEND_MEETING");
+
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+
+    return strJson;
+}
+
+std::string VideoConferencingClient::requestStartVideoToString(std::string userID, std::string meetingID)
+{
+    QJsonObject data;
+    data.insert("FROM",userID.c_str());
+    data.insert("MEETINGID",meetingID.c_str());
+    QJsonObject json;
+    json.insert("DATA",QJsonValue(data));
+    json.insert("TYPE","#REQUEST_START_VIDEO");
 
     QJsonDocument document;
     document.setObject(json);

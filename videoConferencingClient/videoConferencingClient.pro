@@ -61,7 +61,8 @@ HEADERS += \
 DISTFILES += \
     resources/1.png \
     resources/xly.png
-LIBS += -lboost_system -lboost_date_time -lboost_thread -lavformat -lavcodec -lavfilter -lavutil -lSDL2 -lswscale -lswresample -lavdevice -lpthread
+LIBS += -lboost_system -lboost_date_time -lboost_thread
+#-lavformat -lavcodec -lavfilter -lavutil -lSDL2 -lswscale -lswresample -lavdevice -lpthread
 
 
 INCLUDEPATH +=  ./usr/local/include
@@ -71,4 +72,4 @@ LIBS += -L./usr/local/lib/ -lavcodec -lavdevice -lavfilter \
 
 LIBS += -L./usr/local/lib/ -lSDL2
 
-LIBS += -L./usr/local/lib -ljthread -ljrtp
+LIBS += -L./usr/local/lib -ljrtp -ljthread

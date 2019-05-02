@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE void startPlay();
     Q_INVOKABLE void pausePlay();
     Q_INVOKABLE void setScale(QString s);
+    Q_INVOKABLE int getPixHeight();
 protected:
     virtual void paint(QPainter *pPainter);
 private:
