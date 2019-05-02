@@ -260,8 +260,52 @@ void XVideoRecordThread::pausePlay()
     qDebug() << "Pause...";
 }
 
+void XVideoRecordThread::checkerror(int rtperr)
+{
+    if (rtperr < 0)
+    {
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        exit(-1);
+    }
+}
+
+void XVideoRecordThread::SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport)
+{
+    int status;
+    //RTP+RTCP库初始化SOCKET环境
+    RTPUDPv4TransmissionParams transparams;
+    RTPSessionParams sessparams;
+    sessparams.SetOwnTimestampUnit(1.0/90000.0); //时间戳单位
+    sessparams.SetAcceptOwnPackets(true);	//接收自己发送的数据包
+    sessparams.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
+    sessparams.SetPredefinedSSRC(SSRC);     //定义SSRC
+
+    transparams.SetPortbase(baseport);
+
+    status = sess.Create(sessparams,&transparams);
+    CheckError(status);
+
+    destip = ntohl(destip);
+    RTPIPv4Address addr(destip,destport);
+    status = sess.AddDestination(addr);
+    CheckError(status);
+
+}
+
 void XVideoRecordThread::run()
 {
+
+    SVideoSender sender;
+
+    sender.InitBufferSize();
+
+    std::string serverip_str = "10.253.226.45";
+    uint32_t dest_ip = inet_addr(serverip_str.c_str());
+
+    SetRTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
+    sender.SetParamsForSendingH264();
+
+
     initVideoRecord();
 
     AVFrame *pFrame = av_frame_alloc();
@@ -338,7 +382,12 @@ void XVideoRecordThread::run()
                             qDebug()<<"写文件(H264)错误";
                         }
 
+                        sender.SendH264Nalu((unsigned char*)h264Packet.data, h264Packet.size);
+                        RTPTime::Wait(0.005);
+
                         av_packet_unref(&h264Packet);
+
+
                     } // got_h264_pic
                     av_packet_unref(&h264Packet);
 

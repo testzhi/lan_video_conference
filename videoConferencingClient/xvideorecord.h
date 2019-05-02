@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QImage>
+#include "videosender.h"
 
 extern "C"
 {
@@ -16,6 +17,10 @@ extern "C"
 #include <libavutil/audio_fifo.h>
 #include <SDL2/SDL.h>
 }
+
+#define SSRC           100
+#define SERVER_PORT     5000
+#define BASE_PORT     3000
 
 typedef struct PacketQueue {
     AVPacketList *first_pkt, *last_pkt;
@@ -62,12 +67,16 @@ public:
     void stopPlay();
     void pausePlay();
 
+
     int pixWidth() const;
     int pixHeight() const;
 
 
     double imageScale() const;
     void setImageScale(double imageScale);
+
+    void checkerror(int rtperr);
+    void SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
 
 signals:
     void sig_GetOneFrame(QImage); //每获取到一帧图像 就发送此信号
