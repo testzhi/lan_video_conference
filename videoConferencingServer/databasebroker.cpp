@@ -38,7 +38,7 @@ void DataBaseBroker::closeMySQL()
 bool DataBaseBroker::createTables()
 {
     string employees = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`EmployeesTable` ("
-                       "`USERID` VARCHAR(7) NOT NULL,"
+                       "`USERID` VARCHAR(11) NOT NULL,"
                        "`PASSWD` CHAR(20) NOT NULL,"
                        "`REALNAME` VARCHAR(10) NOT NULL,"
                        "`EMAIL` VARCHAR(20) NOT NULL,"
@@ -75,8 +75,8 @@ bool DataBaseBroker::createTables()
     string meetings = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`MeetingsTable` ("
                       "`MEETINGID` INT NOT NULL AUTO_INCREMENT,"
                       "`INITIATOR` VARCHAR(10),"
-                      "`ASSISTANT` CHAR(7) NOT NULL,"
-                      "`SPEAKER` CHAR(7) NOT NULL,"
+                      "`ASSISTANT` CHAR(11) NOT NULL,"
+                      "`SPEAKER` CHAR(11) NOT NULL,"
                       "`DATE` DATE NOT NULL,"
                       "`TIME` TIME NOT NULL,"
                       "`CATEGORY` TINYINT NOT NULL,"
@@ -95,20 +95,33 @@ bool DataBaseBroker::createTables()
                       ");";
     string attendees = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`AttendeesTable` ("
                        "`MEETINGID` INT NOT NULL,"
-                       "`ATTENDEEID` INT NOT NULL,"
+                       "`ATTENDEEID` CHAR(11) NOT NULL,"
                        "`ATTENDSTATE` TINYINT,"
                        "`REMARK` VARCHAR(20),"
                        "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)"
                        ");";
     string notifications = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`NotificationsTable` ("
-                           "`NOTIFIEDID` CHAR(7) NOT NULL,"
-                           "`NOTIFYID` CHAR(7),"
+                           "`NOTIFIEDID` CHAR(11) NOT NULL,"
+                           "`NOTIFYID` CHAR(11),"
                            "`CATEGORY` TINYINT,"
                            "`SUBJECT` VARCHAR(20),"
                            "`STATE` INT NOT NULL,"
                            "`MEETINGID` INT NOT NULL,"
                            "CONSTRAINT `FK_NOTIFIEDID` FOREIGN KEY (`NOTIFIEDID`) REFERENCES `EmployeesTable` (`USERID`)"
                            ");";
+    string meetingNotes = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`MeetingNotesTable` ("
+                          "`MEETINGID` INT NOT NULL,"
+                          "`NOTERID` CHAR(11),"
+                          "`CONTENT` VARCHAR(20),"
+                          "`NOTEDATE` DATE,"
+                          "`NOTETIME` TIME,"
+                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
+    string jurisdictions = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`jurisdictationsTable` ("
+                          "`CATEGORY` INT NOT NULL,"
+                          "`USERID` CHAR(11),"
+                          "`LEVEL` VARCHAR(20),"
+                          "`CATEGORYID` INT NOT NULL,"
+                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
 
 
     if(!query(employees)) return false;
@@ -118,6 +131,7 @@ bool DataBaseBroker::createTables()
     if(!query(meetings)) return false;
     if(!query(attendees)) return false;
     if(!query(notifications)) return false;
+    if(!query(meetingNotes)) return false;
     cout << "建表成功" << endl;
     return true;
 }
@@ -603,13 +617,14 @@ unsigned long long DataBaseBroker::queryInvitationsInvalid(std::string emailID, 
 unsigned long long DataBaseBroker::queryMeetingOfInvitionInfo(std::string meetingID, std::vector<std::string> &data)
 {
     auto row = queryMeetingDetailsByMeetingIDAndMeetingState(meetingID, 0, data);
-    return row;
+    auto row2 = queryMeetingDetailsByMeetingIDAndMeetingState(meetingID, 1, data);
+    return row+row2;
 }
 
 unsigned long long DataBaseBroker::queryMeetingNOTENDByMeetingID(std::string meetingID, int meetingState, std::vector<std::string> &data)
 {
     char *cmd = new char[150];
-    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s' and `MEETINGSTATE` is not '%d';", meetingID.c_str(), meetingState);
+    sprintf(cmd, "select * from MeetingsTable where `MEETINGID` = '%s' and `MEETINGSTATE` <> '%d';", meetingID.c_str(), meetingState);
     if(!query(cmd))
     {
         delete [] cmd;
@@ -632,7 +647,7 @@ unsigned long long DataBaseBroker::queryMeetingNOTENDByMeetingID(std::string mee
     return row;
 }
 
-unsigned long long DataBaseBroker::queryMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds)
+unsigned long long DataBaseBroker::queryUnfinishedMeetingsIDByUserID(std::string emailID, std::vector<std::string> &meetingIds)
 {
     char *cmd = new char[150];
     sprintf(cmd, "select `MEETINGID` from AttendeesTable where `ATTENDEEID` = '%s'  and `ATTENDSTATE` = '1';", emailID.c_str());
@@ -644,7 +659,6 @@ unsigned long long DataBaseBroker::queryMeetingsIDByUserID(std::string emailID, 
     result = mysql_store_result(mysqlInstance);
     auto row = mysql_num_rows(result);
     delete [] cmd;
-    if(row == 0) return 0;
     for (unsigned long long i = 0; i != row; ++i)
     {
         MYSQL_ROW line = mysql_fetch_row(result);
@@ -654,7 +668,29 @@ unsigned long long DataBaseBroker::queryMeetingsIDByUserID(std::string emailID, 
         else
             meetingIds.push_back("");
     }
-    return row;
+
+    char *cmd2 = new char[150];
+    sprintf(cmd2, "select `MEETINGID` from AttendeesTable where `ATTENDEEID` = '%s'  and `ATTENDSTATE` = '3';", emailID.c_str());
+    if(!query(cmd2))
+    {
+        delete [] cmd2;
+        return 0;
+    }
+    result = mysql_store_result(mysqlInstance);
+    auto row2 = mysql_num_rows(result);
+    delete [] cmd2;
+
+    for (unsigned long long i = 0; i != row2; ++i)
+    {
+        MYSQL_ROW line = mysql_fetch_row(result);
+
+        if(line[0])
+            meetingIds.push_back(line[0]);
+        else
+            meetingIds.push_back("");
+    }
+
+    return row+row2;
 }
 int DataBaseBroker::queryMeetingDetailsOnlyByMeetingID(std::string meetingID, std::vector<std::string> &data)
 {
@@ -712,7 +748,7 @@ int DataBaseBroker::queryMeetingStateByMeetingID(std::string meetingID, int &sta
     auto row = mysql_num_rows(result);
     delete [] cmd;
     if(row == 0)
-         return 0;
+        return 0;
     MYSQL_ROW line = mysql_fetch_row(result);
     if(line[0])
     {
@@ -725,7 +761,6 @@ int DataBaseBroker::queryMeetingStateByMeetingID(std::string meetingID, int &sta
 
 unsigned long long DataBaseBroker::queryAttendeesByStateAndMeetingID(std::string meetingID, int attendeeState, std::vector<std::string> &data)
 {
-    data.clear();
     char *cmd = new char[100];
     sprintf(cmd, "select `ATTENDEEID` from `AttendeesTable` where `MEETINGID` = '%s' and `ATTENDSTATE`= '%d';", meetingID.c_str(), attendeeState);
     if(!query(cmd))
@@ -740,20 +775,24 @@ unsigned long long DataBaseBroker::queryAttendeesByStateAndMeetingID(std::string
     if(row == 0)
         return 0;
     while(nullptr!=line)
+    {
+        if(line[0])
         {
-            if(line[0])
-                data.push_back(line[0]);
-            else
-                data.push_back("");
-            line = mysql_fetch_row(result);
+            cout << line[0] << endl;
+            data.push_back(line[0]);
         }
+        else
+            data.push_back("");
+        line = mysql_fetch_row(result);
+    }
+    for(auto d:data)
+        cout << "atten" << d << "  " <<endl;
 
-        return row;
+    return row;
 }
 
 unsigned long long DataBaseBroker::queryMeetingIDByAttendeeIDAndAttendeeState(std::string attendeeID, int attendeeState, std::vector<std::string> &meetingIDs)
 {
-    meetingIDs.clear();
     char *cmd = new char[100];
     sprintf(cmd, "select `MEETINGID` from `AttendeesTable` where `ATTENDEEID` = '%s' and `ATTENDSTATE`= '%d';", attendeeID.c_str(), attendeeState);
     if(!query(cmd))
@@ -885,9 +924,21 @@ bool DataBaseBroker::updateNotificationsState(std::string notifiedID, std::strin
 
 void DataBaseBroker::deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID)
 {
-
     char *cmd = new char[200];
-    sprintf(cmd, "delete from NotificationsTable where `NOTIFIEDID` = '%s' and `MEETINGID` = '%s';", userID.c_str(), meetingID.c_str() );
+    sprintf(cmd, "delete from NotificationsTable where `NOTIFIEDID` = '%s' and `MEETINGID` = '%s' and `CATEGORY` = '1';", userID.c_str(), meetingID.c_str() );
+
+    if(!query(cmd))
+    {
+        delete [] cmd;
+    }
+    delete [] cmd;
+    cout << "删除通知成功"<<endl;
+}
+
+void DataBaseBroker::deleteMeetingEndUndisposedNotifications(std::string meetingID, int category)
+{
+    char *cmd = new char[200];
+    sprintf(cmd, "delete from NotificationsTable where `CATEGORY` = '%d' and `MEETINGID` = '%s';", category, meetingID.c_str() );
 
     if(!query(cmd))
     {
@@ -1125,10 +1176,7 @@ unsigned long long DataBaseBroker::queryInvitations(std::string emailID, int cat
         for(unsigned int j = 0; j != field; j++)
         {
             if(line[j])
-                //            {
-                //                cout << line[i] << endl;
                 linedata.push_back(line[j]);
-            //            }
             else
                 linedata.push_back("");
         }

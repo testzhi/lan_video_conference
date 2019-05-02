@@ -25,8 +25,7 @@ using namespace jthread;
 
 void CheckError(int rtperr);
 
-class SVideoSender :
-    public RTPSession
+class SVideoSender :public RTPSession
 {
 public:
     SVideoSender(void);

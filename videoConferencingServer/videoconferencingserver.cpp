@@ -20,7 +20,6 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
 {
     if(ec)
         return;
-    //    _remote_endpoint = sock.remote_endpoint();
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
     clearTcpRecBuffer();
@@ -36,7 +35,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
 {
     std::string receive_message;
 
-    for(int i = 0;i != BUFFER_LENGTH; i++)
+    for(unsigned int i = 0;i != BUFFER_LENGTH; i++)
     {
         if (m_tcpRecvBuf[i] != '\0')
             receive_message.push_back(m_tcpRecvBuf[i]);
@@ -67,10 +66,18 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         handleRequestLaunchMeeting(Data, sock);
     else if(type == "#REQUEST_START_MEETING")
         handleRequestStartMeeting(Data, sock);
-    //    else if(type == "#REQUEST_STOP_MEETING")
-    //        handleRequestStopMeeting(Data, sock);
+    else if(type == "#REQUEST_STOP_MEETING")
+        handleRequestStopMeeting(Data, sock);
     else if(type == "#REQUEST_SEND_INVITATION_RESULT")
         handleRequestInvitionResult(Data, sock);
+    else if(type == "#REQUEST_ATTEND_MEETING")
+        handleRequestAttendMeeting(Data, sock);
+    else if(type == "#REQUEST_FINISHED_MEETINGS_NOTES")
+        handleRequestFinishedMeetingsNotes(Data, sock);
+    else if(type == "#REQUEST_UNNOTED_MEETINGS")
+        handleRequestUnnotedMeetings(Data, sock);
+    else if(type == "#REQUEST_NOTE_MEETING")
+        handleRequestNoteMeeting(Data, sock);
 
     clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
@@ -82,7 +89,7 @@ void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingS
 }
 void VideoConferencingServer::handleTcpSend(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock)
 {
-    cout << "-------" <<"发送完毕" << endl;
+    cout << sock->remote_endpoint() << "-------" <<"发送完毕" << endl;
 }
 
 void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
@@ -96,7 +103,7 @@ void VideoConferencingServer::tcpSendTo(std::string ip, std::string msg)
         m_sockTcp.connect(send_ep);
     }
     m_sockTcp.send(boost::asio::buffer(msg));
-    cout << "～～～～～～" <<"发送完毕" << endl;
+    cout << send_ep << "～～～～～～" <<"发送完毕" << endl;
     //    m_sockTcp.close();
 }
 
@@ -109,13 +116,13 @@ void VideoConferencingServer::tcpAsyncConnect(std::string ip, std::string msg)
         m_sockTcp.async_connect(send_ep, boost::bind(&VideoConferencingServer::tcpAsyncConnectionHandler, this, msg, boost::asio::placeholders::error));
     }
     else {
-        cout << "*******" <<"异步发送给" << /*m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
+        cout << "*******" <<"异步发送给" <</* m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
         m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
     }
 }
 void VideoConferencingServer::tcpAsyncConnectionHandler(std::string msg, const boost::system::error_code &ec)
 {
-    cout << "*******" <<"异步连接成功,异步发送给 " << /*m_sockTcp.remote_endpoint() << " 内容： "<<*/ msg;
+    cout << "*******" <<"异步连接成功,异步发送给 " /*<< m_sockTcp.remote_endpoint() << " 内容： "*/<< msg;
     m_sockTcp.async_send(boost::asio::buffer(msg), boost::bind(&VideoConferencingServer::tcpAsyncSendToHandler, this, boost::asio::placeholders::error));
 }
 void VideoConferencingServer::tcpAsyncSendToHandler(const boost::system::error_code &ec)
@@ -128,10 +135,18 @@ void VideoConferencingServer::udpSendMessage(std::string ip, std::string msg)
 {
     boost::asio::ip::udp::endpoint send_ep(boost::asio::ip::address::from_string(ip),2444);
 
-    cout  << "=========" << "当前UDP服务端输出：" << msg;
+    cout  << "=========" << "当前UDP服务端输出：" << msg <<"   ip:  " << send_ep;
     m_sockUdp.async_send_to(boost::asio::buffer(msg), send_ep,
                             boost::bind(&VideoConferencingServer::handleUdpSend, this,
                                         boost::asio::placeholders::error));
+}
+
+void VideoConferencingServer::udpSysSendMessage(std::string ip, std::string msg)
+{
+    boost::asio::ip::udp::endpoint send_ep(boost::asio::ip::address::from_string(ip),2444);
+    cout  << "~~~~~~~~~~~" << "当前UDP服务端输出：" << msg <<"   ip:  " << send_ep;
+    m_sockUdp.send_to(boost::asio::buffer(msg), send_ep);
+    cout << "~~~~~~~~~~~" <<"UDP发送完毕" << endl;
 }
 void VideoConferencingServer::handleUdpSend(const boost::system::error_code &ec)
 {
@@ -197,9 +212,11 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
                     if(emailid == speaker || emailid == assistant)
                     {
                         dc.getDb().updateMeetingStateByMeetingID(meetingid, 2);
+                        dc.getDb().deleteMeetingEndUndisposedNotifications(meetingid, 1);//删除会议结束时未处理的通知
                         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingid, emailid, 4, "");
                         vector<string> attendees;
                         dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 2, attendees);
+                        dc.getDb().queryAttendeesByStateAndMeetingID(meetingid, 3, attendees);
                         string json;
                         dc.jsonStopMeeting(meetingid, json);
 
@@ -280,6 +297,21 @@ void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferenc
     unsigned long long res;
     dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
     tcpSendMessage(tcpJson, sock);
+}
+
+void VideoConferencingServer::handleRequestFinishedMeetingsNotes(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
+}
+
+void VideoConferencingServer::handleRequestNoteMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
+}
+
+void VideoConferencingServer::handleRequestUnnotedMeetings(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
+{
+
 }
 
 void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -426,28 +458,33 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
         dc.getDb().queryMeetingSpeakerAndAssistantByMeetingID(meetingID, speaker, assistant);
         if(emailID == speaker || emailID == assistant)
         {
+            cout << "ttttttttttttttttttttttttttt" << endl;
             dc.getDb().updateMeetingStateByMeetingID(meetingID, 2);
+            dc.getDb().deleteMeetingEndUndisposedNotifications(meetingID, 1);//删除会议结束时未处理的通知
             dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 4, "");
-            vector<string> attendees;
-            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
-
+            vector<string> attendeesList;
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendeesList);
+            dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 3, attendeesList);
             string json;
             dc.jsonStopMeeting(meetingID, json);
 
-            if(!attendees.empty())
-            {
-                for(auto &attendee:attendees)
+            for(auto m:attendeesList)
+                if(!attendeesList.empty())
                 {
-                    if(attendee != emailID)
+                    for(auto &attendee:attendeesList)
                     {
-                        dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
-                        string ip;
-                        int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
-                        if(r2 == 1)
-                            udpSendMessage(ip, json);
+                        if(attendee != emailID)
+                        {
+                            dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, attendee, 4, "");
+                            string ip;
+                            int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
+                            if(r2 == 1)
+                            {
+                                udpSendMessage(ip, json);
+                            }
+                        }
                     }
                 }
-            }
         }
         else
         {
@@ -463,7 +500,9 @@ void VideoConferencingServer::handleRequestStopMeeting(QJsonObject Data, VideoCo
                     string ip;
                     int r2 = dc.getDb().queryIpByUserID(atten, 1, ip);
                     if(r2 == 1)
+                    {
                         udpSendMessage(ip, json);
+                    }
                 }
             }
         }
@@ -526,25 +565,28 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
     dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
     if(meetingState == 1)
     {
+        vector<string> attendees;
+        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 2, attendees);
+        string jsonstr2;
+        dc.jsonStrNewAttendeeDetail(emailID, meetingID,jsonstr2);//给所有已经在会人员
+
         dc.getDb().updateAttendeeByMeetingIDAndAttendeeID(meetingID, emailID, 2, "");
+
         string jsonstr;
-        dc.jsonNewMeetingAttendeesList(meetingID, jsonstr);
+        dc.jsonNewMeetingAttendeesList(meetingID, jsonstr);//给当前参会人员
         string ownIp; ownIp.clear();
-                int r2 =dc.getDb().queryIpByUserID(emailID, 1, ownIp);
+        int r2 =dc.getDb().queryIpByUserID(emailID, 1, ownIp);
         if(r2 == 1)
             udpSendMessage(ownIp, jsonstr);
 
-        vector<string> attendees;
-        dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
-        string jsonstr2;
-        dc.jsonStrNewAttendeeDetail(emailID, meetingID,jsonstr2);
-
         if(!attendees.empty())
         {
+            cout <<"sssssssssssr"<<r2<<endl;
             for(auto &atten:attendees)
             {
                 if(atten != emailID)
                 {
+                    cout <<"ggggggattengggggggg"<<atten<<endl;
                     string attenip;
                     attenip.clear();
                     int r = dc.getDb().queryIpByUserID(atten, 1, attenip);
@@ -579,3 +621,123 @@ void VideoConferencingServer::clearTcpRecBuffer()
         m_tcpRecvBuf[i] = '\0';
     }
 }
+
+void VideoConferencingServer::checkerror(int rtperr)
+{
+    if (rtperr < 0)
+    {
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        exit(-1);
+    }
+}
+
+void VideoConferencingServer::videoForward(std::vector<std::string> destIps)
+{
+    RTPSession serverVideoRecvSess;//接收
+    uint16_t portbase;
+    int status;
+    portbase = 5000;//服务器接收客户端数据端口号
+
+    RTPUDPv4TransmissionParams transparams;
+    RTPSessionParams sessparams;
+    sessparams.SetOwnTimestampUnit(1.0/90000.0);
+    sessparams.SetAcceptOwnPackets(true);
+    transparams.SetPortbase(portbase);
+    status = serverVideoRecvSess.Create(sessparams,&transparams);
+    checkerror(status);
+
+
+
+    RTPSession serverVideoSendSess;//发送
+    uint16_t portbase1 = 4000;//输入用于发送的本地端口号
+
+
+
+    RTPUDPv4TransmissionParams transparams1;
+    RTPSessionParams sessparams1;
+
+    sessparams1.SetOwnTimestampUnit(1.0/90000.0);//时间戳单位
+    sessparams1.SetAcceptOwnPackets(true);//接收自己发送的数据包
+    sessparams1.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
+    sessparams1.SetPredefinedSSRC(SSRC);     //定义SSRC
+
+    transparams1.SetPortbase(portbase1);
+
+    int oldBufSize = transparams1.GetRTPReceiveBuffer();
+    transparams1.SetRTPReceiveBuffer(oldBufSize * 2);
+    status = serverVideoSendSess.Create(sessparams1,&transparams1);
+    checkerror(status);
+
+
+    uint16_t destport1 = 3000;//发送数据到客户端的目的端口号
+    for(auto &dip:destIps)
+    {
+        uint32_t destip1= inet_addr(dip.c_str());
+        if (destip1 == INADDR_NONE)
+        {
+            std::cerr << "IP有误" << std::endl;
+        }
+        destip1 = ntohl(destip1);
+        RTPIPv4Address addr1(destip1,destport1);
+        status = serverVideoSendSess.AddDestination(addr1);
+    }
+
+    serverVideoSendSess.SetDefaultPayloadType(96);//设置默认传输参数
+    serverVideoSendSess.SetDefaultMark(true);
+    serverVideoSendSess.SetTimestampUnit(1.0/90000.0);
+    serverVideoSendSess.SetDefaultTimestampIncrement(3600);
+    checkerror(status);
+
+    //int newBufSize = transparams1.GetRTPReceiveBuffer();
+    int oldBufSizec = transparams1.GetRTCPReceiveBuffer();
+    transparams1.SetRTCPReceiveBuffer(oldBufSizec * 2);
+    //int newBufSizec = transparams1.GetRTCPReceiveBuffer();
+
+    unsigned char *pfBuffer;
+    unsigned char *pBuffer;
+
+
+    while(1)
+    {
+
+        serverVideoRecvSess.BeginDataAccess();
+
+        // check incoming packets
+        if (serverVideoRecvSess.GotoFirstSourceWithData())
+        {
+            do
+            {
+                RTPPacket *pack;
+
+                while ((pack = serverVideoRecvSess.GetNextPacket()) != nullptr)
+                {
+                    printf("Got packet !\n");
+
+                    //                    uint8_t t = pack->GetPayloadType();
+                    //                    bool mark = pack->HasMarker();
+                    //                    uint32_t timestam = pack->GetTimestamp();
+
+                    int nLen = pack->GetPayloadLength();
+
+                    pfBuffer = (unsigned char*)pack->GetPayloadData();
+                    pBuffer = new unsigned char[nLen + 1];
+                    memcpy(pBuffer, pfBuffer, nLen);
+                    pBuffer[nLen] = 0;
+
+                    status = serverVideoSendSess.SendPacket((void *)pBuffer, nLen);
+
+                    checkerror(status);
+                    serverVideoRecvSess.DeletePacket(pack);
+                }
+            } while (serverVideoRecvSess.GotoNextSourceWithData());
+        }
+
+        serverVideoRecvSess.EndDataAccess();
+
+        RTPTime::Wait(RTPTime(1,0));
+    }
+
+    serverVideoRecvSess.BYEDestroy(RTPTime(10,0),0,0);
+    serverVideoSendSess.BYEDestroy(RTPTime(10,0),0,0);
+}
+

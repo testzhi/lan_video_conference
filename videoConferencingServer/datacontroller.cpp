@@ -262,7 +262,8 @@ void DataController::jsonStrInvitationsDetail(std::string emailid, std::string &
 void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res)
 {
     vector<string> meetingIds;
-    res = db.queryMeetingsIDByUserID(emalid, meetingIds);
+    res = db.queryUnfinishedMeetingsIDByUserID(emalid, meetingIds);
+    cout << "Unfinished meetingLLLLLLLLLLLLL" << res << endl;
     QJsonArray meetingsArray;
     if(res != 0)
     {
@@ -272,8 +273,10 @@ void DataController::jsonStrMeetingsDetail(std::string emalid, std::string &json
             auto m = db.queryMeetingDetailsOnlyByMeetingID(anID, data);
             if(m > 0)
             {
+                cout << "llll当前会议状态llll" << data[14] << endl;
                 if(atoi(data[14].c_str()) != 2)//未结束会议
                 {
+                    cout << "eeeeeeeeeeeeeeeee" <<endl;
                     QJsonObject meeting;
                     meeting.insert("MEETINGID", data[0].c_str());
                     //                    meeting.insert("INITIATOR", data[1].c_str());
@@ -407,6 +410,7 @@ void DataController::jsonNewMeetingAttendeesList(std::string meetingID, std::str
 
 void DataController::jsonStrNewAttendeeDetail(std::string emailid, std::string meetingID, std::string &jsonstr)
 {
+    cout <<"++++++++++++++"<<endl;
     vector<string> data;
     db.queryEmployeeInfoByEmailID(emailid, data);
     QJsonObject dd;
