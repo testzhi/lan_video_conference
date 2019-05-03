@@ -567,7 +567,11 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
     string meetingID = Data.value("DATA")["MEETINGID"].toString().toStdString();
     int meetingState = -1;
     dc.getDb().queryMeetingStateByMeetingID(meetingID, meetingState);
-    m_srsVideo.addNewDestIP(emailID);
+    string userip;
+    int i = dc.getDb().queryIpByUserID(emailID, 1 ,userip);
+    if(i == 1)
+        m_srsVideo.addNewDestIP(emailID);
+
     if(meetingState == 1)
     {
         vector<string> attendees;
@@ -599,6 +603,9 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
             }
         }
     }
+//        m_srsVideo.addNewDestIP(userip);
+//        std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
+//        t1.detach();
 }
 
 void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -625,8 +632,9 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
             }
         }
     }
-    cout << "kkkkkkkkkkkkkkkkkkkkk" << m_destIps.size() << endl;
-    m_srsVideo.addDestIPs(m_destIps);
+    //    cout << "kkkkkkkkkkkkkkkkkkkkk" << m_destIps.size() << endl;
+    //    m_srsVideo.addDestIPs(m_destIps);
+    m_srsVideo.addNewDestIP("192.168.43.174");
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
     t1.detach();
 }

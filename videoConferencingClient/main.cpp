@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<XScreen>("Meeting",1,0,"XScreen");
     Employee *employee = new Employee();
     ConferenceUI conferenceUI;
-//    employee->startReceive();
+    employee->threadReceive();
     conferenceUI.setEmployee(employee);
     VideoConferencingClient *client = new VideoConferencingClient();
     client->threadTcpReceive();

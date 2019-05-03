@@ -1,5 +1,7 @@
 #include "employee.h"
 
+#include <boost/thread.hpp>
+
 #define PORT_BASE     3000
 
 void checkerror(int rtperr)
@@ -10,6 +12,8 @@ void checkerror(int rtperr)
         exit(-1);
     }
 }
+
+//void
 
 void Employee::startReceive()
 {
@@ -33,6 +37,17 @@ void Employee::startReceive()
 
     RTPTime::Wait(RTPTime(1,0));
     sess.BYEDestroy(RTPTime(10,0),0,0);
+}
+
+void Employee::threadReceive()
+{
+//    boost::thread_group threadGroup;
+//    for(int i = 0;i < 5;i++) {
+        boost::thread thread(boost::bind(&Employee::startReceive,this));
+//        threadGroup.add_thread(&thread);
+        thread.detach();
+//    }
+//    threadGroup.join_all();
 }
 
 

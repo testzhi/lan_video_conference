@@ -73,6 +73,7 @@ public:
     Q_INVOKABLE Attendee *getAttendee(int i);
     Q_INVOKABLE int attendeeCount();
     Q_INVOKABLE void startReceive();
+    void threadReceive();
 
     void insertMeeting(Meeting *meeting);
     void insertNotification(Notification *notification);

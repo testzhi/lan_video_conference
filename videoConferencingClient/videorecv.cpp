@@ -24,12 +24,14 @@ void SVideoRecv::OnPollThreadStep()
 
     std::cout << "thread begin" << std::endl;
     BeginDataAccess();
-
+    std::cout << "1" << std::endl;
     // check incoming packets
     if (GotoFirstSourceWithData())
     {
+        std::cout << "2" << std::endl;
         do
         {
+            std::cout << "3" << std::endl;
             RTPPacket *pack;
             RTPSourceData *srcdat;
 
@@ -50,34 +52,34 @@ void SVideoRecv::ProcessRTPPacket(const RTPSourceData &srcdat,const RTPPacket &r
 {
 
 
-        if(rtppack.GetPayloadType() == H264)
+    if(rtppack.GetPayloadType() == H264)
+    {
+        std::cerr <<"Got H264 packet： " << rtppack.GetExtendedSequenceNumber() << " from SSRC " << srcdat.GetSSRC()
+                <<std::endl;
+        if(rtppack.HasMarker())//如果是最后一包则进行组包
         {
-            std::cout<<"Got H264 packet： " << rtppack.GetExtendedSequenceNumber() << " from SSRC " << srcdat.GetSSRC()
-                    <<std::endl;
-            if(rtppack.HasMarker())//如果是最后一包则进行组包
-            {
-                m_pVideoData->m_lLength = m_current_size + rtppack.GetPayloadLength();//得到数据包总的长度
-                memcpy(m_pVideoData->m_pBuffer,m_buffer,m_current_size);
-                memcpy(m_pVideoData->m_pBuffer + m_current_size ,rtppack.GetPayloadData(),rtppack.GetPayloadLength());
+            m_pVideoData->m_lLength = m_current_size + rtppack.GetPayloadLength();//得到数据包总的长度
+            memcpy(m_pVideoData->m_pBuffer,m_buffer,m_current_size);
+            memcpy(m_pVideoData->m_pBuffer + m_current_size ,rtppack.GetPayloadData(),rtppack.GetPayloadLength());
 
-                m_ReceiveArray.push_back(m_pVideoData);//添加到接收队列
+            m_ReceiveArray.push_back(m_pVideoData);//添加到接收队列
 
-                int fd_out = open("rec.h264", O_CREAT | O_RDWR,S_IRWXU|S_IRWXO|S_IRWXG);
-                lseek(fd_out, 0, SEEK_END);
-                write(fd_out, m_pVideoData->m_pBuffer,m_pVideoData->m_lLength);
-                close(fd_out);
+            int fd_out = open("rec.h264", O_CREAT | O_RDWR,S_IRWXU|S_IRWXO|S_IRWXG);
+            lseek(fd_out, 0, SEEK_END);
+            write(fd_out, m_pVideoData->m_pBuffer,m_pVideoData->m_lLength);
+            close(fd_out);
 
-                memset(m_buffer,0,m_current_size);//清空缓存，为下次做准备
-                m_current_size = 0;
-            }
-            else//放入缓冲区，在此必须确保有序
-            {
-                unsigned char* p = rtppack.GetPayloadData();
-
-
-                memcpy(m_buffer + m_current_size,rtppack.GetPayloadData(),rtppack.GetPayloadLength());
-                m_current_size += rtppack.GetPayloadLength();
-            }
+            memset(m_buffer,0,m_current_size);//清空缓存，为下次做准备
+            m_current_size = 0;
         }
+        else//放入缓冲区，在此必须确保有序
+        {
+            unsigned char* p = rtppack.GetPayloadData();
+
+
+            memcpy(m_buffer + m_current_size,rtppack.GetPayloadData(),rtppack.GetPayloadLength());
+            m_current_size += rtppack.GetPayloadLength();
+        }
+    }
 
 }
