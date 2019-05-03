@@ -332,9 +332,10 @@ void XVideoRecordThread::run()
     SwsContext* swsCtx_= sws_getContext(m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt, m_pOutCodecCtx->width, m_pOutCodecCtx->height, m_pOutCodecCtx->pix_fmt, SWS_BICUBIC, nullptr, nullptr, nullptr);
     AVPacket h264Packet;
 
+
+    qDebug() << "开始执行\---------------------------";
     //初始化jrtplib发送和接收数据参数
     SVideoSender sender;
-    sender.InitBufferSize();
 
     std::string serverip_str = "192.168.43.174";
     uint32_t dest_ip = inet_addr(serverip_str.c_str());

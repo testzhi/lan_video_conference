@@ -6,6 +6,20 @@
 #include "videoconferencingclient.h"
 #include "xvideo.h"
 #include "xscreen.h"
+#include "videorecv.h"
+
+//#define PORT_BASE     1234
+
+
+//void checkerror(int rtperr)
+//{
+//    if (rtperr < 0)
+//    {
+//        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+//        exit(-1);
+//    }
+//}
+//void StartReceive();
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +28,8 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
 
+
+//    StartReceive();
 
     QQmlApplicationEngine engine;
     qmlRegisterType<ConferenceUI>("Meeting",1,0,"ConferenceUI");
@@ -100,5 +116,32 @@ int main(int argc, char *argv[])
 //        conferenceUI.getVideoConferencing()->requestExit(userID);
         conferenceUI.getExitMessage();
     }
+
+
     return app.exec();
 }
+
+
+//void StartReceive()
+//{
+//    SVideoRecv sess;
+//    sess.InitBufferSize();
+//    std::string ipstr;
+//    int status;
+
+
+//    RTPUDPv4TransmissionParams transparams;
+//    RTPSessionParams sessparams;
+
+
+//    sessparams.SetOwnTimestampUnit(1.0/9000.0);
+
+//    transparams.SetPortbase(PORT_BASE);
+//    status = sess.Create(sessparams,&transparams);
+//    checkerror(status);
+
+
+//    RTPTime::Wait(RTPTime(1,0));
+//    sess.BYEDestroy(RTPTime(10,0),0,0);
+//}
+
