@@ -22,6 +22,7 @@ void SVideoRecv::InitBufferSize()
 void SVideoRecv::OnPollThreadStep()
 {
 
+    std::cout << "thread begin" << std::endl;
     BeginDataAccess();
 
     // check incoming packets

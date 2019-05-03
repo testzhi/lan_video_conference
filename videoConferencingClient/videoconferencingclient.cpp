@@ -566,15 +566,17 @@ void VideoConferencingClient::requestStartMeeting(std::string emailid, std::stri
     m_employee->setAttendees(att);
     std::cout << "refresh attendee" << endl;
     m_employee->loginSucceeded("AttendeeMessage");
-    m_employee->loginSucceeded("BeginMeeting");
     for(int i = 0;i != m_employee->meetingCount();i++) {
         Meeting *mee = m_employee->getMeeting(i);
         if(mee->meetingID() == QString::fromStdString(meetingID)) {
             mee->setState("1");
                 m_employee->loginSucceeded("RefreshMeetingState1" + QString::number(i));
+                if(m_employee->userID() == mee->speaker()) {
+                    m_employee->loginSucceeded("StartVideo");
+                }
+                else m_employee->loginSucceeded("StartRecv");
         }
     }
-
     string sendMessage = requestStartMeetingToString(emailid, meetingID);
     cout << "请求开始会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -598,7 +600,15 @@ void VideoConferencingClient::requestStopMeeting(std::string emailid, std::strin
 
 void VideoConferencingClient::requestAttendMeeting(std::string userID, std::string meetingID)
 {
-    m_employee->loginSucceeded("BeginMeeting");
+    for(int i = 0;i != m_employee->meetingCount();i++) {
+        Meeting *mee = m_employee->getMeeting(i);
+        if(mee->meetingID() == QString::fromStdString(meetingID)) {
+                if(m_employee->userID() == mee->speaker()) {
+                    m_employee->loginSucceeded("StartVideo");
+                }
+                else m_employee->loginSucceeded("StartRecv");
+        }
+    }
     string sendMessage = requestAttendMeetingToString(userID,meetingID);
     cout << "请求加入会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);

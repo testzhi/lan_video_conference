@@ -46,8 +46,6 @@ private:
     CVideoData* m_pVideoData;
     unsigned char m_buffer[BUFFER_SIZE];
     int m_current_size;
-
-
 };
 
 

@@ -1,5 +1,42 @@
 #include "employee.h"
 
+#define PORT_BASE     3000
+
+void checkerror(int rtperr)
+{
+    if (rtperr < 0)
+    {
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        exit(-1);
+    }
+}
+
+void Employee::startReceive()
+{
+    std::cout << "receive" << std::endl;
+    SVideoRecv sess;
+    sess.InitBufferSize();
+    std::string ipstr;
+    int status;
+
+
+    RTPUDPv4TransmissionParams transparams;
+    RTPSessionParams sessparams;
+
+
+    sessparams.SetOwnTimestampUnit(1.0/9000.0);
+
+    transparams.SetPortbase(PORT_BASE);
+    status = sess.Create(sessparams,&transparams);
+    checkerror(status);
+
+
+    RTPTime::Wait(RTPTime(1,0));
+    sess.BYEDestroy(RTPTime(10,0),0,0);
+}
+
+
+
 QString Employee::userID() const
 {
     return m_userID;

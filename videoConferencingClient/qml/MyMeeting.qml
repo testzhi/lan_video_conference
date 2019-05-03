@@ -343,34 +343,23 @@ Item {
         target: conferenceUI.employee
         property Meeting mee
         onLoginSucceeded: {
-            if (type === "BeginMeeting") {
-                console.log("begin meeting")
-                for (var i = 0; i !== conferenceUI.employee.meetingCount(
-                         ); i++) {
-                    meetingConnect.mee = conferenceUI.employee.getMeeting(i)
-                    console.log("meetingID  + currentMeetingID  ",
-                                meetingConnect.mee.meetingID, "  s  ",
-                                meeting.currentMeetingID)
-                    if (meetingConnect.mee.meetingID === meeting.currentMeetingID) {
-                        console.log("speaker + userID",
-                                    meetingConnect.mee.speaker, "  ",
-                                    conferenceUI.employee.userID)
-                        if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
-                            console.log("pixHeight  ",
-                                        xvideoCamera.getPixHeight())
-                            //                            xvideoScreen.setScale("2.4")
-                            //                            xvideoCamera.setScale("2.4")
-                            xvideoScreen.setScale("1.6")
-                            xvideoCamera.setScale("1.6")
-                            xvideoScreen.pausePlay()
-                            xvideoCamera.pausePlay()
-                            conferenceUI.getStartVideoMessage(currentMeetingID)
-                            xvideoCamera.startPlay()
-                            screenSwitch.visible = true
-                        }
-                    }
-                }
-            } else if (type === "Exit") {
+            if (type === "StartVideo") {
+                console.log("start video")
+                xvideoScreen.setScale("2.4")
+                xvideoCamera.setScale("2.4")
+                //                xvideoScreen.setScale("1.6")
+                //                xvideoCamera.setScale("1.6")
+                xvideoScreen.pausePlay()
+                xvideoCamera.pausePlay()
+                conferenceUI.getStartVideoMessage(currentMeetingID)
+                xvideoCamera.startPlay()
+                screenSwitch.visible = true
+            }
+            else if(type === "StartRecv") {
+                console.log("start recv")
+//                conferenceUI.employee.startReceive()
+            }
+            else if (type === "Exit") {
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
             } else if (type === "MeetingEnd") {
