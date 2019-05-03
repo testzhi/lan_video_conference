@@ -358,12 +358,12 @@ Item {
                         if (conferenceUI.employee.userID === meetingConnect.mee.speaker) {
                             console.log("pixHeight  ",
                                         xvideoCamera.getPixHeight())
-//                            xvideoScreen.setScale("2.4")
-//                            xvideoCamera.setScale("2.4")
+                            //                            xvideoScreen.setScale("2.4")
+                            //                            xvideoCamera.setScale("2.4")
                             xvideoScreen.setScale("1.6")
                             xvideoCamera.setScale("1.6")
-                            xvideoCamera.pausePlay()
                             xvideoScreen.pausePlay()
+                            xvideoCamera.pausePlay()
                             conferenceUI.getStartVideoMessage(currentMeetingID)
                             xvideoCamera.startPlay()
                             screenSwitch.visible = true

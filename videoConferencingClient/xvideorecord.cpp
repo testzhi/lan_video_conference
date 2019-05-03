@@ -48,9 +48,9 @@ void XVideoRecordThread::initVideoRecord()
                 qDebug() << "不能打开录屏设备.";
                 return;
             }
-            av_dict_set(&m_videoOptions,"framerate","15",0 );//     set frame per second 流畅度，越大越流畅，但不宜过大
-            av_dict_set(&m_videoOptions, "preset", "medium", 0 );
-            av_dict_set(&m_videoOptions,"video_size","1280x720",0);
+//            av_dict_set(&m_videoOptions,"framerate","15",0 );//     set frame per second 流畅度，越大越流畅，但不宜过大
+//            av_dict_set(&m_videoOptions, "preset", "medium", 0 );
+//            av_dict_set(&m_videoOptions,"video_size","1280x720",0);
         //    av_dict_set(&options,"video_size","640×360",0);
         }
         else {
@@ -136,7 +136,14 @@ void XVideoRecordThread::initH264OutputFile()
         qDebug() <<"创建新流出错";
         return;
     }
-    AVCodec *outAVCodec;
+
+    AVCodec *outAVCodec = avcodec_find_encoder(AV_CODEC_ID_H264);
+    if(!outAVCodec)
+    {
+        qDebug() <<"未找到H264编码器";
+        return;
+    }
+
     m_pOutCodecCtx = avcodec_alloc_context3(outAVCodec);
     if( !m_pOutCodecCtx)
     {
@@ -147,27 +154,24 @@ void XVideoRecordThread::initH264OutputFile()
     m_pOutCodecCtx->codec_id = output_format->video_codec;
     m_pOutCodecCtx ->codec_type = AVMEDIA_TYPE_VIDEO;
     m_pOutCodecCtx->pix_fmt  = AV_PIX_FMT_YUV420P;
-    m_pOutCodecCtx->bit_rate = 2000000; // 400000
+    m_pOutCodecCtx->bit_rate = 400000; // 400000
     m_pOutCodecCtx->width = 1280;
     m_pOutCodecCtx->height = 720;
-    m_pOutCodecCtx->gop_size = 10;//3
-    m_pOutCodecCtx->max_b_frames = 2;
+    m_pOutCodecCtx->gop_size = 250;//3
+
     m_pOutCodecCtx->time_base.num = 1;
-    m_pOutCodecCtx->time_base.den = 18; // 15fps快慢
+    m_pOutCodecCtx->time_base.den = 10; // 15fps快慢
+
     m_pOutCodecCtx->qmax = 51;
     m_pOutCodecCtx->qmin = 10;
     m_pOutCodecCtx->max_b_frames = 3;
+
     if (m_pCodecCtx->codec_id == AV_CODEC_ID_H264)
     {
         av_dict_set(&m_videoOutputOptions,"preset", "slow", 0);
         av_dict_set(&m_videoOutputOptions,"tune", "zerolatency", 0);
     }
-    outAVCodec = avcodec_find_encoder(AV_CODEC_ID_H264);
-    if(!outAVCodec)
-    {
-        qDebug() <<"未找到H264编码器";
-        return;
-    }
+
     if (m_outFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
     {
         m_outFormatCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
@@ -295,16 +299,6 @@ void XVideoRecordThread::SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_
 void XVideoRecordThread::run()
 {
 
-    SVideoSender sender;
-
-    sender.InitBufferSize();
-
-    std::string serverip_str = "10.253.226.45";
-    uint32_t dest_ip = inet_addr(serverip_str.c_str());
-
-    SetRTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
-    sender.SetParamsForSendingH264();
-
 
     initVideoRecord();
 
@@ -338,6 +332,15 @@ void XVideoRecordThread::run()
     SwsContext* swsCtx_= sws_getContext(m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt, m_pOutCodecCtx->width, m_pOutCodecCtx->height, m_pOutCodecCtx->pix_fmt, SWS_BICUBIC, nullptr, nullptr, nullptr);
     AVPacket h264Packet;
 
+    //初始化jrtplib发送和接收数据参数
+    SVideoSender sender;
+    sender.InitBufferSize();
+
+    std::string serverip_str = "192.168.43.174";
+    uint32_t dest_ip = inet_addr(serverip_str.c_str());
+
+    SetRTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
+    sender.SetParamsForSendingH264();
 
     int ret, got_picture, got_h264_pic;
     int j = 0;
@@ -406,6 +409,9 @@ void XVideoRecordThread::run()
         }
         av_free_packet(packet);
     }
+
+    sender.BYEDestroy(RTPTime(10,0),0,0);
+
 
     int writeValue = av_write_trailer(m_outFormatCtx);
     if(writeValue < 0)

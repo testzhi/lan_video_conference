@@ -17,6 +17,10 @@
 #include <string>
 #include <vector>
 
+#include <sys/types.h>
+#include <unistd.h>
+#include<fcntl.h>
+
 using namespace jrtplib;
 using namespace jthread;
 
@@ -36,6 +40,8 @@ public:
 
     std::vector<CVideoData*> m_ReceiveArray; //存放接收到的h264的数据
     void InitBufferSize();
+
+    void setSVideoSender();
 
 protected:
     void OnAPPPacket(RTCPAPPPacket *apppacket,const RTPTime &receivetime,const RTPAddress *senderaddress);

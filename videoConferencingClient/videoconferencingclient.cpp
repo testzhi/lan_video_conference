@@ -571,9 +571,10 @@ void VideoConferencingClient::requestStartMeeting(std::string emailid, std::stri
         Meeting *mee = m_employee->getMeeting(i);
         if(mee->meetingID() == QString::fromStdString(meetingID)) {
             mee->setState("1");
+                m_employee->loginSucceeded("RefreshMeetingState1" + QString::number(i));
         }
     }
-    m_employee->loginSucceeded("RefreshMeetingState");
+
     string sendMessage = requestStartMeetingToString(emailid, meetingID);
     cout << "请求开始会议："  << sendMessage << endl;
     tcpSendMessage(sendMessage);
@@ -585,7 +586,7 @@ void VideoConferencingClient::requestStopMeeting(std::string emailid, std::strin
         Meeting *mee = m_employee->getMeeting(i);
         if(mee->meetingID() == QString::fromStdString(meetingID) && (mee->speaker() == m_employee->userID() || mee->initiator() == m_employee->userID())) {
             mee->setState("2");
-            m_employee->loginSucceeded("MeetingMessage");
+            m_employee->loginSucceeded("RefreshMeetingState2" + QString::number(i));
         }
     }
     att.clear();

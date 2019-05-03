@@ -78,7 +78,7 @@ void ConferenceUI::getAttendMeetingMessage(QString meetingID)
 
 void ConferenceUI::getStartVideoMessage(QString meetingID)
 {
-    m_videoConferencing->requestStartVideo(m_employee->userID(),meetingID.toStdString());
+    m_videoConferencing->requestStartVideo(m_employee->userID().toStdString(),meetingID.toStdString());
 }
 
 VideoConferencingClient *ConferenceUI::getVideoConferencing() const
