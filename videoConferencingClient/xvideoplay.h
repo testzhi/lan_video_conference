@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QImage>
+#include "xvideorecord.h"
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -16,29 +17,29 @@ extern "C"
 #include <SDL2/SDL.h>
 }
 
-typedef struct PacketQueue {
-    AVPacketList *first_pkt, *last_pkt;
-    int nb_packets;
-    int size;
-} PacketQueue;
+//typedef struct PacketQueue {
+//    AVPacketList *first_pkt, *last_pkt;
+//    int nb_packets;
+//    int size;
+//} PacketQueue;
 
 
-typedef struct VideoState {
-    AVCodecContext *aCodecCtx; //音频解码器
-    AVFrame *audioFrame;// 解码音频过程中的使用缓存
-    PacketQueue *audioq;
+//typedef struct VideoState {
+//    AVCodecContext *aCodecCtx; //音频解码器
+//    AVFrame *audioFrame;// 解码音频过程中的使用缓存
+//    PacketQueue *audioq;
 
-    double video_clock; ///<pts of last decoded frame / predicted pts of next decoded frame
+//    double video_clock; ///<pts of last decoded frame / predicted pts of next decoded frame
 
-    AVStream *video_st;
+//    AVStream *video_st;
 
-} VideoState;
-enum PlayerState
-{
-    Stop,
-    Pause,
-    Playing
-};
+//} VideoState;
+//enum RecvPlayerState
+//{
+//    Stop,
+//    Pause,
+//    Playing
+//};
 
 class XVideoPlay : public QThread
 {
@@ -67,8 +68,8 @@ protected:
 
 private:
     QString m_filename;
-    VideoState m_videoState{};//用来 传递给 SDL音频回调函数的数据
-    PlayerState m_playerState;
+//    VideoState m_videoState{};//用来 传递给 SDL音频回调函数的数据
+    PlayerState m_recvPlayerState;
     double m_imageScale{1};
 
     AVFormatContext	*m_formatCtx;

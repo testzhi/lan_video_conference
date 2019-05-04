@@ -227,6 +227,12 @@ Item {
                 anchors.fill: parent
                 anchors.centerIn: parent
             }
+            XRecv {
+                id:xRecv
+                anchors.fill: parent
+                anchors.centerIn: parent
+            }
+
             Item {
                 z: 1
                 width: 40
@@ -345,10 +351,10 @@ Item {
         onLoginSucceeded: {
             if (type === "StartVideo") {
                 console.log("start video")
-                xvideoScreen.setScale("2.4")
-                xvideoCamera.setScale("2.4")
-                //                xvideoScreen.setScale("1.6")
-                //                xvideoCamera.setScale("1.6")
+                //                xvideoScreen.setScale("2.4")
+                //                xvideoCamera.setScale("2.4")
+                xvideoScreen.setScale("1.6")
+                xvideoCamera.setScale("1.6")
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
                 conferenceUI.getStartVideoMessage(currentMeetingID)
@@ -357,7 +363,9 @@ Item {
             }
             else if(type === "StartRecv") {
                 console.log("start recv")
-//                conferenceUI.employee.startReceive()
+                xRecv.setScale("1.6")
+                xRecv.pausePlay()
+                xRecv.startPlay()
             }
             else if (type === "Exit") {
                 xvideoScreen.pausePlay()
