@@ -2,7 +2,7 @@
 
 #include <boost/thread.hpp>
 
-#define PORT_BASE     3000
+#define PORT_BASE     6666
 
 void checkerror(int rtperr)
 {
@@ -35,7 +35,7 @@ void Employee::startReceive()
     checkerror(status);
 
 
-    RTPTime::Wait(RTPTime(1,0));
+    RTPTime::Wait(RTPTime(10000,0));
     sess.BYEDestroy(RTPTime(10,0),0,0);
 }
 

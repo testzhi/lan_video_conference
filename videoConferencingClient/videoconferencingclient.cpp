@@ -14,7 +14,7 @@ using std::string;
 
 
 VideoConferencingClient::VideoConferencingClient()
-    :m_sockTcp(m_io), m_tcpEP(ip::address::from_string("192.168.43.174"), 2333)/*, m_sockUdp(m_io)*//*, m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333))*/
+    :m_sockTcp(m_io), m_tcpEP(ip::address::from_string("10.253.226.45"), 2333)/*, m_sockUdp(m_io)*//*, m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333))*/
 {
     m_sockTcp.connect(m_tcpEP);
 }

@@ -12,7 +12,7 @@ StreamingMediaForwading::StreamingMediaForwading()
 {
     m_recvPortbase = 5000;//服务器接收客户端数据端口号
     m_sendPortbase = 4000;//输入用于发送的本地端口号
-    m_destport = 3000;//发送数据到客户端的目的端口号
+    m_destport = 6666;//发送数据到客户端的目的端口号
     //    m_videoState = 1;//默认开启
     receiveInit();
     sendInit();

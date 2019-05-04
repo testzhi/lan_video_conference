@@ -337,7 +337,7 @@ void XVideoRecordThread::run()
     //初始化jrtplib发送和接收数据参数
     SVideoSender sender;
 
-    std::string serverip_str = "192.168.43.174";
+    std::string serverip_str = "10.253.226.45";
     uint32_t dest_ip = inet_addr(serverip_str.c_str());
 
     SetRTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);

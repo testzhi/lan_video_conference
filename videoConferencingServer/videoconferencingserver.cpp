@@ -634,7 +634,7 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
     }
     //    cout << "kkkkkkkkkkkkkkkkkkkkk" << m_destIps.size() << endl;
     //    m_srsVideo.addDestIPs(m_destIps);
-    m_srsVideo.addNewDestIP("192.168.43.174");
+    m_srsVideo.addNewDestIP("10.253.226.45");
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
     t1.detach();
 }
