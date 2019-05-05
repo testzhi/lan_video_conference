@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     Employee *employee = new Employee();
     ConferenceUI conferenceUI;
     employee->threadReceive();
+    employee->threadAACReceive();
     conferenceUI.setEmployee(employee);
     VideoConferencingClient *client = new VideoConferencingClient();
     client->threadTcpReceive();

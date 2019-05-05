@@ -2,6 +2,7 @@
 #include <iostream>
 
 #define SSRC     100
+#define ASSRC    102
 
 using std::cout;
 using std::endl;
@@ -162,11 +163,104 @@ void StreamingMediaForwading::videoForward()
 
         m_serverVideoRecvSess.EndDataAccess();
 
-        RTPTime::Wait(RTPTime(1,0));
+        RTPTime::Wait(RTPTime(3,0));
     }
 
     m_serverVideoRecvSess.BYEDestroy(RTPTime(10,0),nullptr,0);
     m_serverVideoSendSess.BYEDestroy(RTPTime(10,0),nullptr,0);
+}
+
+void StreamingMediaForwading::tranAudioData()
+{
+    RTPSession serverAudioRecvSess;//接收
+     uint16_t portbase;
+     int status;
+     portbase = 8000;//服务器接收端口号
+
+     RTPUDPv4TransmissionParams transparams;
+     RTPSessionParams sessparams;
+     sessparams.SetOwnTimestampUnit(1.0/8000.0);
+     sessparams.SetAcceptOwnPackets(true);
+     transparams.SetPortbase(portbase);
+     status = serverAudioRecvSess.Create(sessparams,&transparams);
+     checkerror(status);
+
+     RTPSession serverAudioSendSess;//发送
+     uint16_t portbase1,destport1;
+     uint32_t destip1;
+     std::string ipstr1;
+     portbase1 = 8010;//输入用于发送的本地端口号
+     ipstr1 = "10.253.77.87";//输入发送数据的目的IP地址
+     destip1 = inet_addr(ipstr1.c_str());
+     if (destip1 == INADDR_NONE)
+     {
+         std::cerr << "IP有误" << std::endl;
+     }
+     destip1 = ntohl(destip1);
+     destport1 = 8888;//输入发送数据的目的端口号
+
+     RTPUDPv4TransmissionParams transparams1;
+     RTPSessionParams sessparams1;
+
+     sessparams1.SetOwnTimestampUnit(1.0/8000.0);//时间戳单位
+     sessparams1.SetAcceptOwnPackets(true);//接收自己发送的数据包
+     sessparams1.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
+     sessparams1.SetPredefinedSSRC(ASSRC);     //定义SSRC
+
+     transparams1.SetPortbase(portbase1);
+
+     int oldBufSize = transparams1.GetRTPReceiveBuffer();
+     transparams1.SetRTPReceiveBuffer(oldBufSize * 2);
+     status = serverAudioSendSess.Create(sessparams1,&transparams1);
+     checkerror(status);
+
+     RTPIPv4Address addr1(destip1,destport1);
+     status = serverAudioSendSess.AddDestination(addr1);
+
+     serverAudioSendSess.SetDefaultPayloadType(97);//设置默认传输参数
+     serverAudioSendSess.SetDefaultMark(true);
+     serverAudioSendSess.SetTimestampUnit(1.0/8000.0);
+     serverAudioSendSess.SetDefaultTimestampIncrement(160);
+     checkerror(status);
+
+     //int newBufSize = transparams1.GetRTPReceiveBuffer();
+     int oldBufSizec = transparams1.GetRTCPReceiveBuffer();
+     transparams1.SetRTCPReceiveBuffer(oldBufSizec * 2);
+     //int newBufSizec = transparams1.GetRTCPReceiveBuffer();
+
+     unsigned char *pfBuffer;
+     unsigned char *pBuffer;
+
+
+     while(1)
+     {
+         serverAudioRecvSess.BeginDataAccess();
+         if (serverAudioRecvSess.GotoFirstSourceWithData())
+         {
+             do
+             {
+                 RTPPacket *pack;
+                 while ((pack = serverAudioRecvSess.GetNextPacket()) != nullptr)
+                 {
+                     int nLen = pack->GetPayloadLength();
+                     pfBuffer = (unsigned char*)pack->GetPayloadData();
+                     pBuffer = new unsigned char[nLen + 1];
+                     memcpy(pBuffer, pfBuffer, nLen);
+                     pBuffer[nLen] = 0;
+
+                     status = serverAudioSendSess.SendPacket((void *)pBuffer, nLen);
+                     checkerror(status);
+                     serverAudioRecvSess.DeletePacket(pack);
+                 }
+             } while (serverAudioRecvSess.GotoNextSourceWithData());
+         }
+
+         serverAudioRecvSess.EndDataAccess();
+
+         RTPTime::Wait(RTPTime(3,0));
+     }
+     serverAudioRecvSess.BYEDestroy(RTPTime(10,0),0,0);
+     serverAudioSendSess.BYEDestroy(RTPTime(10,0),0,0);
 }
 
 int StreamingMediaForwading::videoState() const

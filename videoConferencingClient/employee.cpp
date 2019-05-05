@@ -39,6 +39,29 @@ void Employee::startReceive()
     sess.BYEDestroy(RTPTime(10,0),0,0);
 }
 
+void Employee::AACStartReceive()
+{
+    AudioReceiver sess;
+    sess.InitBufferSize();
+    std::string ipstr;
+    int status;
+
+
+    RTPUDPv4TransmissionParams transparams;
+    RTPSessionParams sessparams;
+
+
+    sessparams.SetOwnTimestampUnit(1.0/8000.0);
+
+    transparams.SetPortbase(PORT_BASE);
+    status = sess.Create(sessparams,&transparams);
+    checkerror(status);
+
+
+    RTPTime::Wait(RTPTime(1000,0));
+    sess.BYEDestroy(RTPTime(10,0),0,0);
+}
+
 void Employee::threadReceive()
 {
 //    boost::thread_group threadGroup;
@@ -47,7 +70,14 @@ void Employee::threadReceive()
 //        threadGroup.add_thread(&thread);
         thread.detach();
 //    }
-//    threadGroup.join_all();
+        //    threadGroup.join_all();
+}
+
+void Employee::threadAACReceive()
+{
+    boost::thread thread(boost::bind(&Employee::AACStartReceive,this));
+//        threadGroup.add_thread(&thread);
+    thread.detach();
 }
 
 

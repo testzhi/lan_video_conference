@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QImage>
 #include "videosender.h"
+#include "aacsender.h"
 
 extern "C"
 {
@@ -76,7 +77,8 @@ public:
     void setImageScale(double imageScale);
 
     void checkerror(int rtperr);
-    void SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
+    void SetH264RTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
+    void SetAACRTPParams(CAACSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
 
 signals:
     void sig_GetOneFrame(QImage); //每获取到一帧图像 就发送此信号

@@ -42,6 +42,9 @@ public:
     void closeRecvSessparams();//关闭接收
     void closeSendSessparams();//关闭发送
 
+
+    void tranAudioData();//音频
+
 private:
     RTPSession m_serverVideoRecvSess;//接收
     uint16_t m_recvPortbase;

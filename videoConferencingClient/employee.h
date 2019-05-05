@@ -10,6 +10,7 @@
 #include "notification.h"
 #include "company.h"
 #include "videorecv.h"
+#include "aacrecv.h"
 
 class Employee:public QObject
 {
@@ -73,7 +74,9 @@ public:
     Q_INVOKABLE Attendee *getAttendee(int i);
     Q_INVOKABLE int attendeeCount();
     Q_INVOKABLE void startReceive();
+    Q_INVOKABLE void AACStartReceive();
     void threadReceive();
+    void threadAACReceive();
 
     void insertMeeting(Meeting *meeting);
     void insertNotification(Notification *notification);

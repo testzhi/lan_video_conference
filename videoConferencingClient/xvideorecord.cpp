@@ -273,7 +273,7 @@ void XVideoRecordThread::checkerror(int rtperr)
     }
 }
 
-void XVideoRecordThread::SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport)
+void XVideoRecordThread::SetH264RTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport)
 {
     int status;
     //RTP+RTCP库初始化SOCKET环境
@@ -294,6 +294,28 @@ void XVideoRecordThread::SetRTPParams(SVideoSender& sess,uint32_t destip,uint16_
     status = sess.AddDestination(addr);
     CheckError(status);
 
+}
+
+void XVideoRecordThread::SetAACRTPParams(CAACSender &sess, uint32_t destip, uint16_t destport, uint16_t baseport)
+{
+    int status;
+    //RTP+RTCP库初始化SOCKET环境
+    RTPUDPv4TransmissionParams transparams;
+    RTPSessionParams sessparams;
+    sessparams.SetOwnTimestampUnit(1.0/8000.0); //时间戳单位
+    sessparams.SetAcceptOwnPackets(true);	//接收自己发送的数据包
+    sessparams.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
+    sessparams.SetPredefinedSSRC(SSRC);     //定义SSRC
+
+    transparams.SetPortbase(baseport);
+
+    status = sess.Create(sessparams,&transparams);
+    CheckError(status);
+
+    destip = ntohl(destip);
+    RTPIPv4Address addr(destip,destport);
+    status = sess.AddDestination(addr);
+    CheckError(status);
 }
 
 void XVideoRecordThread::run()
