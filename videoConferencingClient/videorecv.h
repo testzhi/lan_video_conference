@@ -28,7 +28,6 @@ using namespace jthread;
 #define H264               96
 
 
-
 class SVideoRecv :public RTPSession
 {
 public:

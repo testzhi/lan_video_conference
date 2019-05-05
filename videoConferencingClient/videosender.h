@@ -26,7 +26,7 @@ using namespace jthread;
 #define MAX_RTP_PKT_LENGTH 1360
 #define H264               96
 
-void CheckError(int rtperr);
+
 
 class SVideoSender :public RTPSession
 {
@@ -36,6 +36,7 @@ public:
 
     void SendH264Nalu(unsigned char* m_h264Buf,int buflen);
     void SetParamsForSendingH264();
+    void CheckError(int rtperr);
 
 protected:
     void OnAPPPacket(RTCPAPPPacket *apppacket,const RTPTime &receivetime,const RTPAddress *senderaddress);

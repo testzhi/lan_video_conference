@@ -285,12 +285,12 @@ void XVideoRecordThread::SetH264RTPParams(SVideoSender& sess,uint32_t destip,uin
     transparams.SetPortbase(baseport);
 
     status = sess.Create(sessparams,&transparams);
-    CheckError(status);
+    checkerror(status);
 
     destip = ntohl(destip);
     RTPIPv4Address addr(destip,destport);
     status = sess.AddDestination(addr);
-    CheckError(status);
+    checkerror(status);
 
 }
 

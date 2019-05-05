@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#define BUFFER_SIZE 1360
+#define BUFFER_SIZE1 1360
 class CAudioData{
 public:
     unsigned char * m_pBuffer;
@@ -12,8 +12,8 @@ public:
     uint64_t m_pts;
 
 
-    CAudioData(){m_pBuffer = new unsigned char[BUFFER_SIZE];m_lLength = 0; m_pts = 0;m_lMaxLength = BUFFER_SIZE;}
-    CAudioData(long lLength){m_lLength = lLength;m_pts = 0;m_pBuffer = new unsigned char[BUFFER_SIZE];m_lMaxLength = BUFFER_SIZE;}
+    CAudioData(){m_pBuffer = new unsigned char[BUFFER_SIZE1];m_lLength = 0; m_pts = 0;m_lMaxLength = BUFFER_SIZE1;}
+    CAudioData(long lLength){m_lLength = lLength;m_pts = 0;m_pBuffer = new unsigned char[BUFFER_SIZE1];m_lMaxLength = BUFFER_SIZE1;}
     ~CAudioData(){
         if(m_pBuffer != NULL)
         {

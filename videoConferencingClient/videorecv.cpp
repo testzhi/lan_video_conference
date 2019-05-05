@@ -1,9 +1,6 @@
 #include "videorecv.h"
 
 
-
-
-
 void SVideoRecv::InitBufferSize()
 {
     m_pVideoData = new CVideoData();

@@ -3,7 +3,7 @@
 void AudioReceiver::InitBufferSize()
 {
     m_pAudioData = new CAudioData();
-    memset(m_buffer,0,BUFFER_SIZE);
+    memset(m_buffer,0,BUFFER_SIZE2);
     m_current_size = 0;
 }
 
