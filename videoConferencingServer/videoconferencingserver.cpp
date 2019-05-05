@@ -603,9 +603,10 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
             }
         }
     }
-//        m_srsVideo.addNewDestIP(userip);
-//        std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
-//        t1.detach();
+
+//    m_srsVideo.addNewDestIP(userip);
+//    std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
+//    t1.detach();
 }
 
 void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -616,6 +617,7 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
     vector<string> attendees;
     dc.getDb().queryAttendeesByStateAndMeetingID(meetingID, 1, attendees);
 
+    m_destIps.clear();
     if(!attendees.empty())
     {
         for(auto &attendee:attendees)
@@ -626,15 +628,17 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
                 int r2 = dc.getDb().queryIpByUserID(attendee, 1, ip);
                 if(r2 == 1)
                 {
-                    m_destIps.push_back(ip);
                     cout<<"<<<<<<<<加入ip："<<ip <<endl;
+                    m_destIps.push_back(ip);
                 }
             }
         }
     }
-    //    cout << "kkkkkkkkkkkkkkkkkkkkk" << m_destIps.size() << endl;
-    //    m_srsVideo.addDestIPs(m_destIps);
+
+    m_srsVideo.addNewDestIP("192.168.43.7");
+    m_srsVideo.addNewDestIP("192.168.43.188");
     m_srsVideo.addNewDestIP("192.168.43.174");
+//    m_srsVideo.addDestIPs(m_destIps);
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
     t1.detach();
 }
