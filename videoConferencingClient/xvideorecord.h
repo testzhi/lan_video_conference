@@ -5,6 +5,7 @@
 #include <QImage>
 #include "videosender.h"
 #include "aacsender.h"
+#include "aacrecv.h"
 
 extern "C"
 {
@@ -50,9 +51,6 @@ extern "C"
 #define OUTPUT_CHANNELS 2
 #define MAX_AUDIO_FRAME_SIZE 192000
 #define ADTS_HEADER_SIZE 7
-
-char url[]="hw:1";
-char *ADTSHeader = nullptr;
 
 const int avpriv_mpeg4audio_sample_rates[16] = {
     96000, 88200, 64000, 48000, 44100, 32000,
@@ -142,6 +140,8 @@ public:
 
     void aacCodeAndSent();//音频编码发送主函数
     //音频函数相关END----------------------------------------------
+
+    char *ADTSHeader = nullptr;
 
 
 signals:

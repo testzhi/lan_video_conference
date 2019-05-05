@@ -1,7 +1,7 @@
 #include "videosender.h"
 
 
-void CheckError(int rtperr)
+void SVideoSender::CheckError(int rtperr)
 {
     if (rtperr < 0)
     {

@@ -31,7 +31,7 @@
 using namespace jrtplib;
 using namespace jthread;
 
-#define BUFFER_SIZE 1360
+#define BUFFER_SIZE2 1360
 #define AAC        97
 
 class AudioReceiver : public RTPSession
@@ -46,7 +46,7 @@ public:
 
 private:
     CAudioData* m_pAudioData;
-    unsigned char m_buffer[BUFFER_SIZE];
+    unsigned char m_buffer[BUFFER_SIZE2];
     int m_current_size;
 };
 

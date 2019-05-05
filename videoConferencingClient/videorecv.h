@@ -27,8 +27,6 @@ using namespace jthread;
 #define MAX_RTP_PKT_LENGTH 1360
 #define H264               96
 
-void CheckError(int rtperr);
-
 class SVideoRecv :public RTPSession
 {
 public:

@@ -20,7 +20,6 @@ XVideoRecordThread::~XVideoRecordThread()
 
 void XVideoRecordThread::initVideoRecord()
 {
-    av_register_all();
     avdevice_register_all();
     avformat_network_init();
 
@@ -498,10 +497,9 @@ int XVideoRecordThread::ADTS(AVPacket *src, AVPacket **des)
 void XVideoRecordThread::aacCodeAndSent()
 {
 
-    av_register_all();
-    avcodec_register_all();
     avdevice_register_all();
 
+    char url[]="hw:1";
     FILE *outAudioFile = nullptr;
     outAudioFile = fopen("rec.aac", "wb");
 
