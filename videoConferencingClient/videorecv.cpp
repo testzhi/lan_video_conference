@@ -1,14 +1,7 @@
 #include "videorecv.h"
 
 
-//void CheckError(int rtperr)
-//{
-//    if (rtperr < 0)
-//    {
-//        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
-//        exit(-1);
-//    }
-//}
+
 
 
 void SVideoRecv::InitBufferSize()
@@ -16,6 +9,15 @@ void SVideoRecv::InitBufferSize()
     m_pVideoData = new CVideoData();
     memset(m_buffer,0,BUFFER_SIZE);
     m_current_size = 0;
+}
+
+void SVideoRecv::CheckError(int rtperr)
+{
+    if (rtperr < 0)
+    {
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        exit(-1);
+    }
 }
 
 

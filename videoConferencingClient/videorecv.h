@@ -27,7 +27,7 @@ using namespace jthread;
 #define MAX_RTP_PKT_LENGTH 1360
 #define H264               96
 
-void CheckError(int rtperr);
+
 
 class SVideoRecv :public RTPSession
 {
@@ -35,7 +35,7 @@ public:
 
     std::vector<CVideoData*> m_ReceiveArray; //存放接收到的h264的数据
     void InitBufferSize();
-
+    void CheckError(int rtperr);
 protected:
 
 //接收h264数据

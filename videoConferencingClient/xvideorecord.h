@@ -4,7 +4,6 @@
 #include <QThread>
 #include <QImage>
 #include "videosender.h"
-#include "aacsender.h"
 
 extern "C"
 {
@@ -41,28 +40,6 @@ extern "C"
 #define SERVER_PORT     5000
 #define BASE_PORT     3000
 
-#define ASSRC           102
-#define A_DEST_PORT     8000
-#define A_BASE_PORT     8050
-
-//音频参数START-------------------------------
-#define OUTPUT_BIT_RATE 96000
-#define OUTPUT_CHANNELS 2
-#define MAX_AUDIO_FRAME_SIZE 192000
-#define ADTS_HEADER_SIZE 7
-
-char url[]="hw:1";
-char *ADTSHeader = nullptr;
-
-const int avpriv_mpeg4audio_sample_rates[16] = {
-    96000, 88200, 64000, 48000, 44100, 32000,
-    24000, 22050, 16000, 12000, 11025, 8000, 7350
-};
-
-const uint8_t ff_mpeg4audio_channels[8] = {
-    0, 1, 2, 3, 4, 5, 6, 8
-};
-//音频参数END---------------------------------
 
 typedef struct PacketQueue {
     AVPacketList *first_pkt, *last_pkt;
@@ -117,31 +94,7 @@ public:
 
     void checkerror(int rtperr);
     void SetH264RTPParams(SVideoSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
-    void SetAACRTPParams(CAACSender& sess,uint32_t destip,uint16_t destport,uint16_t baseport);
 
-    //音频函数相关START----------------------------------------
-    static int GetSampleIndex(int sample_rate);
-    static int init_resampler(AVCodecContext *input_codec_context,
-                              AVCodecContext *output_codec_context,
-                              SwrContext **resample_context);
-
-    static int init_converted_samples(uint8_t ***converted_input_samples,
-                                      AVCodecContext *output_codec_context,
-                                      int frame_size);
-
-    static int convert_samples(const uint8_t **input_data,
-                               uint8_t **converted_data, const int frame_size,
-                               SwrContext *resample_context);
-
-    static int add_samples_to_fifo(AVAudioFifo *fifo,
-                                   uint8_t **converted_input_samples,
-                                   const int frame_size);
-
-    void WriteADTSHeader(int Size, int sample_rate,int channels);
-    int ADTS(AVPacket *src, AVPacket **des);
-
-    void aacCodeAndSent();//音频编码发送主函数
-    //音频函数相关END----------------------------------------------
 
 
 signals:

@@ -32,7 +32,8 @@ SOURCES += \
     xrecv.cpp \
     xvideoplay.cpp \
     aacsender.cpp \
-    aacrecv.cpp
+    aacrecv.cpp \
+    xaudioplay.cpp
 
 
 RESOURCES += qml.qrc
@@ -69,7 +70,8 @@ HEADERS += \
     xvideoplay.h \
     aacsender.h \
     caudiodata.h \
-    aacrecv.h
+    aacrecv.h \
+    xaudioplay.h
 
 DISTFILES += \
     resources/1.png \

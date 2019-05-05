@@ -1,14 +1,7 @@
 #include "aacsender.h"
 
 
-void CheckError(int rtperr)
-{
-    if (rtperr < 0)
-    {
-        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
-        exit(-1);
-    }
-}
+
 
 
 CAACSender::CAACSender(void)
@@ -99,6 +92,15 @@ void CAACSender::SetParamsForSendingAAC()
     this->SetDefaultMark(true);		//设置位
     this->SetTimestampUnit(1.0/8000.0); //设置采样间隔
     this->SetDefaultTimestampIncrement(160);//设置时间戳增加间隔
+}
+
+void CAACSender::CheckError(int rtperr)
+{
+    if (rtperr < 0)
+    {
+        std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+        exit(-1);
+    }
 }
 
 void CAACSender::OnBYEPacket(RTPSourceData *srcdat)

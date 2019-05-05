@@ -21,7 +21,7 @@ using namespace jthread;
 #define MAX_RTP_PKT_LENGTH 1360
 #define AAC               97
 
-void CheckError(int rtperr);
+
 
 class CAACSender :
     public RTPSession
@@ -37,6 +37,7 @@ protected:
 public:
     void SendAACPacket(unsigned char* m_aacBuf,int buflen);
     void SetParamsForSendingAAC();
+    void CheckError(int rtperr);
 };
 
 #endif // AACSENDER_H
