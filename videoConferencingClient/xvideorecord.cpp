@@ -48,10 +48,10 @@ void XVideoRecordThread::initVideoRecord()
                 qDebug() << "不能打开录屏设备.";
                 return;
             }
-//            av_dict_set(&m_videoOptions,"framerate","15",0 );//     set frame per second 流畅度，越大越流畅，但不宜过大
-//            av_dict_set(&m_videoOptions, "preset", "medium", 0 );
-//            av_dict_set(&m_videoOptions,"video_size","1280x720",0);
-        //    av_dict_set(&options,"video_size","640×360",0);
+            //            av_dict_set(&m_videoOptions,"framerate","15",0 );//     set frame per second 流畅度，越大越流畅，但不宜过大
+            //            av_dict_set(&m_videoOptions, "preset", "medium", 0 );
+            //            av_dict_set(&m_videoOptions,"video_size","1280x720",0);
+            //    av_dict_set(&options,"video_size","640×360",0);
         }
         else {
             qDebug() << "不能打开相机/录屏设备.";
@@ -218,6 +218,8 @@ void XVideoRecordThread::closeH264OutputFile()
     //    avformat_free_context(&m_outFormatCtx);
 }
 
+
+
 void XVideoRecordThread::setFileName(QString &path)
 {
     m_fileName = path;
@@ -305,7 +307,7 @@ void XVideoRecordThread::SetAACRTPParams(CAACSender &sess, uint32_t destip, uint
     sessparams.SetOwnTimestampUnit(1.0/8000.0); //时间戳单位
     sessparams.SetAcceptOwnPackets(true);	//接收自己发送的数据包
     sessparams.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
-    sessparams.SetPredefinedSSRC(SSRC);     //定义SSRC
+    sessparams.SetPredefinedSSRC(ASSRC);     //定义SSRC
 
     transparams.SetPortbase(baseport);
 
@@ -318,6 +320,409 @@ void XVideoRecordThread::SetAACRTPParams(CAACSender &sess, uint32_t destip, uint
     CheckError(status);
 }
 
+int XVideoRecordThread::GetSampleIndex(int sample_rate)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        if (sample_rate == avpriv_mpeg4audio_sample_rates[i])
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int XVideoRecordThread::init_resampler(AVCodecContext *input_codec_context, AVCodecContext *output_codec_context, SwrContext **resample_context)
+{
+    int error;
+
+    /*
+         * Create a resampler context for the conversion.
+         * Set the conversion parameters.
+         * Default channel layouts based on the number of channels
+         * are assumed for simplicity (they are sometimes not detected
+         * properly by the demuxer and/or decoder).
+         */
+    *resample_context = swr_alloc_set_opts(NULL,
+                                           av_get_default_channel_layout(output_codec_context->channels),
+                                           output_codec_context->sample_fmt,
+                                           output_codec_context->sample_rate,
+                                           av_get_default_channel_layout(input_codec_context->channels),
+                                           input_codec_context->sample_fmt,
+                                           input_codec_context->sample_rate,
+                                           0, NULL);
+    if (!*resample_context) {
+        fprintf(stderr, "Could not allocate resample context\n");
+        return AVERROR(ENOMEM);
+    }
+    /*
+        * Perform a sanity check so that the number of converted samples is
+        * not greater than the number of samples to be converted.
+        * If the sample rates differ, this case has to be handled differently
+        */
+    av_assert0(output_codec_context->sample_rate == input_codec_context->sample_rate);
+
+    /* Open the resampler with the specified parameters. */
+    if ((error = swr_init(*resample_context)) < 0) {
+        fprintf(stderr, "Could not open resample context\n");
+        swr_free(resample_context);
+        return error;
+    }
+    return 0;
+}
+
+int XVideoRecordThread::init_converted_samples(uint8_t ***converted_input_samples, AVCodecContext *output_codec_context, int frame_size)
+{
+    int error;
+
+    /* Allocate as many pointers as there are audio channels.
+     * Each pointer will later point to the audio samples of the corresponding
+     * channels (although it may be NULL for interleaved formats).
+     */
+    if (!(*converted_input_samples = (uint8_t **)calloc(output_codec_context->channels,
+                                                        sizeof(**converted_input_samples)))) {
+        fprintf(stderr, "Could not allocate converted input sample pointers\n");
+        return AVERROR(ENOMEM);
+    }
+
+    /* Allocate memory for the samples of all channels in one consecutive
+     * block for convenience. */
+    if ((error = av_samples_alloc(*converted_input_samples, NULL,
+                                  output_codec_context->channels,
+                                  frame_size,
+                                  output_codec_context->sample_fmt, 0)) < 0) {
+        //        fprintf(stderr,
+        //                "Could not allocate converted input samples (error '%s')\n",
+        //                av_err2str(error));
+        av_freep(&(*converted_input_samples)[0]);
+        free(*converted_input_samples);
+        return error;
+    }
+    return 0;
+}
+
+int XVideoRecordThread::convert_samples(const uint8_t **input_data, uint8_t **converted_data, const int frame_size, SwrContext *resample_context)
+{
+    int error;
+
+    /* Convert the samples using the resampler. */
+    if ((error = swr_convert(resample_context,
+                             converted_data, frame_size,
+                             input_data    , frame_size)) < 0) {
+        //        fprintf(stderr, "Could not convert input samples (error '%s')\n",
+        //                av_err2str(error));
+        //        return error;
+    }
+
+    return 0;
+}
+
+int XVideoRecordThread::add_samples_to_fifo(AVAudioFifo *fifo, uint8_t **converted_input_samples, const int frame_size)
+{
+    int error;
+
+    /* Make the FIFO as large as it needs to be to hold both,
+     * the old and the new samples. */
+    if ((error = av_audio_fifo_realloc(fifo, av_audio_fifo_size(fifo) + frame_size)) < 0) {
+        fprintf(stderr, "Could not reallocate FIFO\n");
+        return error;
+    }
+
+    /* Store the new samples in the FIFO buffer. */
+    if (av_audio_fifo_write(fifo, (void **)converted_input_samples,
+                            frame_size) < frame_size) {
+        fprintf(stderr, "Could not write data to FIFO\n");
+        return AVERROR_EXIT;
+    }
+    return 0;
+}
+
+void XVideoRecordThread::WriteADTSHeader(int Size, int sample_rate, int channels)
+{
+    if (ADTSHeader == nullptr)
+    {
+        ADTSHeader = (char*)av_malloc(ADTS_HEADER_SIZE);
+    }
+    memset(ADTSHeader,0, ADTS_HEADER_SIZE);
+    int length = ADTS_HEADER_SIZE + Size;
+    length &= 0x1FFF;
+    int sample_index = GetSampleIndex(sample_rate);
+    int channel = 0;
+    if (channels < (int)FF_ARRAY_ELEMS(ff_mpeg4audio_channels))
+        channel = ff_mpeg4audio_channels[channels];
+    ADTSHeader[0] = (char)0xff;
+    ADTSHeader[1] = (char)0xf1;
+    ADTSHeader[2] = (char)(0x40 | (sample_index << 2) | (channel >> 2));
+    ADTSHeader[3] = (char)((channel & 0x3) << 6 | (length >> 11));
+    ADTSHeader[4] = (char)(length >> 3) & 0xff;
+    ADTSHeader[5] = (char)(((length & 0x7) << 5) & 0xff) | 0x1f;
+    ADTSHeader[6] = (char)0xfc;
+}
+
+int XVideoRecordThread::ADTS(AVPacket *src, AVPacket **des)
+{
+    if (src == nullptr) {
+        return -1;
+    }
+    if (des == nullptr) {
+        return -1;
+    }
+    AVPacket *adtsPacket = av_packet_alloc();
+    av_init_packet(adtsPacket);
+    av_new_packet(adtsPacket, src->size + ADTS_HEADER_SIZE);
+    WriteADTSHeader(src->size, 48000, 2);
+    memcpy(adtsPacket->data, ADTSHeader, ADTS_HEADER_SIZE);
+    memcpy(adtsPacket->data + ADTS_HEADER_SIZE, src->data, src->size);
+    adtsPacket->pts = src->pts;
+    adtsPacket->dts = src->dts;
+    adtsPacket->duration = src->duration;
+    adtsPacket->flags = src->flags;
+    adtsPacket->stream_index = src->stream_index;
+    adtsPacket->pos = src->pos;
+    if (*des == src)
+    {
+        av_packet_unref(src);
+        av_packet_move_ref(*des, adtsPacket);
+    }
+    else if (*des != nullptr)
+    {
+        av_packet_move_ref(*des, adtsPacket);
+    }
+    else
+    {
+        *des = adtsPacket;
+    }
+    return 0;
+}
+
+void XVideoRecordThread::aacCodeAndSent()
+{
+
+    av_register_all();
+    avcodec_register_all();
+    avdevice_register_all();
+
+    FILE *outAudioFile = nullptr;
+    outAudioFile = fopen("rec.aac", "wb");
+
+    AVFormatContext *inputFormatCtx = NULL;
+    AVInputFormat *inputFmt = av_find_input_format("alsa");
+    // 打开输入音频文件
+    int ret = avformat_open_input(&inputFormatCtx, url, inputFmt, 0);
+    if (ret != 0) {
+        printf("打开文件失败\n");
+    }
+
+    //获取音频中流的相关信息
+    ret = avformat_find_stream_info(inputFormatCtx, 0);
+    if (ret != 0) {
+        printf("不能获取流信息\n");
+    }
+
+    av_dump_format(inputFormatCtx, 0, url, false);
+    // 获取数据中音频流的序列号，这是一个标识符
+    int  index = 0,audioStream = -1;
+    AVCodecContext *inputCodecCtx;
+
+    for (index = 0; index <inputFormatCtx->nb_streams; index++) {
+        AVStream *stream = inputFormatCtx->streams[index];
+        AVCodecContext *code = stream->codec;
+        if (code->codec_type == AVMEDIA_TYPE_AUDIO){
+            audioStream = index;
+            break;
+        }
+    }
+
+    //从音频流中获取输入编解码相关的上下文
+    inputCodecCtx = inputFormatCtx->streams[audioStream]->codec;
+    //查找解码器
+    AVCodec *pCodec = avcodec_find_decoder(inputCodecCtx->codec_id);
+    // 打开解码器
+    int result =  avcodec_open2(inputCodecCtx, pCodec, NULL);
+    if (result < 0) {
+        printf("打开音频解码器失败\n");
+    }
+
+    // 创建aac编码器
+    AVCodec *aacCodec = avcodec_find_encoder(AV_CODEC_ID_AAC);
+    if (!aacCodec){
+        printf("Can not find encoder!\n");
+    }
+
+    //常见aac编码相关上下文信息
+    AVCodecContext *aacCodeContex = avcodec_alloc_context3(aacCodec);
+    // 设置编码相关信息
+    aacCodeContex->sample_fmt = aacCodec->sample_fmts[0];
+    aacCodeContex->sample_rate= inputCodecCtx->sample_rate;             // 音频的采样率
+    aacCodeContex->channel_layout = av_get_default_channel_layout(2);
+    aacCodeContex->channels = inputCodecCtx->channels;
+    aacCodeContex->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+
+    //打开编码器
+    AVDictionary *opts = NULL;
+    result = avcodec_open2(aacCodeContex, aacCodec, &opts);
+
+    if (result < 0) {
+        printf("failure open code\n");
+    }
+
+    //初始化先进先出缓存队列
+    AVAudioFifo *fifo = av_audio_fifo_alloc(AV_SAMPLE_FMT_FLTP,aacCodeContex->channels, aacCodeContex->frame_size);
+
+    //获取编码每帧的最大取样数
+    int output_frame_size = aacCodeContex->frame_size;
+
+    // 初始化重采样上下文
+    SwrContext *resample_context = NULL;
+    if (init_resampler(inputCodecCtx, aacCodeContex,
+                       &resample_context)){
+    }
+
+    //jrtplib 发送初始化START-------------------------------------------
+    CAACSender Asender;
+    std::string destip_str = "10.253.77.87";
+    uint32_t dest_ip = inet_addr(destip_str.c_str());
+    SetAACRTPParams(Asender,dest_ip,A_DEST_PORT,A_BASE_PORT);
+    Asender.SetParamsForSendingAAC();
+    //JRTPLIB 发送初始化END---------------------------------------------
+
+    bool finished  = false;
+    while (1) {
+
+        if (finished){
+            break;
+        }
+        // 查看fifo队列中的大小是否超过可以编码的一帧的大小
+        while (av_audio_fifo_size(fifo) < output_frame_size) {
+            // 如果没超过，则继续进行解码
+            if (finished)
+            {
+                break;
+            }
+
+            AVFrame *audioFrame = av_frame_alloc();
+            AVPacket packet;
+            packet.data = NULL;
+            packet.size = 0;
+            int data_present;
+
+            // 读取出一帧未解码数据
+            finished =  (av_read_frame(inputFormatCtx, &packet) == AVERROR_EOF);
+
+            // 判断该帧数据是否为音频数据
+            if (packet.stream_index != audioStream) {
+                continue;
+            }
+
+            // 开始进行解码
+            if ( avcodec_decode_audio4(inputCodecCtx, audioFrame, &data_present, &packet) < 0) {
+                printf("音频解码失败\n");
+            }
+
+//            if (data_present)
+//            {
+//                //将pcm数据写入文件
+//                for(int i = 0 ; i <audioFrame->channels;i++)
+//                {
+//                    //                    NSData *data = [NSData dataWithBytes:audioFrame->data[i] length:audioFrame->linesize[0]];
+//                    //                    [pcmfileHandle writeData:data];
+
+//                }
+//            }
+
+            // 初始化进行重采样的存储空间
+            uint8_t **converted_input_samples = NULL;
+            if(init_converted_samples(&converted_input_samples, aacCodeContex,
+                                      audioFrame->nb_samples))
+            {
+            }
+
+            // 进行重采样
+            if(convert_samples((const uint8_t**)audioFrame->extended_data, converted_input_samples,
+                               audioFrame->nb_samples, resample_context))
+            {
+            }
+
+           //将采样结果加入进fifo中
+            add_samples_to_fifo(fifo, converted_input_samples,audioFrame->nb_samples);
+
+            // 释放重采样存储空间
+            if (converted_input_samples)
+            {
+                av_freep(&converted_input_samples[0]);
+                free(converted_input_samples);
+            }
+        }
+        // 从fifo队列中读入数据
+        while (av_audio_fifo_size(fifo) >= output_frame_size || finished) {
+
+            AVFrame *frame;
+
+            frame = av_frame_alloc();
+
+            const int frame_size = FFMIN(av_audio_fifo_size(fifo),aacCodeContex->frame_size);
+
+            // 设置输入帧的相关参数
+            (frame)->nb_samples     = frame_size;
+            (frame)->channel_layout = aacCodeContex->channel_layout;
+            (frame)->format         = aacCodeContex->sample_fmt;
+            (frame)->sample_rate    = aacCodeContex->sample_rate;
+
+            int error;
+
+            //根据帧的相关参数，获取数据存储空间
+            if ((error = av_frame_get_buffer(frame, 0)) < 0)
+            {
+                av_frame_free(&frame);
+            }
+
+            // 从fifo中读取frame_size个样本数据
+            if (av_audio_fifo_read(fifo, (void **)frame->data, frame_size) < frame_size)
+            {
+                av_frame_free(&frame);
+            }
+
+            AVPacket pkt;
+            av_init_packet(&pkt);
+            pkt.data = NULL;
+            pkt.size = 0;
+
+            AVPacket *dpkt = av_packet_alloc();
+            av_init_packet(dpkt);
+
+            int data_present = 0;
+
+            frame->pts = av_frame_get_best_effort_timestamp(frame);
+            frame->pict_type=AV_PICTURE_TYPE_NONE;
+
+            // 将pcm数据进行编码
+            if ((error = avcodec_encode_audio2(aacCodeContex, &pkt,frame, &data_present)) < 0)
+            {
+                av_free_packet(&pkt);
+            }
+            av_frame_free(&frame);
+
+            WriteADTSHeader(pkt.size, 48000, 2);
+            // 如果编码成功，写入文件
+            if (data_present) {
+
+                int i =  ADTS(&pkt, &dpkt);
+
+                //jrtplib发送包含ADTS头部的数据
+                Asender.SendAACPacket((unsigned char*)dpkt->data, dpkt->size);
+                fwrite(dpkt->data, 1, dpkt->size, outAudioFile);
+            }
+
+            av_free_packet(&pkt);
+            av_free_packet(dpkt);
+        }
+
+    }
+    free(outAudioFile);
+
+
+}
+
 void XVideoRecordThread::run()
 {
 
@@ -326,9 +731,9 @@ void XVideoRecordThread::run()
 
     AVFrame *pFrame = av_frame_alloc();
     AVFrame *pFrameRGB = av_frame_alloc();
-//    pFrameRGB->format = m_pCodecCtx->pix_fmt;
-//    pFrameRGB->width = m_pCodecCtx->width;
-//    pFrameRGB->height = m_pCodecCtx->height;
+    //    pFrameRGB->format = m_pCodecCtx->pix_fmt;
+    //    pFrameRGB->width = m_pCodecCtx->width;
+    //    pFrameRGB->height = m_pCodecCtx->height;
 
 
     int numBytes = avpicture_get_size(AV_PIX_FMT_RGB32, m_pCodecCtx->width,m_pCodecCtx->height);
@@ -359,10 +764,10 @@ void XVideoRecordThread::run()
     //初始化jrtplib发送和接收数据参数
     SVideoSender sender;
 
-    std::string serverip_str = "`192.168.43.188";
+    std::string serverip_str = "192.168.43.188";
     uint32_t dest_ip = inet_addr(serverip_str.c_str());
 
-    SetRTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
+    SetH264RTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
     sender.SetParamsForSendingH264();
 
     int ret, got_picture, got_h264_pic;
@@ -425,7 +830,7 @@ void XVideoRecordThread::run()
 
                     QImage image = tmpImg->scaled(m_pCodecCtx->width*m_imageScale, m_pCodecCtx->height*m_imageScale); //把图像复制一份 传递给界面显示
                     emit sig_GetOneFrame(image);  //发送信号
-//                    pFrameRGB->pts=(loop -1)*(m_video_st->time_base.den)/((m_video_st->time_base.num)*10);
+                    //                    pFrameRGB->pts=(loop -1)*(m_video_st->time_base.den)/((m_video_st->time_base.num)*10);
 
                 }
             }

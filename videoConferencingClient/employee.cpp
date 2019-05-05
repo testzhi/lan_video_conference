@@ -3,6 +3,8 @@
 #include <boost/thread.hpp>
 
 #define PORT_BASE     6666
+#define APORT_BASE     8888
+
 
 void checkerror(int rtperr)
 {
@@ -23,17 +25,12 @@ void Employee::startReceive()
     std::string ipstr;
     int status;
 
-
     RTPUDPv4TransmissionParams transparams;
     RTPSessionParams sessparams;
-
-
     sessparams.SetOwnTimestampUnit(1.0/9000.0);
-
     transparams.SetPortbase(PORT_BASE);
     status = sess.Create(sessparams,&transparams);
     checkerror(status);
-
 
     RTPTime::Wait(RTPTime(10000,0));
     sess.BYEDestroy(RTPTime(10,0),0,0);
@@ -46,19 +43,14 @@ void Employee::AACStartReceive()
     std::string ipstr;
     int status;
 
-
     RTPUDPv4TransmissionParams transparams;
     RTPSessionParams sessparams;
-
-
     sessparams.SetOwnTimestampUnit(1.0/8000.0);
-
-    transparams.SetPortbase(PORT_BASE);
+    transparams.SetPortbase(APORT_BASE);
     status = sess.Create(sessparams,&transparams);
     checkerror(status);
 
-
-    RTPTime::Wait(RTPTime(1000,0));
+    RTPTime::Wait(RTPTime(10000,0));
     sess.BYEDestroy(RTPTime(10,0),0,0);
 }
 

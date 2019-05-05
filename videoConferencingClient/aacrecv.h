@@ -34,8 +34,6 @@ using namespace jthread;
 #define BUFFER_SIZE 1360
 #define AAC        97
 
-#define PORT_BASE     8888
-
 class AudioReceiver : public RTPSession
 {
 protected:
