@@ -13,8 +13,7 @@ DataBaseBroker::DataBaseBroker()
 {
     mysql_library_init(0,nullptr,nullptr);
     mysql_init(mysqlInstance);
-    //    mysql_options(mysqlInstance,MYSQL_SET_CHARSET_NAME,"utf8");
-    mysql_options(mysqlInstance, MYSQL_SET_CHARSET_NAME,"gbk");
+    mysql_options(mysqlInstance,MYSQL_SET_CHARSET_NAME,"utf8");
 }
 
 bool DataBaseBroker::connectMySQL(const char *host, const char *username, const char *password, const char *database, int port)
@@ -115,13 +114,13 @@ bool DataBaseBroker::createTables()
                           "`CONTENT` VARCHAR(20),"
                           "`NOTEDATE` DATE,"
                           "`NOTETIME` TIME)";
-//                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
+    //                          "CONSTRAINT `FK_MEETINGID` FOREIGN KEY (`MEETINGID`) REFERENCES `MeetingsTable` (`MEETINGID`)";//会议记录表
     string jurisdictions = "CREATE TABLE IF NOT EXISTS`VideoConferencingDB`.`JurisdictationsTable` ("
-                          "`CATEGORY` INT NOT NULL,"
-                          "`USERID` CHAR(11),"
-                          "`LEVEL` VARCHAR(20),"
-                          "`CATEGORYID` INT NOT NULL)";
-//                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
+                           "`CATEGORY` INT NOT NULL,"
+                           "`USERID` CHAR(11),"
+                           "`LEVEL` VARCHAR(20),"
+                           "`CATEGORYID` INT NOT NULL)";
+    //                          "CONSTRAINT `FK_USERID` FOREIGN KEY (`USERID`) REFERENCES `EmployeesTable` (`USERID`)";//权限表  或者改成禁言表
 
 
     if(!query(employees)) return false;

@@ -7,7 +7,6 @@
 #include <boost/thread.hpp>
 #include <thread>
 
-std::vector<std::string> destIPs;
 int main()
 {
     try {

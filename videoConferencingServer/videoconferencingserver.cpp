@@ -11,6 +11,13 @@ using namespace boost::asio;
 using namespace boost::posix_time;
 using std::vector;
 
+VideoConferencingServer::VideoConferencingServer()
+    : m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333)), m_sockTcp(m_io) , m_sockUdp(m_io)
+{
+    m_sockUdp.open(ip::udp::v4());
+    accept();
+}
+
 void VideoConferencingServer::accept()
 {
     m_destIps.clear();
@@ -44,6 +51,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
         if (m_tcpRecvBuf[i] != '\0')
             receive_message.push_back(m_tcpRecvBuf[i]);
     }
+
     QJsonObject Data = stringToQJsonObject(receive_message);
 
     if(receive_message.length() != 0)
@@ -51,39 +59,22 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     receive_message.clear();
 
     string type = Data["TYPE"].toString().toStdString();
-
-    if(type == "#REGISTER") //处理注册请求
-        handleRegister(Data, sock);
-    else if(type == "#LOGIN") //处理登录请求
-        handleLogin(Data, _remote_ip,sock);
-    else if(type == "#EXIT")
-        handleExit(Data, sock);
-    else if(type == "#REQUEST_ACCOUNT_DETAIL")
-        handleAccountDetail(Data, sock);
-    else if(type == "#REQUEST_COLLEAGUE_LIST")
-        handleColleagueList(Data, sock);
-    else if(type == "#REQUEST_MEETING_INVITATIONS_LIST")
-        handleInvitionsList(Data, sock);
-    else if(type == "#REQUEST_MEETINGS_LIST")
-        handleMeetingList(Data, sock);
-    else if(type == "#REQUEST_LAUNCH_MEETING")
-        handleRequestLaunchMeeting(Data, sock);
-    else if(type == "#REQUEST_START_MEETING")
-        handleRequestStartMeeting(Data, sock);
-    else if(type == "#REQUEST_STOP_MEETING")
-        handleRequestStopMeeting(Data, sock);
-    else if(type == "#REQUEST_SEND_INVITATION_RESULT")
-        handleRequestInvitionResult(Data, sock);
-    else if(type == "#REQUEST_ATTEND_MEETING")
-        handleRequestAttendMeeting(Data, sock);
-    else if(type == "#REQUEST_FINISHED_MEETINGS_NOTES")
-        handleRequestFinishedMeetingsNotes(Data, sock);
-    else if(type == "#REQUEST_UNNOTED_MEETINGS")
-        handleRequestUnnotedMeetings(Data, sock);
-    else if(type == "#REQUEST_NOTE_MEETING")
-        handleRequestNoteMeeting(Data, sock);
-    else if(type == "#REQUEST_START_VIDEO")
-        handleRequestStartVideo(Data, sock);
+    if(type == "#REGISTER")                                 handleRegister(Data, sock);//处理注册请求
+    else if(type == "#LOGIN")                               handleLogin(Data, _remote_ip,sock);//处理登录请求
+    else if(type == "#EXIT")                                handleExit(Data, sock);
+    else if(type == "#REQUEST_ACCOUNT_DETAIL")              handleAccountDetail(Data, sock);
+    else if(type == "#REQUEST_COLLEAGUE_LIST")              handleColleagueList(Data, sock);
+    else if(type == "#REQUEST_MEETING_INVITATIONS_LIST")    handleInvitionsList(Data, sock);
+    else if(type == "#REQUEST_MEETINGS_LIST")               handleMeetingList(Data, sock);
+    else if(type == "#REQUEST_LAUNCH_MEETING")              handleRequestLaunchMeeting(Data, sock);
+    else if(type == "#REQUEST_START_MEETING")               handleRequestStartMeeting(Data, sock);
+    else if(type == "#REQUEST_STOP_MEETING")                handleRequestStopMeeting(Data, sock);
+    else if(type == "#REQUEST_SEND_INVITATION_RESULT")      handleRequestInvitionResult(Data, sock);
+    else if(type == "#REQUEST_ATTEND_MEETING")              handleRequestAttendMeeting(Data, sock);
+    else if(type == "#REQUEST_FINISHED_MEETINGS_NOTES")     handleRequestFinishedMeetingsNotes(Data, sock);
+    else if(type == "#REQUEST_UNNOTED_MEETINGS")            handleRequestUnnotedMeetings(Data, sock);
+    else if(type == "#REQUEST_NOTE_MEETING")                handleRequestNoteMeeting(Data, sock);
+    else if(type == "#REQUEST_START_VIDEO")                 handleRequestStartVideo(Data, sock);
 
     clearTcpRecBuffer();
     sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
@@ -352,8 +343,6 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
         int a_res;
         string a_jsonstr;
         dc.jsonStrMeetingAddDetail(mm, a_jsonstr, a_res);
-        //                tcpSendTo(sip, s_jsonstr);
-        //                tcpAsyncConnect(sip, s_jsonstr);
         udpSendMessage(aip, a_jsonstr);
     }
     //邮件
@@ -373,8 +362,6 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
                 int s_res;
                 string s_jsonstr;
                 dc.jsonStrMeetingAddDetail(mm, s_jsonstr, s_res);
-                //                tcpSendTo(sip, s_jsonstr);
-                //                tcpAsyncConnect(sip, s_jsonstr);
                 udpSendMessage(sip, s_jsonstr);
 
             }
@@ -604,9 +591,14 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
         }
     }
 
-//    m_srsVideo.addNewDestIP(userip);
+//    m_srsVideo.addNewDestIP("192.168.43.7");
+//    m_srsVideo.addNewDestIP("192.168.43.188");
+//    m_srsVideo.addNewDestIP("192.168.43.174");
+////    m_srsVideo.addDestIPs(m_destIps);
 //    std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
 //    t1.detach();
+//    std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
+//    t2.detach();
 }
 
 void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -641,6 +633,8 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
 //    m_srsVideo.addDestIPs(m_destIps);
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
     t1.detach();
+    std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
+    t2.detach();
 }
 
 

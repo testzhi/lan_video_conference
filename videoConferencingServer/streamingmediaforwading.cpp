@@ -81,17 +81,17 @@ void StreamingMediaForwading::sendVideoInit()
 
 void StreamingMediaForwading::sendAudioInit()
 {
-     m_sendAudioSessparams.SetOwnTimestampUnit(1.0/8000.0);//时间戳单位
-     m_sendAudioSessparams.SetAcceptOwnPackets(true);//接收自己发送的数据包
-     m_sendAudioSessparams.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
-     m_sendAudioSessparams.SetPredefinedSSRC(ASSRC);     //定义SSRC
+    m_sendAudioSessparams.SetOwnTimestampUnit(1.0/8000.0);//时间戳单位
+    m_sendAudioSessparams.SetAcceptOwnPackets(true);//接收自己发送的数据包
+    m_sendAudioSessparams.SetUsePredefinedSSRC(true);  //设置使用预先定义的SSRC
+    m_sendAudioSessparams.SetPredefinedSSRC(ASSRC);     //定义SSRC
 
-     m_sendAudioTransparams.SetPortbase(m_sendAudioPortbase);
-     int oldBufSize = m_sendAudioTransparams.GetRTPReceiveBuffer();
-     m_sendAudioTransparams.SetRTPReceiveBuffer(oldBufSize * 2);
+    m_sendAudioTransparams.SetPortbase(m_sendAudioPortbase);
+    int oldBufSize = m_sendAudioTransparams.GetRTPReceiveBuffer();
+    m_sendAudioTransparams.SetRTPReceiveBuffer(oldBufSize * 2);
 
-     m_audioStatus = m_serverAudioSendSess.Create(m_sendAudioSessparams, &m_sendAudioTransparams);
-     checkerror(m_audioStatus);
+    m_audioStatus = m_serverAudioSendSess.Create(m_sendAudioSessparams, &m_sendAudioTransparams);
+    checkerror(m_audioStatus);
 
 }
 
@@ -283,16 +283,13 @@ void StreamingMediaForwading::videoForward()
             do
             {
                 RTPPacket *pack;
-
                 while ((pack = m_serverVideoRecvSess.GetNextPacket()) != nullptr)
                 {
                     std::cerr << "Got Video packet" << std::endl;
+                    int nLen = pack->GetPayloadLength();
                     //                    uint8_t t = pack->GetPayloadType();
                     //                    bool mark = pack->HasMarker();
                     //                    uint32_t timestam = pack->GetTimestamp();
-
-                    int nLen = pack->GetPayloadLength();
-
                     pfBuffer = (unsigned char*)pack->GetPayloadData();
                     pBuffer = new unsigned char[nLen + 1];
                     memcpy(pBuffer, pfBuffer, nLen);
@@ -307,10 +304,8 @@ void StreamingMediaForwading::videoForward()
         }
 
         m_serverVideoRecvSess.EndDataAccess();
-
         RTPTime::Wait(RTPTime(3,0));
     }
-
     m_serverVideoRecvSess.BYEDestroy(RTPTime(10,0),nullptr,0);
     m_serverVideoSendSess.BYEDestroy(RTPTime(10,0),nullptr,0);
 }
@@ -319,7 +314,6 @@ void StreamingMediaForwading::audioForward()
 {
     unsigned char *pfBuffer;
     unsigned char *pBuffer;
-
     while(1)
     {
         m_serverAudioRecvSess.BeginDataAccess();
@@ -330,6 +324,7 @@ void StreamingMediaForwading::audioForward()
                 RTPPacket *pack;
                 while ((pack = m_serverAudioRecvSess.GetNextPacket()) != nullptr)
                 {
+                    std::cerr << "got audio packet" << std::endl;
                     int nLen = pack->GetPayloadLength();
                     pfBuffer = (unsigned char*)pack->GetPayloadData();
                     pBuffer = new unsigned char[nLen + 1];
@@ -342,9 +337,7 @@ void StreamingMediaForwading::audioForward()
                 }
             } while (m_serverAudioRecvSess.GotoNextSourceWithData());
         }
-
         m_serverAudioRecvSess.EndDataAccess();
-
         RTPTime::Wait(RTPTime(3,0));
     }
     m_serverAudioRecvSess.BYEDestroy(RTPTime(10,0),nullptr,0);

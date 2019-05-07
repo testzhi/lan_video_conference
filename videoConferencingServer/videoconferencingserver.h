@@ -26,11 +26,7 @@ class VideoConferencingServer
     typedef std::shared_ptr<socket_type> sock_ptr;
 
 public:
-    VideoConferencingServer(): m_acceptor(m_io, ip::tcp::endpoint(ip::tcp::v4(), 2333)), m_sockTcp(m_io) , m_sockUdp(m_io)
-    {
-        m_sockUdp.open(ip::udp::v4());
-        accept();
-    }
+    VideoConferencingServer();
 
     void accept();
     void handle_accepter(const boost::system::error_code &ec, sock_ptr sock);

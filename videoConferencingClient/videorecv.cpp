@@ -64,7 +64,7 @@ void SVideoRecv::ProcessRTPPacket(const RTPSourceData &srcdat,const RTPPacket &r
             m_ReceiveArray.push_back(m_pVideoData);//添加到接收队列
 
 
-            int fd_out = open("rec.h264", O_CREAT | O_RDWR | O_TRUNC,S_IRWXU|S_IRWXO|S_IRWXG);
+            int fd_out = open("rec.h264", O_CREAT | O_RDWR ,S_IRWXU|S_IRWXO|S_IRWXG);
             lseek(fd_out, 0, SEEK_END);
             write(fd_out, m_pVideoData->m_pBuffer,m_pVideoData->m_lLength);
             close(fd_out);

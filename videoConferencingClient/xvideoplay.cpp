@@ -113,6 +113,8 @@ void XVideoPlay::run()
     av_dump_format(m_formatCtx,0,m_filename.toStdString().c_str(),0);
     printf("-------------------------------------------------\n");
 
+
+
     int ret, got_picture;
     while (1)
     {
@@ -136,10 +138,10 @@ void XVideoPlay::run()
                     emit sig_getAFrame(image);  //发送信号
                 }
             }
-//                        av_free_packet(packet);
+            //            av_free_packet(packet);
         }
+        msleep(25);
         av_free_packet(packet);
-        msleep(20);
     }
 
     sws_freeContext(img_convert_ctx2);
