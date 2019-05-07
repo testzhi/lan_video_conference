@@ -31,7 +31,7 @@ void CAACSender::SendAACPacket(unsigned char* m_aacBuf, int buflen)
 
     int status;
 
-    printf("send packet length %d \n",buflen);
+    printf("send AAC packet length %d \n",buflen);
 
     if ( buflen <= MAX_RTP_PKT_LENGTH )
     {

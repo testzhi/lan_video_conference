@@ -12,6 +12,7 @@ void XRecv::SetSize(int width, int height)
 XRecv::XRecv()
 {
     m_pVideoPlay = new XVideoPlay("rec.h264");
+    m_pAudioPlay = new XAudioPlay();
     connect(m_pVideoPlay, &XVideoPlay::sig_getAFrame, this, &XRecv::slot_GetOneFrame);
 }
 
@@ -25,18 +26,14 @@ XRecv::~XRecv()
 
 void XRecv::startPlay()
 {
-//    int i = type.toInt();
-//    if(i == 0)
         m_pVideoPlay->startPlay();
-//    else m_pScreenRecord->startPlay();
+        m_pAudioPlay->startPlay();
 }
 
 void XRecv::pausePlay()
 {
-//    int i = type.toInt();
-//    if(i == 0)
         m_pVideoPlay->pausePlay();
-//    else m_pScreenRecord->pausePlay();
+        m_pAudioPlay->pausePlay();
 }
 
 void XRecv::setScale(QString s)

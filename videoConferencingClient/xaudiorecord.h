@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include "aacsender.h"
+#include "xvideorecord.h"
 
 extern "C"
 {
@@ -34,12 +35,12 @@ extern "C"
 #include <sys/time.h>
 }
 
-enum PlayerState
-{
-    Stop,
-    Pause,
-    Playing
-};
+//enum PlayerState
+//{
+//    Stop,
+//    Pause,
+//    Playing
+//};
 
 class XAudioRecord : public QThread
 {

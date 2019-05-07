@@ -7,6 +7,7 @@
 #include "xvideo.h"
 #include "xscreen.h"
 #include "xrecv.h"
+#include "xaudio.h"
 
 //void startReceive();
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<XVideo>("Meeting",1,0,"XVideo");
     qmlRegisterType<XScreen>("Meeting",1,0,"XScreen");
     qmlRegisterType<XRecv>("Meeting",1,0,"XRecv");
+    qmlRegisterType<XAudio>("Meeting",1,0,"XAudio");
     Employee *employee = new Employee();
     ConferenceUI conferenceUI;
     employee->threadReceive();

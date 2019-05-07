@@ -150,9 +150,9 @@ void XVideoRecordThread::initH264OutputFile()
     m_pOutCodecCtx->codec_id = output_format->video_codec;
     m_pOutCodecCtx ->codec_type = AVMEDIA_TYPE_VIDEO;
     m_pOutCodecCtx->pix_fmt  = AV_PIX_FMT_YUV420P;
-    m_pOutCodecCtx->bit_rate = 20000; // 400000
-    m_pOutCodecCtx->width = 1280;
-    m_pOutCodecCtx->height = 720;
+    m_pOutCodecCtx->bit_rate = 400000; // 400000
+    m_pOutCodecCtx->width = m_pCodecCtx->width;
+    m_pOutCodecCtx->height = m_pCodecCtx->height;
     m_pOutCodecCtx->gop_size = 250;//3
 
     m_pOutCodecCtx->time_base.num = 1;
@@ -296,7 +296,6 @@ void XVideoRecordThread::SetH264RTPParams(SVideoSender& sess,uint32_t destip,uin
 
 void XVideoRecordThread::run()
 {
-
     initVideoRecord();
 
     AVFrame *pFrame = av_frame_alloc();
@@ -306,11 +305,10 @@ void XVideoRecordThread::run()
     //    pFrameRGB->height = m_pCodecCtx->height;
 
 
-    int numBytes = avpicture_get_size(AV_PIX_FMT_RGB32, m_pCodecCtx->width,m_pCodecCtx->height);
+    int numBytes = avpicture_get_size(AV_PIX_FMT_RGB555, m_pCodecCtx->width,m_pCodecCtx->height);
     uint8_t *rgb_out_buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
     avpicture_fill((AVPicture *) pFrameRGB, rgb_out_buffer, AV_PIX_FMT_YUV420P, m_pCodecCtx->width, m_pCodecCtx->height);
     struct SwsContext *img_convert_ctx = sws_getContext(m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt, m_pCodecCtx->width/2, m_pCodecCtx->height, AV_PIX_FMT_RGB555, SWS_BICUBIC, nullptr, nullptr, nullptr);
-
     AVPacket *packet = (AVPacket *) malloc(sizeof(AVPacket));
     int y_size = m_pCodecCtx->width * m_pCodecCtx->height;
     av_new_packet(packet, y_size);

@@ -232,6 +232,9 @@ Item {
                 anchors.fill: parent
                 anchors.centerIn: parent
             }
+            XAudio{
+                id:xaudio
+            }
 
             Item {
                 z: 1
@@ -291,6 +294,7 @@ Item {
                     onClicked: {
                         xvideoScreen.pausePlay()
                         xvideoCamera.pausePlay()
+                        xRecv.pausePlay()
                         screenSwitch.visible = false
                         while (meeting.meetingNotifications.length !== 0)
                             meeting.meetingNotifications.pop()
@@ -351,14 +355,18 @@ Item {
         onLoginSucceeded: {
             if (type === "StartVideo") {
                 console.log("start video")
-                //                xvideoScreen.setScale("2.4")
-                //                xvideoCamera.setScale("2.4")
-                xvideoScreen.setScale("1.6")
-                xvideoCamera.setScale("1.6")
+                console.log(meetingScreen.width,"  ",meetingScreen.height)
+                xvideoScreen.setScale("2.4")
+                xvideoCamera.setScale("2.4")
+
+                //                xvideoScreen.setScale("1.6")
+                //                xvideoCamera.setScale("1.6")
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
+                xaudio.pausePlay()
                 conferenceUI.getStartVideoMessage(currentMeetingID)
                 xvideoCamera.startPlay()
+                xaudio.startPlay()
                 screenSwitch.visible = true
             }
             else if(type === "StartRecv") {
@@ -370,6 +378,7 @@ Item {
             else if (type === "Exit") {
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
+                xRecv.pausePlay()
             } else if (type === "MeetingEnd") {
                 if (meeting.visible === true)
                     messageDialog.visible = true

@@ -2,6 +2,8 @@
 #include <QDebug>
 
 #define MAX_AUDIO_FRAME_SIZE 192000 // 1 second of 48khz 32bit audio
+static  Uint8  *audioChunk;
+
 
 XAudioPlay::XAudioPlay()
 {
@@ -12,6 +14,9 @@ void XAudioPlay::initAudioPlay()
 {
     av_register_all();
     avformat_network_init();
+    m_pFormatCtx = nullptr;
+    m_options = nullptr;
+    m_pCodecCtx = nullptr;
     m_pFormatCtx = avformat_alloc_context();
 
     if(avformat_open_input(&m_pFormatCtx, m_fileName.toStdString().c_str(), nullptr, nullptr)!= 0){
@@ -92,7 +97,7 @@ void XAudioPlay::run()
     wanted_spec.channels = out_channels;
     wanted_spec.silence = 0;
     wanted_spec.samples = out_nb_samples;
-    wanted_spec.callback = fillAudio;
+    wanted_spec.callback = fill_Audio;
     wanted_spec.userdata = m_pCodecCtx;
 
     if (SDL_OpenAudio(&wanted_spec, nullptr)<0){
@@ -164,6 +169,31 @@ QString XAudioPlay::fileName() const
 void XAudioPlay::setFileName(const QString &fileName)
 {
     m_fileName = fileName;
+}
+
+void XAudioPlay::startPlay()
+{
+    if( m_playerState == Pause || m_playerState == Stop ) {
+        m_playerState = Playing;
+        if( !this->isRunning() ) {
+            this->start();
+        }
+        qDebug() << "Playing...";
+    } else if( m_playerState == Playing ) {
+        m_playerState = Stop;
+        qDebug() << "Stop...";
+    }
+}
+
+void XAudioPlay::stopPlay()
+{
+
+}
+
+void XAudioPlay::pausePlay()
+{
+    m_playerState = Pause;
+    qDebug() << "Pause...";
 }
 
 

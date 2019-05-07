@@ -1,23 +1,22 @@
-#ifndef XRECV_H
-#define XRECV_H
-#include <QQuickPaintedItem>
-#include <QImage>
+#ifndef XAUDIO_H
+#define XAUDIO_H
+#include <QObject>
 
-#include "xvideoplay.h"
-#include "xaudioplay.h"
+#include "xaudiorecord.h"
 
-class XRecv:public QQuickPaintedItem
+class XAudio : public QObject
 {
     Q_OBJECT
 public:
 
     Q_PROPERTY(int          nWidth           READ getWidth         WRITE setWidth        NOTIFY widthChanged)
     Q_PROPERTY(int          nHeight          READ getHeight        WRITE setHeight       NOTIFY heightChanged)
+    Q_PROPERTY(QString      strVideoPath     READ getStrVideoPath  WRITE setStrVideoPath NOTIFY strVideoPathChanged)
     Q_PROPERTY(int          nDuration        READ getDuration      WRITE setDuration     NOTIFY durationChanged)
     Q_PROPERTY(int          nPosition        READ getPosition      WRITE setPosition     NOTIFY positionChanged)
 Q_INVOKABLE void SetSize(int width, int height);
-    explicit XRecv();
-    ~XRecv();
+    explicit XAudio(QObject *parent = 0);
+    ~XAudio();
     int getHeight() const;
     void setHeight(int value);
 
@@ -25,6 +24,7 @@ Q_INVOKABLE void SetSize(int width, int height);
     void setWidth(int value);
 
     QString getStrVideoPath() const;
+    void setStrVideoPath(QString &value);
 
     int getDuration() const;
     void setDuration(int value);
@@ -35,21 +35,15 @@ Q_INVOKABLE void SetSize(int width, int height);
 public:
     Q_INVOKABLE void startPlay();
     Q_INVOKABLE void pausePlay();
-    Q_INVOKABLE void setScale(QString s);
-protected:
-    virtual void paint(QPainter *pPainter);
 private:
 
-    QImage m_Frame;
-    XVideoPlay *m_pVideoPlay;
-    XAudioPlay *m_pAudioPlay;
+    XAudioRecord *m_audioRecord;
     int nHeight;
     int nWidth;
     QString strVideoPath;
     int nDuration;
     int nPosition;
 public slots:
-    void slot_GetOneFrame(QImage image);
     void slot_totalTimeChanged(QString str, qint64 sec);
     void slot_currentTimeChanged(QString str, qint64 sec);
 
@@ -62,7 +56,6 @@ signals:
 
     void sig_totalTimeChanged(QString str);
     void sig_currentTimeChanged(QString str);
-
 };
 
-#endif // XRECV_H
+#endif // XAUDIO_H

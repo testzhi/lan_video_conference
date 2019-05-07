@@ -39,13 +39,18 @@ XAudioRecord::~XAudioRecord()
 
 void XAudioRecord::initAudioRecord()
 {
-    av_register_all();
-    avdevice_register_all();
-    avformat_network_init();
-
+//    av_register_all();
+//    avdevice_register_all();
+//    avformat_network_init();
+    m_inFormatContext = nullptr;
+    m_inOptions = nullptr;
+    m_inPCodeCtx = nullptr;
     m_inFormatContext = avformat_alloc_context();
     AVInputFormat *inputAudioFmt = av_find_input_format("alsa");
-    if(avformat_open_input(&m_inFormatContext, "hw:1", inputAudioFmt, &m_inOptions)!=0)
+    std::string url = "hw:1";
+    int i = avformat_open_input(&m_inFormatContext, url.c_str(), inputAudioFmt, &m_inOptions);
+    std::cout << "i  " << i <<std::endl;
+    if(i != 0)
     {
         qDebug() << "不能打开音频设备." ;
         exit(0);
@@ -68,16 +73,17 @@ void XAudioRecord::initAudioRecord()
     }
     m_inPCodeCtx = m_inFormatContext->streams[m_audioStream]->codec;
     m_inPCodeCtx->channel_layout = av_get_default_channel_layout(m_inPCodeCtx->channels);
-
     AVCodec	*pAudioCodec = avcodec_find_decoder(m_inPCodeCtx->codec_id);
+    av_dump_format(m_inFormatContext, 0, url.c_str(), 0);
     if(pAudioCodec == nullptr)
     {
-        printf("不能发现音频编码器.\n");
+        printf("不能发现音频解码器.\n");
         exit(0);
     }
+    m_inOptions = nullptr;
     if(avcodec_open2(m_inPCodeCtx, pAudioCodec, &m_inOptions)<0)
     {
-        printf("不能打开音频编码器.\n");
+        printf("不能打开音频解码器.\n");
         exit(0);
     }
 
@@ -91,6 +97,9 @@ void XAudioRecord::closeAudioRecord()
 
 void XAudioRecord::initAACOutputFile()
 {
+    m_outFormatContext = nullptr;
+    m_outOptions = nullptr;
+    m_outPCodecCtx = nullptr;
     m_AACOutputFilePath = "audio.aac";
     m_outFormatContext = avformat_alloc_context();
     AVOutputFormat *outputAudioFmt = av_guess_format(nullptr, m_AACOutputFilePath.toStdString().c_str(), nullptr);
@@ -100,6 +109,7 @@ void XAudioRecord::initAACOutputFile()
         return;
     }
 
+    m_outFormatContext->oformat = outputAudioFmt;
     // 创建aac编码器
     AVCodec *aacCodec = avcodec_find_encoder(AV_CODEC_ID_AAC);
     if (!aacCodec){
@@ -107,15 +117,18 @@ void XAudioRecord::initAACOutputFile()
     }
 
     //常见aac编码相关上下文信息
-    AVCodecContext *m_outPCodecCtx = avcodec_alloc_context3(aacCodec);
+    m_outPCodecCtx = avcodec_alloc_context3(aacCodec);
     // 设置编码相关信息
     m_outPCodecCtx->sample_fmt = aacCodec->sample_fmts[0];
-    m_outPCodecCtx->sample_rate= m_outPCodecCtx->sample_rate;             // 音频的采样率
+    m_outPCodecCtx->sample_rate= m_inPCodeCtx->sample_rate;             // 音频的采样率
     m_outPCodecCtx->channel_layout = av_get_default_channel_layout(2);
-    m_outPCodecCtx->channels = m_outPCodecCtx->channels;
+    m_outPCodecCtx->channels = m_inPCodeCtx->channels;
     m_outPCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 
-    if (avcodec_open2(m_outPCodecCtx, aacCodec, &m_outOptions)<0) {
+    m_outOptions = nullptr;
+    int a = avcodec_open2(m_outPCodecCtx, aacCodec, &m_outOptions);
+    if (a < 0) {
+        qDebug() << a;
         printf("不能打开音频编码器.\n");
         exit(0);
     }
@@ -130,7 +143,17 @@ void XAudioRecord::closeAACOutputFile()
 
 void XAudioRecord::startPlay()
 {
-
+    ///调用 QThread 的start函数 将会自动执行下面的run函数 run函数是一个新的线程
+    if( m_playerState == Pause || m_playerState == Stop ) {
+        m_playerState = Playing;
+        if( !this->isRunning() ) {
+            this->start();
+        }
+        qDebug() << "Playing...";
+    } else if( m_playerState == Playing ) {
+        m_playerState = Stop;
+        qDebug() << "Stop...";
+    }
 }
 
 void XAudioRecord::stopPlay()
@@ -140,7 +163,8 @@ void XAudioRecord::stopPlay()
 
 void XAudioRecord::pausePlay()
 {
-
+    m_playerState = Pause;
+    qDebug() << "Pause...";
 }
 
 int XAudioRecord::GetSampleIndex(int sample_rate)
@@ -353,7 +377,6 @@ void XAudioRecord::SetAACRTPParams(CAACSender &sess, uint32_t destip, uint16_t d
 void XAudioRecord::run()
 {
     initAudioRecord();
-
     FILE *pcmFile = fopen("record.pcm", "wb");
     uint64_t mid_pcm_channel_layout = AV_CH_LAYOUT_STEREO;//Out Audio Param
     int mid_pcm_nb_samples = m_inPCodeCtx->frame_size;//nb_samples: AAC-1024 MP3-1152
@@ -361,8 +384,6 @@ void XAudioRecord::run()
     int mid_pcm_sample_rate = 44100;
     int mid_pcm_channels = av_get_channel_layout_nb_channels(mid_pcm_channel_layout);
 
-    //    AUDIO INPUT
-    //    int64_t in_channel_layout = av_get_default_channel_layout(m_inPCodeCtx->channels);
     int64_t in_channel_layout = m_inPCodeCtx->channel_layout;
 
     //Swr
@@ -375,8 +396,6 @@ void XAudioRecord::run()
 
     int decodeRet, decode_got_picture;
 
-
-
     //--------------------------aac start
     initAACOutputFile();
 
@@ -385,7 +404,6 @@ void XAudioRecord::run()
 
     //获取编码每帧的最大取样数
     int output_frame_size = m_outPCodecCtx->frame_size;
-
     // 初始化重采样上下文
     SwrContext *resample_context = nullptr;
     if (init_resampler(m_inPCodeCtx, m_outPCodecCtx,
