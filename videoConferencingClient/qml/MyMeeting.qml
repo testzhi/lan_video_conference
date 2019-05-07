@@ -294,6 +294,7 @@ Item {
                     onClicked: {
                         xvideoScreen.pausePlay()
                         xvideoCamera.pausePlay()
+                        xaudio.pausePlay()
                         xRecv.pausePlay()
                         screenSwitch.visible = false
                         while (meeting.meetingNotifications.length !== 0)
@@ -335,6 +336,8 @@ Item {
                     console.log("And of course you could only agree.")
                     xvideoScreen.pausePlay()
                     xvideoCamera.pausePlay()
+                    xaudio.pausePlay()
+                    xRecv.pausePlay()
                     meetingExit()
                     meetingList.currentMeeting = ""
                     screenSwitch.visible = false
@@ -358,7 +361,6 @@ Item {
                 console.log(meetingScreen.width,"  ",meetingScreen.height)
                 xvideoScreen.setScale("2.4")
                 xvideoCamera.setScale("2.4")
-
                 //                xvideoScreen.setScale("1.6")
                 //                xvideoCamera.setScale("1.6")
                 xvideoScreen.pausePlay()
@@ -371,13 +373,14 @@ Item {
             }
             else if(type === "StartRecv") {
                 console.log("start recv")
-                xRecv.setScale("1.6")
+                xRecv.setScale("2.4")
                 xRecv.pausePlay()
                 xRecv.startPlay()
             }
             else if (type === "Exit") {
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
+                xaudio.pausePlay()
                 xRecv.pausePlay()
             } else if (type === "MeetingEnd") {
                 if (meeting.visible === true)

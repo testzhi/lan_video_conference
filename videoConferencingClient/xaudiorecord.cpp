@@ -97,6 +97,9 @@ void XAudioRecord::closeAudioRecord()
 
 void XAudioRecord::initAACOutputFile()
 {
+    av_register_all();
+    avdevice_register_all();
+    avformat_network_init();
     m_outFormatContext = nullptr;
     m_outOptions = nullptr;
     m_outPCodecCtx = nullptr;
@@ -431,6 +434,8 @@ void XAudioRecord::run()
         if (finished){
             break;
         }
+        if(m_playerState == Pause)
+            break;
         // 查看fifo队列中的大小是否超过可以编码的一帧的大小
         while (av_audio_fifo_size(fifo) < output_frame_size)
         {

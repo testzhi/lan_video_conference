@@ -156,7 +156,7 @@ void XVideoRecordThread::initH264OutputFile()
     m_pOutCodecCtx->gop_size = 250;//3
 
     m_pOutCodecCtx->time_base.num = 1;
-    m_pOutCodecCtx->time_base.den = 10; // 15fps快慢
+    m_pOutCodecCtx->time_base.den = 30; // 15fps快慢
 
     m_pOutCodecCtx->qmax = 51;
     m_pOutCodecCtx->qmin = 10;
