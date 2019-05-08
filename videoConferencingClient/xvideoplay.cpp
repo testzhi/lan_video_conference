@@ -94,6 +94,15 @@ void XVideoPlay::run()
     AVFrame *pFrame=av_frame_alloc();
     AVFrame *pFrameYUV=av_frame_alloc();
 
+    m_pCodecCtx->time_base.num=1;
+    m_pCodecCtx->time_base.den=10;
+    m_pCodecCtx->bit_rate=400000;
+    m_pCodecCtx->rc_max_rate=400000;
+    m_pCodecCtx->rc_min_rate=400000;
+    m_pCodecCtx->gop_size=250;
+    m_pCodecCtx->qmin=10;
+    m_pCodecCtx->qmax=51;
+    m_pCodecCtx->max_b_frames=3;
     uint8_t *out_buffer=(uint8_t *)av_malloc(avpicture_get_size(AV_PIX_FMT_YUV420P, m_pCodecCtx->width, m_pCodecCtx->height));
     avpicture_fill((AVPicture *)pFrameYUV, out_buffer, AV_PIX_FMT_YUV420P, m_pCodecCtx->width, m_pCodecCtx->height);
     struct SwsContext *img_convert_ctx = sws_getContext(m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt, m_pCodecCtx->width, m_pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, nullptr, nullptr, nullptr);
@@ -115,11 +124,14 @@ void XVideoPlay::run()
 
 
 
+    msleep(2000);
+
     int ret, got_picture;
     while (1)
     {
         if(m_recvPlayerState == Pause)
             break;
+        msleep(100);
         if(av_read_frame(m_formatCtx, packet)>=0)
         {
             if(packet->stream_index==m_videoStream){
@@ -140,7 +152,6 @@ void XVideoPlay::run()
             }
             //            av_free_packet(packet);
         }
-        msleep(25);
         av_free_packet(packet);
     }
 

@@ -151,12 +151,15 @@ void XVideoRecordThread::initH264OutputFile()
     m_pOutCodecCtx ->codec_type = AVMEDIA_TYPE_VIDEO;
     m_pOutCodecCtx->pix_fmt  = AV_PIX_FMT_YUV420P;
     m_pOutCodecCtx->bit_rate = 400000; // 400000
+    m_pOutCodecCtx->rc_max_rate = 400000;
+    m_pOutCodecCtx->rc_min_rate = 400000;
+
     m_pOutCodecCtx->width = m_pCodecCtx->width;
     m_pOutCodecCtx->height = m_pCodecCtx->height;
     m_pOutCodecCtx->gop_size = 250;//3
 
     m_pOutCodecCtx->time_base.num = 1;
-    m_pOutCodecCtx->time_base.den = 30; // 15fps快慢
+    m_pOutCodecCtx->time_base.den = 10; // 15fps快慢
 
     m_pOutCodecCtx->qmax = 51;
     m_pOutCodecCtx->qmin = 10;

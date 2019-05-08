@@ -359,10 +359,10 @@ Item {
             if (type === "StartVideo") {
                 console.log("start video")
                 console.log(meetingScreen.width,"  ",meetingScreen.height)
-                xvideoScreen.setScale("2.4")
-                xvideoCamera.setScale("2.4")
-                //                xvideoScreen.setScale("1.6")
-                //                xvideoCamera.setScale("1.6")
+//                xvideoScreen.setScale("2.4")
+//                xvideoCamera.setScale("2.4")
+                                xvideoScreen.setScale("1.6")
+                                xvideoCamera.setScale("1.6")
                 xvideoScreen.pausePlay()
                 xvideoCamera.pausePlay()
                 xaudio.pausePlay()
@@ -373,7 +373,8 @@ Item {
             }
             else if(type === "StartRecv") {
                 console.log("start recv")
-                xRecv.setScale("2.4")
+//                xRecv.setScale("2.4")
+                xRecv.setScale("1.6")
                 xRecv.pausePlay()
                 xRecv.startPlay()
             }
