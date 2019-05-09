@@ -27,7 +27,7 @@ void Employee::startReceive()
 
     RTPUDPv4TransmissionParams transparams;
     RTPSessionParams sessparams;
-    sessparams.SetOwnTimestampUnit(1.0/9000.0);
+    sessparams.SetOwnTimestampUnit(1.0/90000.0);
     transparams.SetPortbase(PORT_BASE);
     status = sess.Create(sessparams,&transparams);
     checkerror(status);

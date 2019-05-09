@@ -77,7 +77,7 @@ void XAudioPlay::run()
     uint64_t out_channel_layout=AV_CH_LAYOUT_STEREO;
     int out_nb_samples=m_pCodecCtx->frame_size;
     AVSampleFormat out_sample_fmt=AV_SAMPLE_FMT_S16;
-    int out_sample_rate=44100;
+    int out_sample_rate=48000;
     int out_channels=av_get_channel_layout_nb_channels(out_channel_layout);
     //Out Buffer Size
     int out_buffer_size=av_samples_get_buffer_size(nullptr,out_channels ,out_nb_samples,out_sample_fmt, 1);

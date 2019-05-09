@@ -153,7 +153,6 @@ void XVideoRecordThread::initH264OutputFile()
     m_pOutCodecCtx->bit_rate = 400000; // 400000
     m_pOutCodecCtx->rc_max_rate = 400000;
     m_pOutCodecCtx->rc_min_rate = 400000;
-
     m_pOutCodecCtx->width = m_pCodecCtx->width;
     m_pOutCodecCtx->height = m_pCodecCtx->height;
     m_pOutCodecCtx->gop_size = 250;//3
@@ -335,7 +334,7 @@ void XVideoRecordThread::run()
     //初始化jrtplib发送和接收数据参数
     SVideoSender sender;
 
-    std::string serverip_str = "192.168.43.174";
+    std::string serverip_str = "192.168.43.188";
     uint32_t dest_ip = inet_addr(serverip_str.c_str());
 
     SetH264RTPParams(sender,dest_ip,SERVER_PORT,BASE_PORT);
