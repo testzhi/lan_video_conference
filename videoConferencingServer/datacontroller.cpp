@@ -15,8 +15,6 @@ using std::string;
 using std::cout;
 using std::endl;
 
-
-
 DataController::~DataController()
 {
     db.closeMySQL();

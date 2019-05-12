@@ -34,7 +34,7 @@ void VideoConferencingServer::handle_accepter(const boost::system::error_code &e
     cout  << "Client: "<< sock->remote_endpoint() << "已连接"<<endl;
 
     clearTcpRecBuffer();
-    sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, boost::asio::placeholders::error, sock, sock->remote_endpoint().address().to_string()));
+    sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive, this, sock, sock->remote_endpoint().address().to_string()));
     accept();
 }
 void VideoConferencingServer::run()
@@ -42,7 +42,7 @@ void VideoConferencingServer::run()
     m_io.run();
 }
 
-void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &ec, VideoConferencingServer::sock_ptr sock, std::string _remote_ip)
+void VideoConferencingServer::tcpHandleReceive(VideoConferencingServer::sock_ptr sock, std::string _remote_ip)
 {
     std::string receive_message;
 
@@ -60,7 +60,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
 
     string type = Data["TYPE"].toString().toStdString();
     if(type == "#REGISTER")                                 handleRegister(Data, sock);//处理注册请求
-    else if(type == "#LOGIN")                               handleLogin(Data, _remote_ip,sock);//处理登录请求
+    else if(type == "#LOGIN")                               handleLogin(Data, _remote_ip, sock);//处理登录请求
     else if(type == "#EXIT")                                handleExit(Data, sock);
     else if(type == "#REQUEST_ACCOUNT_DETAIL")              handleAccountDetail(Data, sock);
     else if(type == "#REQUEST_COLLEAGUE_LIST")              handleColleagueList(Data, sock);
@@ -77,7 +77,7 @@ void VideoConferencingServer::tcpHandleReceive(const boost::system::error_code &
     else if(type == "#REQUEST_START_VIDEO")                 handleRequestStartVideo(Data, sock);
 
     clearTcpRecBuffer();
-    sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this, boost::asio::placeholders::error,sock,_remote_ip));
+    sock->async_receive(buffer(m_tcpRecvBuf), boost::bind(&VideoConferencingServer::tcpHandleReceive,this,  sock,_remote_ip));
 }
 void VideoConferencingServer::tcpSendMessage(std::string msg, VideoConferencingServer::sock_ptr sock)
 {
@@ -175,18 +175,13 @@ void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencing
 void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConferencingServer::sock_ptr sock)
 {
     string emailid = Data.value("DATA")["EMAILID"].toString().toStdString();
-    string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
+       string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
 
-    string verifyRes;
-    int result;
-    dc.jsonStrVerifyAccountResult(emailid, passwd, verifyRes, result);
-
-    if(result == 1)
-    {
-        dc.getDb().updateStateByEmaiID(emailid, 1, ip);
-    }
-    tcpSendMessage(verifyRes, sock);
+       string verifyRes;
+       jsonStrVerifyAccountResult(emailid, passwd, ip, verifyRes);
+       tcpSendMessage(verifyRes, sock);
 }
+
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
     string tcpJson;
@@ -636,6 +631,46 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
     t1.detach();
     std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
     t2.detach();
+}
+
+void VideoConferencingServer::jsonStrVerifyAccountResult(std::string emailid, std::string passwd, std::string ip, std::string &verifyResult)
+{
+    verifyResult.clear();
+        string err; err.clear();
+        string res; res.clear();
+        int i = m_adb.validateForLogin(emailid, passwd, ip);
+
+        if(i == -3)
+        {
+            err = m_adb.getErrorInfo();
+        }
+        else if (i == -1)
+        {
+            err = "InvalidAccount";
+            res = "-1";
+        }
+        else if(i == 0)
+        {
+            err = "WrongPassword";
+            res = "-2";
+        }
+        else {
+            err="";
+            res = "1";
+        }
+
+        QJsonObject dd;
+        dd.insert("RESULT", res.c_str());
+        dd.insert("ERROR", err.c_str());
+        dd.insert("EMAILID", emailid.c_str());
+        QJsonObject jsonMsg;
+        jsonMsg.insert("DATA", dd);
+        jsonMsg.insert("TYPE", "_LOGIN");
+        QJsonDocument document;
+        document.setObject(jsonMsg);
+        QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+        string strJson(byteArray);
+        verifyResult = strJson;
 }
 
 

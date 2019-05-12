@@ -105,12 +105,14 @@ public:
     void deleteNotificationByUserIDAndMeetingID(std::string userID, std::string meetingID);
     void deleteMeetingEndUndisposedNotifications(std::string meetingID, int category);
     std::string getErrorInfo();
-
-
-private:
-
+protected:
+    bool isEmail(std::string emailId);
+    //错误信息
+    void errorIntoMySQL();
+protected:
     MYSQL_RES *result;                 //用于存放结果 建议用char* 数组将此结果转存
     MYSQL *mysqlInstance;              //MySQL对象，必备的一个数据结构
+private:
 
     //根据companyname插入新公司（需要自己判断无重复）
     bool insertIntoTableCompanies(std::string name);
@@ -140,11 +142,10 @@ private:
 
 
     //email 1 , id 0
-    bool isEmail(std::string emailId);
+
     //生成id时判断该id是否被占用
     bool canCreateID(std::string id);
-    //填写错误信息
-    void errorIntoMySQL();
+
     //执行命令
     bool query(const std::string& querystr);
 };

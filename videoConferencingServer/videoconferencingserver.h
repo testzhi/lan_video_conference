@@ -9,6 +9,7 @@
 #include <string>
 #include "datacontroller.h"
 #include "streamingmediaforwading.h"
+#include "accountbroker.h"
 
 
 
@@ -33,7 +34,7 @@ public:
     void run();
 
     //TCP
-    void tcpHandleReceive(const boost::system::error_code &ec, sock_ptr sock, std::string _remote_ip);
+    void tcpHandleReceive(sock_ptr sock, std::string _remote_ip);
     void handleTcpSend(const boost::system::error_code &ec, sock_ptr sock);
     void tcpSendMessage(std::string msg, sock_ptr sock);
 
@@ -72,6 +73,7 @@ public:
     void handleRequestStartVideo(QJsonObject Data, sock_ptr sock);
 
 
+    void jsonStrVerifyAccountResult(std::string emailid, std::string passwd, std::string ip, std::string &verifyResult);
 
 
 private:
@@ -90,6 +92,7 @@ private:
     udp::socket m_sockUdp;
 
     DataController dc;
+    AccountBroker m_adb;
 
     std::vector<std::string> m_destIps;
     StreamingMediaForwading m_srsVideo;
