@@ -419,7 +419,7 @@ void XAudioRecord::run()
 
     //jrtplib 发送初始化START--------------------------------------
     CAACSender Asender;
-    std::string destip_str = "192.168.43.188";
+    std::string destip_str = "192.168.43.174";
     uint32_t dest_ip = inet_addr(destip_str.c_str());
     SetAACRTPParams(Asender,dest_ip,A_DEST_PORT,A_BASE_PORT);
     Asender.SetParamsForSendingAAC();

@@ -12,8 +12,7 @@ public:
     AccountBroker();
     int validateForLogin(std::string emailid, std::string passwd, std::string ip);
     void clearAccounts();
-    void clearUpSeldomeAccessAccounts()
-    {}
+    void clearUpSeldomeAccessAccounts(){}
     void exit(std::string emailid);
 
 private:

@@ -11,9 +11,25 @@ using std::vector;
 DataBaseBroker::DataBaseBroker()
     :mysqlInstance(mysql_init(nullptr))//分配内存并初始化一个MYSQL *对象
 {
+    ////    mysql -u VideoConferencingServer
+    ////    drop database VideoConferencingDB;  create database VideoConferencingDB;     use VideoConferencingDB;
+    ////    select * from EmployeesTable; select * from MeetingsTable; select * from AttendeesTable; select * from NotificationsTable;
     mysql_library_init(0,nullptr,nullptr);
     mysql_init(mysqlInstance);
     mysql_options(mysqlInstance,MYSQL_SET_CHARSET_NAME,"utf8");
+    connectMySQL("localhost", "VideoConferencingServer", "", "VideoConferencingDB", 3306);
+    createTables();
+    insertIntoTableEmployees("5631813", "1717", "Liana",     "563181@qq.com", "TechGROUP1", "Development", "Google","");
+    insertIntoTableEmployees("563", "1717", "Liana Xu", "5634@qq.com","TechGROUP1", "Development", "Google","");
+    insertIntoTableEmployees("1", "3", "name1", "1@qq.com", "TechGROUP1", "Development", "Google","");
+    insertIntoTableEmployees("7", "7", "name7", "16931742@qq.com", "TechGROUP1", "Development", "Google", "");
+    insertIntoTableEmployees("6", "6", "name6", "169@qq.com", "TechGROUP1", "Development", "Google","");
+
+    insertIntoTableEmployees("4", "4", "梁组", "9129484@qq.com", "TechGROUP2", "Development", "Google", "");
+    insertIntoTableEmployees("5", "5", "凉凉", "912@qq.com", "TechGROUP2", "Development", "Google", "");
+    insertIntoTableEmployees("2", "2", "章鱼专用2", "2@qq.com", "TechGROUP2", "Development", "Google", "");
+    insertIntoTableEmployees("3", "3", "章鱼", "3@qq.com", "TechGROUP3", "Development", "Google", "");
+    std::cout << "建表结束" << std::endl;
 }
 
 bool DataBaseBroker::connectMySQL(const char *host, const char *username, const char *password, const char *database, int port)
@@ -33,6 +49,11 @@ void DataBaseBroker::closeMySQL()
 {
     mysql_free_result(result);
     mysql_close(mysqlInstance);
+}
+
+DataBaseBroker::~DataBaseBroker()
+{
+    closeMySQL();
 }
 bool DataBaseBroker::createTables()
 {
@@ -959,13 +980,13 @@ bool DataBaseBroker::canRegister(string email)
 {
     char *cmd = new char[100];
     sprintf(cmd, "select `USERID` from EmployeesTable where EMAIL = '%s'", email.c_str());
-    if(!query(cmd))
+    if(mysql_real_query(mysqlInstance, cmd, strlen(cmd)) != 0)
     {
-        delete [] cmd;
+        errorIntoMySQL();
         return 0;
     }
-    result = mysql_store_result(mysqlInstance);
     delete [] cmd;
+    result = mysql_store_result(mysqlInstance);
     auto row = mysql_num_rows(result);
     if(row == 0)
         return 1;
@@ -981,13 +1002,11 @@ int DataBaseBroker::isValidAccount(std::string emailId)
     }else {
         sprintf(cmd, "select `USERID` from EmployeesTable where EMAIL = '%s';", emailId.c_str());
     }
-    if(!query(cmd))
-    {
-        delete [] cmd;
-        return 0;
-    }
-    result = mysql_store_result(mysqlInstance);
+    auto i = mysql_real_query(mysqlInstance, cmd, strlen(cmd));
     delete [] cmd;
+    if(i != 0)
+        return 0;
+    result = mysql_store_result(mysqlInstance);
     auto row = mysql_num_rows(result);
     if(em)
     {

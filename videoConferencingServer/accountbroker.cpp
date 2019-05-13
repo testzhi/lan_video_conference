@@ -23,11 +23,13 @@ int AccountBroker::validateForLogin(std::string emailid, std::string passwd, std
             find = true;
             acc->addAccessTime();
             acc->printAccountInfo();
-            if(acc->passwd() == passwd)
+            if(acc->passwd() == passwd)//验证密码
             {
                 acc->setState(1);
                 acc->setIpAddress(ip);
                 changeStateAndIPInDB(emailid, 1, ip);
+                _emailToAccounts[acc->email()]->setState(1);
+                _emailToAccounts[acc->email()]->setIpAddress(ip);
                 return 1;
             }
             else return 0;
@@ -45,6 +47,8 @@ int AccountBroker::validateForLogin(std::string emailid, std::string passwd, std
                 acc->setState(1);
                 acc->setIpAddress(ip);
                 changeStateAndIPInDB(emailid, 1, ip);
+                _userIDToAccounts[acc->userID()]->setState(1);
+                _userIDToAccounts[acc->userID()]->setIpAddress(ip);
                 return 1;
             }
             else return 0;
@@ -98,6 +102,7 @@ int AccountBroker::validateForLogin(std::string emailid, std::string passwd, std
     return -3;
 }
 
+
 void AccountBroker::clearAccounts()
 {
     _emailToAccounts.clear();
@@ -117,6 +122,8 @@ void AccountBroker::exit(std::string emailid)
             acc->setState(0);
             acc->setIpAddress("");
             changeStateAndIPInDB(emailid, 0, "");
+            _emailToAccounts[acc->email()]->setState(0);
+            _emailToAccounts[acc->email()]->setIpAddress("");
         }
     }else {//email
         auto acc = _emailToAccounts[emailid];
@@ -127,6 +134,8 @@ void AccountBroker::exit(std::string emailid)
             acc->setState(0);
             acc->setIpAddress("");
             changeStateAndIPInDB(emailid, 0, "");
+            _userIDToAccounts[acc->userID()]->setState(0);
+            _userIDToAccounts[acc->userID()]->setIpAddress("");
         }
     }
     if(find == false)

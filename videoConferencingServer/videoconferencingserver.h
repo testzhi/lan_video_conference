@@ -10,6 +10,7 @@
 #include "datacontroller.h"
 #include "streamingmediaforwading.h"
 #include "accountbroker.h"
+#include "employeebroker.h"
 
 
 
@@ -73,7 +74,12 @@ public:
     void handleRequestStartVideo(QJsonObject Data, sock_ptr sock);
 
 
+    void jsonStrCreateRegisteredID(std::string &idJson, string email, string &id, std::string realName, std::string passwd, std::string avatar, std::string gName, std::string dName, std::string cName, std::string phone);
     void jsonStrVerifyAccountResult(std::string emailid, std::string passwd, std::string ip, std::string &verifyResult);
+    void jsonStrAccountDetail(string emailid, string &jsonstr);
+    void jsonStrColleagueDetail(std::string emailid, std::string &jsonstr, int &res);
+    void jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res);
+    void jsonStrInvitationsDetail(std::string emailid, std::string &jsonstr, unsigned long long &res);
 
 
 private:
@@ -93,6 +99,7 @@ private:
 
     DataController dc;
     AccountBroker m_adb;
+    EmployeeBroker m_edb;
 
     std::vector<std::string> m_destIps;
     StreamingMediaForwading m_srsVideo;

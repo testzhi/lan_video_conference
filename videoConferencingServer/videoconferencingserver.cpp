@@ -1,4 +1,5 @@
 #include "videoconferencingserver.h"
+#include "company.h"
 #include <iostream>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -153,13 +154,8 @@ void VideoConferencingServer::handleUdpSend(const boost::system::error_code &ec)
 //处理函数
 void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
-
     string email = Data.value("DATA")["EMAIL"].toString().toStdString();
-
     string tcpJson, id;
-    int res;
-    dc.jsonStrCreateRegisteredID(tcpJson, email, id, res);
-
     string realName = Data.value("DATA")["REALNAME"].toString().toStdString();
     string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
     string avatar = Data.value("DATA")["AVATAR"].toString().toStdString();
@@ -167,19 +163,17 @@ void VideoConferencingServer::handleRegister(QJsonObject Data, VideoConferencing
     string department = Data.value("DATA")["DEPARTMENT"].toString().toStdString();
     string group = Data.value("DATA")["GROUP"].toString().toStdString();
     string phone = Data.value("DATA")["PHONE"].toString().toStdString();
-
-    if(res == 1)
-        dc.getDb().insertIntoTableEmployees(id, passwd, realName, email, group, department, company, "");
+    jsonStrCreateRegisteredID(tcpJson, email, id, realName, passwd, avatar, group, department, company, phone);
     tcpSendMessage(tcpJson, sock);
 }
+
 void VideoConferencingServer::handleLogin(QJsonObject Data, string ip, VideoConferencingServer::sock_ptr sock)
 {
     string emailid = Data.value("DATA")["EMAILID"].toString().toStdString();
-       string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
-
-       string verifyRes;
-       jsonStrVerifyAccountResult(emailid, passwd, ip, verifyRes);
-       tcpSendMessage(verifyRes, sock);
+    string passwd = Data.value("DATA")["PASSWD"].toString().toStdString();
+    string verifyRes;
+    jsonStrVerifyAccountResult(emailid, passwd, ip, verifyRes);
+    tcpSendMessage(verifyRes, sock);
 }
 
 void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -189,7 +183,7 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
 
     if(!emailid.empty())
     {
-        dc.getDb().updateStateByEmaiID(emailid, 0, "");
+        m_adb.exit(emailid);
         vector<string> meetingIDs;
         dc.getDb().queryMeetingIDByAttendeeIDAndAttendeeState(emailid, 2, meetingIDs);
         if(!meetingIDs.empty())
@@ -253,10 +247,8 @@ void VideoConferencingServer::handleExit(QJsonObject Data, VideoConferencingServ
 void VideoConferencingServer::handleAccountDetail(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
 {
     string emailID = Data.value("DATA")["FROM"].toString().toStdString();
-
-    string tcpJson, id;
-    int res;
-    dc.jsonStrAccountDetail(emailID, tcpJson, res);
+    string tcpJson;
+    jsonStrAccountDetail(emailID, tcpJson);
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -266,7 +258,7 @@ void VideoConferencingServer::handleColleagueList(QJsonObject Data, VideoConfere
 
     string tcpJson, id;
     int res;
-    dc.jsonStrColleagueDetail(emailID, tcpJson, res);
+    jsonStrColleagueDetail(emailID, tcpJson, res);
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -276,7 +268,7 @@ void VideoConferencingServer::handleInvitionsList(QJsonObject Data, VideoConfere
 
     string tcpJson;
     unsigned long long res;
-    dc.jsonStrInvitationsDetail(emailID, tcpJson, res);
+    jsonStrInvitationsDetail(emailID, tcpJson, res);
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -286,7 +278,7 @@ void VideoConferencingServer::handleMeetingList(QJsonObject Data, VideoConferenc
 
     string tcpJson, id;
     unsigned long long res;
-    dc.jsonStrMeetingsDetail(emailID, tcpJson, res);
+    jsonStrMeetingsDetail(emailID, tcpJson, res);
     tcpSendMessage(tcpJson, sock);
 }
 
@@ -586,14 +578,14 @@ void VideoConferencingServer::handleRequestAttendMeeting(QJsonObject Data, Video
         }
     }
 
-//    m_srsVideo.addNewDestIP("192.168.43.7");
-//    m_srsVideo.addNewDestIP("192.168.43.188");
-//    m_srsVideo.addNewDestIP("192.168.43.174");
-////    m_srsVideo.addDestIPs(m_destIps);
-//    std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
-//    t1.detach();
-//    std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
-//    t2.detach();
+    //    m_srsVideo.addNewDestIP("192.168.43.7");
+    //    m_srsVideo.addNewDestIP("192.168.43.188");
+    //    m_srsVideo.addNewDestIP("192.168.43.174");
+    ////    m_srsVideo.addDestIPs(m_destIps);
+    //    std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
+    //    t1.detach();
+    //    std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
+    //    t2.detach();
 }
 
 void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoConferencingServer::sock_ptr sock)
@@ -622,57 +614,266 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
         }
     }
 
-//    m_srsVideo.addNewDestIP("192.168.43.7");
-//    m_srsVideo.addNewDestIP("192.168.43.188");
-//    m_srsVideo.addNewDestIP("192.168.43.174");
+    //    m_srsVideo.addNewDestIP("192.168.43.7");
+    //    m_srsVideo.addNewDestIP("192.168.43.188");
+    //    m_srsVideo.addNewDestIP("192.168.43.174");
     m_srsVideo.addNewDestIP("192.168.43.174");
-//    m_srsVideo.addDestIPs(m_destIps);
+    //    m_srsVideo.addDestIPs(m_destIps);
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
     t1.detach();
     std::thread t2(&StreamingMediaForwading::audioForward, &m_srsVideo);
     t2.detach();
 }
 
+void VideoConferencingServer::jsonStrCreateRegisteredID(std::string &idJson, std::string email, std::string &id, std::string realName, std::string passwd, std::string avatar, std::string gName, std::string dName, std::string cName, std::string phone)
+{
+    idJson.clear();
+    id.clear();
+
+    int rr = m_adb.canRegister(email);
+    QJsonObject data;
+    if(!rr)
+    {
+        data.insert("RESULT", "-1");
+        data.insert("USERID", "");
+        data.insert("EMAIL", email.c_str());
+        data.insert("ERROR", "The email HAS BEEN REGISTERED.");
+    }else {
+        auto low = 1000000;
+        auto high = 9999999;
+        srand(time(nullptr));
+        long int rnum = rand()%(high-low+1)+low;
+        string iid =std::to_string(rnum);
+        id =iid;
+        while(!m_adb.canRegister(iid))
+        {
+            srand(time(nullptr));
+            rnum = rand()%(high-low+1)+low;
+            iid =std::to_string(rnum);
+            id = iid;
+        }
+        data.insert("RESULT", "1");
+        data.insert("USERID", id.c_str());
+        data.insert("EMAIL", email.c_str());
+        data.insert("ERROR", "");
+        m_edb.addEmployee(id, passwd, realName, email, avatar, gName, dName, cName, phone);
+    }
+
+    QJsonObject jsonMsg;
+    jsonMsg.insert("DATA", data);
+    jsonMsg.insert("TYPE", "_REGISTER");
+    QJsonDocument document;
+    document.setObject(jsonMsg);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+    idJson = strJson;
+}
+
 void VideoConferencingServer::jsonStrVerifyAccountResult(std::string emailid, std::string passwd, std::string ip, std::string &verifyResult)
 {
     verifyResult.clear();
-        string err; err.clear();
-        string res; res.clear();
-        int i = m_adb.validateForLogin(emailid, passwd, ip);
+    string err; err.clear();
+    string res; res.clear();
+    int i = m_adb.validateForLogin(emailid, passwd, ip);
 
-        if(i == -3)
-        {
-            err = m_adb.getErrorInfo();
-        }
-        else if (i == -1)
-        {
-            err = "InvalidAccount";
-            res = "-1";
-        }
-        else if(i == 0)
-        {
-            err = "WrongPassword";
-            res = "-2";
-        }
-        else {
-            err="";
-            res = "1";
-        }
+    if(i == -3)
+    {
+        err = m_adb.getErrorInfo();
+    }
+    else if (i == -1)
+    {
+        err = "InvalidAccount";
+        res = "-1";
+    }
+    else if(i == 0)
+    {
+        err = "WrongPassword";
+        res = "-2";
+    }
+    else {
+        err="";
+        res = "1";
+    }
 
-        QJsonObject dd;
-        dd.insert("RESULT", res.c_str());
-        dd.insert("ERROR", err.c_str());
-        dd.insert("EMAILID", emailid.c_str());
-        QJsonObject jsonMsg;
-        jsonMsg.insert("DATA", dd);
-        jsonMsg.insert("TYPE", "_LOGIN");
-        QJsonDocument document;
-        document.setObject(jsonMsg);
-        QByteArray byteArray = document.toJson(QJsonDocument::Compact);
-        string strJson(byteArray);
-        verifyResult = strJson;
+    QJsonObject dd;
+    dd.insert("RESULT", res.c_str());
+    dd.insert("ERROR", err.c_str());
+    dd.insert("EMAILID", emailid.c_str());
+    QJsonObject jsonMsg;
+    jsonMsg.insert("DATA", dd);
+    jsonMsg.insert("TYPE", "_LOGIN");
+    QJsonDocument document;
+    document.setObject(jsonMsg);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+    verifyResult = strJson;
 }
 
+void VideoConferencingServer::jsonStrAccountDetail(std::string emailid, std::string &jsonstr)
+{
+    vector<string> data;
+    auto e = m_edb.findByEmployeeID(emailid);
+    QJsonObject dd;
+    dd.insert("USERID", e->userID().c_str());
+    dd.insert("EMAIL", e->email().c_str());
+    dd.insert("REALNAME", e->realName().c_str());
+    dd.insert("AVATAR", e->avatar().c_str());
+    dd.insert("COMPANY", e->companyName().c_str());
+    dd.insert("DEPARTMENT", e->departmentName().c_str());
+    dd.insert("GROUP", e->groupName().c_str());
+    dd.insert("PHONE", e->phone().c_str());
+    QJsonObject jsonMsg;
+    jsonMsg.insert("DATA", dd);
+    jsonMsg.insert("TYPE", "_INITIALIZE_ACCOUNT_DETAIL");
+    QJsonDocument document;
+    document.setObject(jsonMsg);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    string strJson(byteArray);
+    jsonstr = strJson;
+}
+
+void VideoConferencingServer::jsonStrColleagueDetail(std::string emailid, std::string &jsonstr, int &res)
+{
+    QJsonArray departmentsArray;
+
+    string comid;
+    Company *company = m_edb.findColleagues(emailid);
+    if(company)
+    {
+        auto departments = company->departments();//map-departments
+        for (auto departments_begin = departments.begin(); departments_begin != departments.end(); ++departments_begin)//a department
+        {
+            QJsonObject aDepartment;
+            aDepartment.insert("DEPARTMENTNAME", departments_begin->first.c_str());
+            QJsonArray groupsInDepartment;
+            auto groups = departments_begin->second->groups();//map-groups
+            for(auto groups_begin = groups.begin(); groups_begin != groups.end(); ++groups_begin)//a group
+            {
+                QJsonObject aGroup;
+                aGroup.insert("GROUPNAME", groups_begin->first.c_str());
+                QJsonArray employeesInAGroup;
+                auto employees = groups_begin->second->members();
+                for (auto employees_begin = employees.begin(); employees_begin != employees.end(); ++employees_begin)
+                {
+                    QJsonObject employee;
+                    employee.insert("USERID", employees_begin->first.c_str());
+                    employee.insert("EMAIL", employees_begin->second->email().c_str());
+                    employee.insert("REALNAME", employees_begin->second->realName().c_str());
+                    employee.insert("AVATAR", employees_begin->second->avatar().c_str());
+                    employee.insert("PHONE", employees_begin->second->phone().c_str());
+                    employeesInAGroup.insert(0, employee);
+                }
+                aGroup.insert("EMPLOYEES", employeesInAGroup);
+                groupsInDepartment.insert(0, aGroup);
+
+            }
+            aDepartment.insert("GROUPS",groupsInDepartment);
+            departmentsArray.insert(0, aDepartment);
+        }
+    }
+
+    QJsonObject data;
+    data.insert("DEPARTMENTS", departmentsArray);
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(data));
+    json.insert("TYPE", "_INITIALIZE_COLLEAGUE_LIST");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+    res = 1;
+}
+
+void VideoConferencingServer::jsonStrMeetingsDetail(std::string emalid, std::string &jsonstr, unsigned long long &res)
+{
+    QJsonArray meetingsArray;
+    auto meetings = m_edb.findMeetings(emalid);//meetings
+    for(auto meetings_begin = meetings.begin(); meetings_begin != meetings.end(); ++meetings_begin)
+    {
+        auto ameeting = meetings_begin->second;
+        if(ameeting->state() != 2)//未结束的会议
+        {
+            QJsonObject meeting;
+            meeting.insert("MEETINGID", ameeting->meetingID());
+            //                    meeting.insert("INITIATOR", ameeting->initiator().c_str());
+            meeting.insert("ASSISTANT", ameeting->assistant().c_str());
+            meeting.insert("ASSISTANTNAME", ameeting->assistantName().c_str());
+            meeting.insert("SPEAKER", ameeting->speaker().c_str());
+            meeting.insert("SPEAKERNAME", ameeting->speakerName().c_str());
+            meeting.insert("DATE", ameeting->date().c_str());
+            meeting.insert("TIME", ameeting->time().c_str());
+            meeting.insert("CATEGORY", ameeting->catagory());
+            meeting.insert("SUBJECT", ameeting->subject().c_str());
+            meeting.insert("MEETINGSCALE", ameeting->scale());
+            meeting.insert("PREDICTEDDURATION", ameeting->preDuration());
+            meeting.insert("MEETINGSTATE", ameeting->state());
+            meeting.insert("REMARK", ameeting->remark().c_str());
+            meetingsArray.insert(0, meeting);
+        }
+    }
+
+    QJsonObject qdata;
+    qdata.insert("MEETINGS", meetingsArray);
+    QJsonObject json;
+    json.insert("DATA", QJsonValue(qdata));
+    json.insert("TYPE", "_INITIALIZE_MEETINGS_LIST");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+}
+
+void VideoConferencingServer::jsonStrInvitationsDetail(std::string emailid, std::string &jsonstr, unsigned long long &res)
+{
+    QJsonArray invitationsArray;
+    QJsonObject json;
+    QJsonObject qdata;
+    //    vector<vector<string>> invi;
+    //    res = db.queryInvitationsUndisposed(emailid, invi);
+
+    //    if(res != 0)
+    //    {
+    //        for (auto &anInvi: invi)
+    //        {
+    //            QJsonObject meeting;
+    //            vector<string> data;
+    //            auto meetingNumber = db.queryMeetingOfInvitionInfo(anInvi[5], data);
+    //            if(meetingNumber != 0)
+    //            {
+    //                meeting.insert("MEETINGID", data[0].c_str());
+    //                //            meeting.insert("INITIATOR", data[1].c_str());
+    //                meeting.insert("ASSISTANT", data[2].c_str());
+    //                string assistantName;   assistantName.clear();
+    //                db.queryNameByUserID(data[2], assistantName);
+    //                meeting.insert("ASSISTANTNAME", data[2].c_str());
+    //                meeting.insert("SPEAKER", data[3].c_str());
+    //                string speakerName;     speakerName.clear();
+    //                db.queryNameByUserID(data[3], speakerName);
+    //                meeting.insert("SPEAKERNAME", speakerName.c_str());
+    //                meeting.insert("DATE", data[4].c_str());
+    //                meeting.insert("TIME", data[5].c_str());
+    //                meeting.insert("SUBJECT", data[7].c_str());
+    //                //            meeting.insert("MEETINGNAME", data[8].c_str());
+    //                //            meeting.insert("OWNUNIT", data[9].c_str());
+    //                //                            meeting.insert("MEETINGSCALE", data[10].c_str());
+    //                //            meeting.insert("PREDICTEDDURATION", data[11].c_str());
+    //                //            meeting.insert("MEETINGSTATE", data[14].c_str());
+    //                meeting.insert("REMARK", data[15].c_str());
+    //                invitationsArray.insert(0, meeting);
+    //            }
+    //        }
+    //    }
+    qdata.insert("INVITATIONS", invitationsArray);
+    json.insert("DATA", QJsonValue(qdata));
+    json.insert("TYPE", "_INITIALIZE_MEETING_INVITATIONS_LIST");
+    QJsonDocument document;
+    document.setObject(json);
+    QByteArray byteArray = document.toJson(QJsonDocument::Compact);
+    std::string strJson(byteArray);
+    jsonstr = strJson;
+}
 
 QJsonObject VideoConferencingServer::stringToQJsonObject(std::string string)
 {

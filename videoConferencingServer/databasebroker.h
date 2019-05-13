@@ -12,6 +12,7 @@ public:
     bool connectMySQL(const char *host, const char *username, const char *password, const char *database, int port);
     bool createTables();
     void closeMySQL();
+    ~DataBaseBroker();
 
     //判断USERID是否重复
     bool canRegister(std::string email);
@@ -109,6 +110,7 @@ protected:
     bool isEmail(std::string emailId);
     //错误信息
     void errorIntoMySQL();
+
 protected:
     MYSQL_RES *result;                 //用于存放结果 建议用char* 数组将此结果转存
     MYSQL *mysqlInstance;              //MySQL对象，必备的一个数据结构
