@@ -16,7 +16,8 @@ SOURCES += \
     department.cpp \
     company.cpp \
     attendee.cpp \
-    meeting.cpp
+    meeting.cpp \
+    csendmail.cpp
 
 HEADERS += \
     videoconferencingserver.h \
@@ -31,8 +32,8 @@ HEADERS += \
     department.h \
     company.h \
     attendee.h \
-    meeting.h
+    meeting.h \
+    csendmail.h
 
-LIBS += -lboost_system -lboost_thread -lboost_date_time -lpthread -lmysqlclient -ljrtp -ljthread
-# -lmysqlclient
+LIBS += -lboost_system -lboost_thread -lboost_date_time -lpthread -lmysqlclient -ljrtp -ljthread -lcurl
 QT += core

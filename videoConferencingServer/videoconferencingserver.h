@@ -11,6 +11,7 @@
 #include "streamingmediaforwading.h"
 #include "accountbroker.h"
 #include "employeebroker.h"
+#include "csendmail.h"
 
 
 
@@ -103,6 +104,7 @@ private:
 
     std::vector<std::string> m_destIps;
     StreamingMediaForwading m_srsVideo;
+    CSendEmail sender{"3152608002@qq.com", "hvuwrbfwrmdldgbh", "smtp.qq.com",25};
 };
 
 #endif // VIDEOCONFERENCINGSERVER_H

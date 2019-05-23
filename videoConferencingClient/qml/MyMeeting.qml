@@ -373,7 +373,7 @@ Item {
             }
             else if(type === "StartRecv") {
                 console.log("start recv")
-                xRecv.setScale("1.7")
+                xRecv.setScale("2.4")
                 xRecv.pausePlay()
                 xRecv.startPlay()
             }
