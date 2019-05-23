@@ -346,6 +346,8 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
         udpSendMessage(aip, a_jsonstr);
     }
     //邮件
+    sender.clearRecipients();
+
 
     if(meetingid > 0)
     {
@@ -353,6 +355,8 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
         {
             dc.getDb().insertIntoTableAttendees(mm, speaker, 1, "");
             //邮件
+//            sender.addRecipient();
+
             //            //暂定不向speaker发会议邀请×
             string sip;
             int ss = dc.getDb().queryIpByUserID(speaker, 1, sip);
@@ -380,6 +384,7 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
                     dc.getDb().insertIntoTableAttendees(mm, userid, 0, "");
                     dc.getDb().insertIntoTableNotifications(userid, assistant, 1, subject, 0, mm);
                     //邮件
+//                    sender.addRecipient();
                     string atten_ip;
                     atten_ip.clear();
                     int aa = dc.getDb().queryIpByUserID(userid, 1, atten_ip);
@@ -399,6 +404,8 @@ void VideoConferencingServer::handleRequestLaunchMeeting(QJsonObject Data, Video
                 }
             }
         }
+        sender.addContent("","3152608002@qq.com","","您有一场新的会议","您好，你有一场新的会议，详情请登录局域网视频会议软件");
+        sender.sendEmail();
     }
 }
 
@@ -627,9 +634,8 @@ void VideoConferencingServer::handleRequestStartVideo(QJsonObject Data, VideoCon
         }
     }
 
-//    m_srsVideo.addNewDestIP("192.168.43.7");
+    m_srsVideo.addNewDestIP("192.168.43.7");
 //    m_srsVideo.addNewDestIP("192.168.43.188");
-//    m_srsVideo.addNewDestIP("192.168.43.174");
     m_srsVideo.addNewDestIP("192.168.43.174");
 //    m_srsVideo.addDestIPs(m_destIps);
     std::thread t1(&StreamingMediaForwading::videoForward, &m_srsVideo);
